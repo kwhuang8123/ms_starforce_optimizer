@@ -1,0 +1,132 @@
+"""Guards against transcription errors in the official tables."""
+
+from __future__ import annotations
+
+import unittest
+
+from starforce import data
+
+
+class EnhanceRatesTest(unittest.TestCase):
+    def test_covers_every_attempt_from_0_to_29(self) -> None:
+        self.assertEqual(sorted(data.ENHANCE_RATES), list(range(30)))
+
+    def test_every_row_sums_to_the_basis(self) -> None:
+        for star, row in data.ENHANCE_RATES.items():
+            with self.subTest(star=star):
+                self.assertEqual(sum(row), data.RATE_BASIS)
+
+    def test_no_destruction_below_15_stars(self) -> None:
+        for star in range(15):
+            with self.subTest(star=star):
+                self.assertEqual(data.ENHANCE_RATES[star][1], 0)
+
+    def test_destruction_on_every_attempt_from_15_stars(self) -> None:
+        for star in range(15, 30):
+            with self.subTest(star=star):
+                self.assertGreater(data.ENHANCE_RATES[star][1], 0)
+
+    def test_success_rate_rebounds_at_20_stars(self) -> None:
+        # The announcement deliberately makes 20 -> 21 easier than 19 -> 20.
+        self.assertEqual(data.ENHANCE_RATES[19][0], 1000)
+        self.assertEqual(data.ENHANCE_RATES[20][0], 3000)
+
+    def test_spot_checks_against_the_announcement(self) -> None:
+        self.assertEqual(data.ENHANCE_RATES[0], (9500, 0, 500))
+        self.assertEqual(data.ENHANCE_RATES[15], (3000, 210, 6790))
+        self.assertEqual(data.ENHANCE_RATES[17], (1500, 680, 7820))
+        self.assertEqual(data.ENHANCE_RATES[22], (1750, 1225, 7025))
+        self.assertEqual(data.ENHANCE_RATES[29], (100, 1980, 7920))
+
+
+class EnhanceCostTest(unittest.TestCase):
+    def test_covers_every_supported_level(self) -> None:
+        self.assertEqual(tuple(data.ENHANCE_COST), data.SUPPORTED_LEVELS)
+
+    def test_level_130_stops_at_20_stars(self) -> None:
+        self.assertEqual(sorted(data.ENHANCE_COST[130]), list(range(20)))
+
+    def test_levels_140_and_up_reach_30_stars(self) -> None:
+        for level in data.SUPPORTED_LEVELS[1:]:
+            with self.subTest(level=level):
+                self.assertEqual(sorted(data.ENHANCE_COST[level]), list(range(30)))
+
+    def test_spot_checks_against_the_announcement(self) -> None:
+        self.assertEqual(data.ENHANCE_COST[130][0], 62_000)
+        self.assertEqual(data.ENHANCE_COST[140][9], 763_200)
+        self.assertEqual(data.ENHANCE_COST[150][14], 47_243_900)
+        self.assertEqual(data.ENHANCE_COST[160][19], 444_652_400)
+        self.assertEqual(data.ENHANCE_COST[200][24], 237_957_700)
+        self.assertEqual(data.ENHANCE_COST[250][29], 1_013_810_000)
+
+    def test_published_anomalies_are_preserved(self) -> None:
+        # Both of these read like typos but are exactly what the official table
+        # publishes; the engine must not silently "fix" them.
+        self.assertLess(data.ENHANCE_COST[130][15], data.ENHANCE_COST[130][14])
+        self.assertGreater(data.ENHANCE_COST[140][21], data.ENHANCE_COST[140][22])
+
+    def test_first_ten_attempts_match_the_derived_formula(self) -> None:
+        # cost = round_half_up_to_100(level^3 * (star + 1) / 36 + 1000), which
+        # reproduces every published 0 -> 10 figure across all six levels.
+        for level in data.SUPPORTED_LEVELS:
+            for star in range(10):
+                raw = level**3 * (star + 1) / 36 + 1000
+                expected = int((raw + 50) // 100) * 100
+                with self.subTest(level=level, star=star):
+                    self.assertEqual(data.ENHANCE_COST[level][star], expected)
+
+
+class RepairTest(unittest.TestCase):
+    def test_no_level_130_column(self) -> None:
+        self.assertNotIn(130, data.REPAIR_MESO)
+
+    def test_every_other_level_covers_15_to_22_stars(self) -> None:
+        for level in data.SUPPORTED_LEVELS[1:]:
+            with self.subTest(level=level):
+                self.assertEqual(sorted(data.REPAIR_MESO[level]), list(range(15, 23)))
+
+    def test_equipment_counts(self) -> None:
+        self.assertEqual(
+            data.REPAIR_EQUIPMENT,
+            {15: 1, 16: 1, 17: 1, 18: 1, 19: 2, 20: 2, 21: 3, 22: 4},
+        )
+
+    def test_spot_checks_against_the_event_page(self) -> None:
+        self.assertEqual(data.REPAIR_MESO[140][15], 149_000_000)
+        self.assertEqual(data.REPAIR_MESO[200][20], 23_500_000_000)
+        self.assertEqual(data.REPAIR_MESO[250][22], 80_100_000_000)
+
+
+class StarScrollTest(unittest.TestCase):
+    def test_scrolls_cover_10_to_20_stars(self) -> None:
+        self.assertEqual(data.STAR_SCROLL_STARS, tuple(range(10, 21)))
+
+    def test_every_scroll_is_priced(self) -> None:
+        self.assertEqual(sorted(data.STAR_SCROLL_COST), list(data.STAR_SCROLL_STARS))
+
+    def test_prices(self) -> None:
+        # 0.2e through 20 stars at 330e, as supplied.
+        self.assertEqual(
+            data.STAR_SCROLL_COST,
+            {
+                10: 20_000_000,
+                11: 20_000_000,
+                12: 20_000_000,
+                13: 20_000_000,
+                14: 20_000_000,
+                15: 40_000_000,
+                16: 280_000_000,
+                17: 1_580_000_000,
+                18: 2_500_000_000,
+                19: 6_400_000_000,
+                20: 33_000_000_000,
+            },
+        )
+
+    def test_prices_never_decrease_with_star(self) -> None:
+        prices = [data.STAR_SCROLL_COST[star] for star in data.STAR_SCROLL_STARS]
+        self.assertEqual(prices, sorted(prices))
+
+
+if __name__ == "__main__":
+    unittest.main()
