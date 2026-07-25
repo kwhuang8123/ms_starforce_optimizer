@@ -1,8 +1,8 @@
 """Monte Carlo aggregation over repeated runs.
 
 ``to_dict`` output is plain JSON-serialisable data, ready to be dumped for the
-static HTML front end. Meso appears twice: ``meso`` holds raw amounts and
-``meso_yi`` holds the same figures in 億, which is the unit meant for display.
+static HTML front end. Every meso quantity appears twice: the raw amount, and
+the same figure in 億 under a ``_yi`` key, which is the unit meant for display.
 """
 
 from __future__ import annotations
@@ -53,7 +53,15 @@ class SimulationSummary:
     config: RunConfig
     trials: int
     seed: int | None
+    #: Meso spent, plus the equipment burned, plus any rebuilds.
+    total_cost: Distribution
+    #: Enhancement fees, repair meso and star scrolls.
     meso: Distribution
+    #: Repair equipment valued at the config's equipment price.
+    equipment_cost: Distribution
+    #: Climbing an OWNED run back to 22 stars after a 12 star repair.
+    rebuild_cost: Distribution
+    #: Repair equipment as a piece count.
     equipment: Distribution
     scrolls: Distribution
     attempts: Distribution
@@ -62,44 +70,62 @@ class SimulationSummary:
     mean_attempts_by_star: dict[int, float]
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        payload: dict[str, Any] = {
             "config": self.config.to_dict(),
             "trials": self.trials,
             "seed": self.seed,
-            "meso": self.meso.to_dict(),
-            "meso_yi": self.meso.to_yi_dict(),
-            "equipment": self.equipment.to_dict(),
-            "scrolls": self.scrolls.to_dict(),
-            "attempts": self.attempts.to_dict(),
-            "destroys": self.destroys.to_dict(),
-            "mean_attempts_by_star": {
-                str(star): value
-                for star, value in sorted(self.mean_attempts_by_star.items())
-            },
         }
+        for label in ("total_cost", "meso", "equipment_cost", "rebuild_cost"):
+            distribution: Distribution = getattr(self, label)
+            payload[label] = distribution.to_dict()
+            payload[f"{label}_yi"] = distribution.to_yi_dict()
+        for label in ("equipment", "scrolls", "attempts", "destroys"):
+            payload[label] = getattr(self, label).to_dict()
+        payload["mean_attempts_by_star"] = {
+            str(star): value
+            for star, value in sorted(self.mean_attempts_by_star.items())
+        }
+        return payload
 
     def report(self, percentiles: Sequence[int] = DEFAULT_PERCENTILES) -> str:
         """Human-readable summary with every meso figure in 億."""
         config = self.config
-        lines = [
+        headline = (
             f"level {config.level}  {config.start_star} -> {config.target_star} stars  "
-            f"repair={config.repair_policy.value}  trials={self.trials:,}",
-            f"  meso       mean {format_meso(self.meso.mean):>14}"
-            + "".join(
-                f"  p{p} {format_meso(self.meso.percentiles[p]):>14}"
-                for p in percentiles
-            ),
-        ]
-        for label, dist in (
-            ("equipment", self.equipment),
+            f"start={config.start_mode.value}  repair={config.repair_policy.value}"
+        )
+        if config.equipment_name is not None:
+            headline += (
+                f"  equipment={config.equipment_name} @ "
+                f"{format_meso(config.equipment_price)}"
+            )
+        headline += f"  trials={self.trials:,}"
+
+        lines = [headline]
+        for label, distribution in (
+            ("total", self.total_cost),
+            ("meso", self.meso),
+            ("equip cost", self.equipment_cost),
+            ("rebuild", self.rebuild_cost),
+        ):
+            lines.append(
+                f"  {label:<11} mean {format_meso(distribution.mean):>14}"
+                + "".join(
+                    f"  p{p} {format_meso(distribution.percentiles[p]):>14}"
+                    for p in percentiles
+                )
+            )
+        for label, distribution in (
+            ("equip qty", self.equipment),
             ("scrolls", self.scrolls),
             ("attempts", self.attempts),
             ("destroys", self.destroys),
         ):
             lines.append(
-                f"  {label:<9}  mean {dist.mean:>14,.2f}"
+                f"  {label:<11} mean {distribution.mean:>14,.2f}"
                 + "".join(
-                    f"  p{p} {dist.percentiles[p]:>14,.0f}" for p in percentiles
+                    f"  p{p} {distribution.percentiles[p]:>14,.0f}"
+                    for p in percentiles
                 )
             )
         return "\n".join(lines)
@@ -144,20 +170,28 @@ def simulate(
             raise ValueError(f"percentile must be within 0-100, got {percentile}")
 
     rng = random.Random(seed)
-    meso: list[int] = []
-    equipment: list[int] = []
-    scrolls: list[int] = []
-    attempts: list[int] = []
-    destroys: list[int] = []
+    samples: dict[str, list[int]] = {
+        "total_cost": [],
+        "meso": [],
+        "equipment_cost": [],
+        "rebuild_cost": [],
+        "equipment": [],
+        "scrolls": [],
+        "attempts": [],
+        "destroys": [],
+    }
     attempts_by_star: dict[int, int] = {}
 
     for _ in range(trials):
         result = simulate_once(config, rng)
-        meso.append(result.total_meso)
-        equipment.append(result.equipment_used)
-        scrolls.append(result.scrolls_used)
-        attempts.append(result.attempts)
-        destroys.append(result.destroys)
+        samples["total_cost"].append(result.total_cost)
+        samples["meso"].append(result.total_meso)
+        samples["equipment_cost"].append(result.equipment_cost)
+        samples["rebuild_cost"].append(result.rebuild_cost)
+        samples["equipment"].append(result.equipment_used)
+        samples["scrolls"].append(result.scrolls_used)
+        samples["attempts"].append(result.attempts)
+        samples["destroys"].append(result.destroys)
         for star, count in result.attempts_by_star.items():
             attempts_by_star[star] = attempts_by_star.get(star, 0) + count
 
@@ -165,11 +199,14 @@ def simulate(
         config=config,
         trials=trials,
         seed=seed,
-        meso=_summarise(meso, percentiles),
-        equipment=_summarise(equipment, percentiles),
-        scrolls=_summarise(scrolls, percentiles),
-        attempts=_summarise(attempts, percentiles),
-        destroys=_summarise(destroys, percentiles),
+        total_cost=_summarise(samples["total_cost"], percentiles),
+        meso=_summarise(samples["meso"], percentiles),
+        equipment_cost=_summarise(samples["equipment_cost"], percentiles),
+        rebuild_cost=_summarise(samples["rebuild_cost"], percentiles),
+        equipment=_summarise(samples["equipment"], percentiles),
+        scrolls=_summarise(samples["scrolls"], percentiles),
+        attempts=_summarise(samples["attempts"], percentiles),
+        destroys=_summarise(samples["destroys"], percentiles),
         mean_attempts_by_star={
             star: count / trials for star, count in attempts_by_star.items()
         },

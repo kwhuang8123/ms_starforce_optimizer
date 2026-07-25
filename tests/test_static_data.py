@@ -1,10 +1,10 @@
-"""Guards against transcription errors in the official tables."""
+﻿"""Guards against transcription errors in the official tables."""
 
 from __future__ import annotations
 
 import unittest
 
-from starforce import data
+from starforce import static_data as data
 
 
 class EnhanceRatesTest(unittest.TestCase):
@@ -101,32 +101,12 @@ class StarScrollTest(unittest.TestCase):
     def test_scrolls_cover_10_to_20_stars(self) -> None:
         self.assertEqual(data.STAR_SCROLL_STARS, tuple(range(10, 21)))
 
-    def test_every_scroll_is_priced(self) -> None:
-        self.assertEqual(sorted(data.STAR_SCROLL_COST), list(data.STAR_SCROLL_STARS))
-
-    def test_prices(self) -> None:
-        # 0.2e through 20 stars at 330e, as supplied.
-        self.assertEqual(
-            data.STAR_SCROLL_COST,
-            {
-                10: 20_000_000,
-                11: 20_000_000,
-                12: 20_000_000,
-                13: 20_000_000,
-                14: 20_000_000,
-                15: 40_000_000,
-                16: 280_000_000,
-                17: 1_580_000_000,
-                18: 2_500_000_000,
-                19: 6_400_000_000,
-                20: 33_000_000_000,
-            },
-        )
-
-    def test_prices_never_decrease_with_star(self) -> None:
-        prices = [data.STAR_SCROLL_COST[star] for star in data.STAR_SCROLL_STARS]
-        self.assertEqual(prices, sorted(prices))
+    def test_prices_are_not_fixed_data(self) -> None:
+        # Which scrolls exist is a rule; what they cost moves with the market
+        # and lives in volatile_data.
+        self.assertFalse(hasattr(data, "STAR_SCROLL_COST"))
 
 
 if __name__ == "__main__":
     unittest.main()
+

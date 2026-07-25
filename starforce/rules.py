@@ -1,12 +1,16 @@
 """Star force rules derived from the V272 announcement.
 
 Every lookup validates its arguments and raises rather than falling back to a
-default, so an unsupported level or an unpriced star scroll fails loudly.
+default, so an unsupported level or an out-of-range star fails loudly.
+
+Fixed tables come from :mod:`starforce.static_data`; prices that move with the
+market come from :mod:`starforce.volatile_data`.
 """
 
 from __future__ import annotations
 
-from . import data
+from . import static_data as data
+from . import volatile_data
 
 # Star force caps by item level. 130 gear stops at 20 stars, 140+ at 30.
 MAX_STAR: dict[int, int] = {
@@ -33,6 +37,11 @@ TRACE_STAR_CAP = 22
 # The cheap repair option restores the item to 12 stars.
 CHEAP_REPAIR_STAR = 12
 CHEAP_REPAIR_EQUIPMENT = 1
+
+# Where a rebuild lands when a run that started from an already-owned item is
+# destroyed: repair to 12 stars, then climb back to 22. 22 is the star the
+# rebuild cost is priced against, so the two must stay in step.
+REBUILD_STAR = 22
 
 
 def check_level(level: int) -> None:
@@ -117,9 +126,10 @@ def check_start_star(star: int) -> None:
 
 
 def star_scroll_cost(star: int) -> int:
-    """Meso cost of the ``star`` star scroll.
+    """Meso cost of the ``star`` star scroll, as currently priced.
 
-    Scroll prices do not vary with item level, so this takes no level.
+    Scroll prices do not vary with item level, so this takes no level. The
+    figure is volatile: it is read live so a reload picks up new prices.
     """
     check_start_star(star)
-    return data.STAR_SCROLL_COST[star]
+    return volatile_data.STAR_SCROLL_COST[star]
