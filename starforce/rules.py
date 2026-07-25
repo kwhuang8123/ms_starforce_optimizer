@@ -1,12 +1,16 @@
 """Star force rules derived from the V272 announcement.
 
 Every lookup validates its arguments and raises rather than falling back to a
-default, so an unsupported level or an unpriced star scroll fails loudly.
+default, so an unsupported level or an out-of-range star fails loudly.
+
+Fixed tables come from :mod:`starforce.static_data`; prices that move with the
+market come from :mod:`starforce.volatile_data`.
 """
 
 from __future__ import annotations
 
-from . import data
+from . import static_data as data
+from . import volatile_data
 
 # Star force caps by item level. 130 gear stops at 20 stars, 140+ at 30.
 MAX_STAR: dict[int, int] = {
@@ -117,9 +121,10 @@ def check_start_star(star: int) -> None:
 
 
 def star_scroll_cost(star: int) -> int:
-    """Meso cost of the ``star`` star scroll.
+    """Meso cost of the ``star`` star scroll, as currently priced.
 
-    Scroll prices do not vary with item level, so this takes no level.
+    Scroll prices do not vary with item level, so this takes no level. The
+    figure is volatile: it is read live so a reload picks up new prices.
     """
     check_start_star(star)
-    return data.STAR_SCROLL_COST[star]
+    return volatile_data.STAR_SCROLL_COST[star]

@@ -1,10 +1,10 @@
-"""Rule lookups: caps, trace stars, repairs, star scrolls."""
+﻿"""Rule lookups: caps, trace stars, repairs, star scrolls."""
 
 from __future__ import annotations
 
 import unittest
 
-from starforce import data, rules
+from starforce import rules, static_data as data
 
 
 class LevelTest(unittest.TestCase):
@@ -110,3 +110,4 @@ class StarScrollTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

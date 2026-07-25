@@ -13,10 +13,12 @@ from .rules import (
 )
 from .stats import Distribution, SimulationSummary, simulate
 from .units import YI, format_meso, to_yi
+from .volatile_data import Equipment, known_names, lookup
 
 __all__ = [
     "YI",
     "Distribution",
+    "Equipment",
     "RepairPolicy",
     "RunConfig",
     "RunResult",
@@ -26,6 +28,8 @@ __all__ = [
     "enhance_rates",
     "format_meso",
     "full_repair",
+    "known_names",
+    "lookup",
     "max_star",
     "max_target_star",
     "simulate",

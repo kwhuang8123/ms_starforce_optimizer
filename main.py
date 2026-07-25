@@ -2,7 +2,10 @@
 
 VS Code runs this straight from the repo root, so ``import starforce`` resolves
 with no extra configuration. Every setting is also a ``main()`` keyword, so
-``main(level=200, runs=[(19, 25)])`` works without editing the file.
+``main(equipment="控制核心", runs=[(19, 25)])`` works without editing the file.
+
+Prices come from ``data/volatile.json``; edit that file to reprice scrolls or
+equipment without touching code.
 """
 
 from __future__ import annotations
@@ -11,15 +14,21 @@ import json
 from pathlib import Path
 from typing import Sequence
 
-from starforce import RepairPolicy, RunConfig, rules, simulate
+from starforce import RepairPolicy, RunConfig, rules, simulate, volatile_data
 from starforce.stats import SimulationSummary
-from starforce.units import to_yi
+from starforce.units import format_meso, to_yi
 
 # ---------------------------------------------------------------------------
 # SETTINGS - edit these
 # ---------------------------------------------------------------------------
 
-#: Item level. Only 130, 140, 150, 160, 200 and 250 are published.
+#: Equipment name, alias, or digit variant, e.g. "頂培" or "永恆上4".
+#: Its level and price come from data/volatile.json. Set to None to fall back
+#: to LEVEL below and value the equipment repairs consume at zero.
+EQUIPMENT: str | None = "頂培"
+
+#: Item level, used only when EQUIPMENT is None.
+#: Only 130, 140, 150, 160, 200 and 250 are published.
 LEVEL = 150
 
 #: (start_star, target_star) pairs to simulate.
@@ -52,11 +61,49 @@ EXPORT_JSON: Path | None = None
 # ---------------------------------------------------------------------------
 
 
-def print_scroll_prices(runs: Sequence[tuple[int, int]]) -> None:
-    """Show what the starting scroll costs for each configured run."""
-    print("star scroll prices in play:")
+def build_configs(
+    equipment: str | None,
+    level: int,
+    runs: Sequence[tuple[int, int]],
+    policies: Sequence[RepairPolicy],
+) -> list[RunConfig]:
+    """One config per runs x policies combination."""
+    configs = []
+    for start_star, target_star in runs:
+        for policy in policies:
+            if equipment is None:
+                configs.append(
+                    RunConfig(
+                        level=level,
+                        start_star=start_star,
+                        target_star=target_star,
+                        repair_policy=policy,
+                    )
+                )
+            else:
+                configs.append(
+                    RunConfig.for_equipment(
+                        equipment, start_star, target_star, repair_policy=policy
+                    )
+                )
+    return configs
+
+
+def print_prices(equipment: str | None, runs: Sequence[tuple[int, int]]) -> None:
+    """Show the volatile prices this run depends on."""
+    print(f"volatile prices from {volatile_data.SOURCE_PATH}")
+    if equipment is None:
+        print("  equipment  (none - repair equipment valued at 0)")
+    else:
+        item = volatile_data.lookup(equipment)
+        print(
+            f"  equipment  {item.name}  level {item.level}  "
+            f"{format_meso(item.price)}"
+        )
     for star in sorted({start for start, _ in runs}):
-        print(f"  {star:>2} star  {to_yi(rules.star_scroll_cost(star)):>10,.2f}e")
+        print(
+            f"  {star:>2} star scroll  {to_yi(rules.star_scroll_cost(star)):>10,.2f}e"
+        )
     print()
 
 
@@ -64,29 +111,33 @@ def print_comparison(
     results: Sequence[tuple[RunConfig, SimulationSummary]],
     percentiles: Sequence[int],
 ) -> None:
-    """One row per configuration, meso in 億."""
+    """One row per configuration. Percentiles are of total cost, meso in 億."""
     header = (
         f"{'run':<10}{'policy':<8}"
         + "".join(f"{f'p{p}':>12}" for p in percentiles)
-        + f"{'mean':>12}{'equip':>8}{'scroll':>8}{'destroy':>9}{'try':>8}"
+        + f"{'mean':>12}{'meso':>12}{'equip$':>12}{'qty':>7}{'destroy':>9}{'try':>8}"
     )
     print("=" * len(header))
+    print("total cost percentiles")
     print(header)
     print("-" * len(header))
     for config, summary in results:
         row = f"{f'{config.start_star}->{config.target_star}':<10}"
         row += f"{config.repair_policy.value:<8}"
         row += "".join(
-            f"{to_yi(summary.meso.percentiles[p]):>11,.1f}e" for p in percentiles
+            f"{to_yi(summary.total_cost.percentiles[p]):>11,.1f}e" for p in percentiles
         )
+        row += f"{to_yi(summary.total_cost.mean):>11,.1f}e"
         row += f"{to_yi(summary.meso.mean):>11,.1f}e"
-        row += f"{summary.equipment.mean:>8.2f}{summary.scrolls.mean:>8.2f}"
-        row += f"{summary.destroys.mean:>9.2f}{summary.attempts.mean:>8.1f}"
+        row += f"{to_yi(summary.equipment_cost.mean):>11,.1f}e"
+        row += f"{summary.equipment.mean:>7.2f}{summary.destroys.mean:>9.2f}"
+        row += f"{summary.attempts.mean:>8.1f}"
         print(row)
     print("=" * len(header))
 
 
 def main(
+    equipment: str | None = EQUIPMENT,
     level: int = LEVEL,
     runs: Sequence[tuple[int, int]] = RUNS,
     policies: Sequence[RepairPolicy] = POLICIES,
@@ -96,29 +147,24 @@ def main(
     export_json: Path | None = EXPORT_JSON,
 ) -> list[tuple[RunConfig, SimulationSummary]]:
     """Simulate every ``runs`` x ``policies`` combination and print the results."""
-    print(f"level {level}   trials={trials:,}\n")
-    print_scroll_prices(runs)
+    configs = build_configs(equipment, level, runs, policies)
+
+    print(f"level {configs[0].level}   trials={trials:,}\n")
+    print_prices(equipment, runs)
 
     results: list[tuple[RunConfig, SimulationSummary]] = []
-    for start_star, target_star in runs:
-        for policy in policies:
-            config = RunConfig(
-                level=level,
-                start_star=start_star,
-                target_star=target_star,
-                repair_policy=policy,
-            )
-            summary = simulate(config, trials=trials, percentiles=percentiles)
-            results.append((config, summary))
+    for config in configs:
+        summary = simulate(config, trials=trials, percentiles=percentiles)
+        results.append((config, summary))
 
-            print(summary.report(percentiles))
-            if show_attempts_by_star:
-                breakdown = "  ".join(
-                    f"{star}:{value:.1f}"
-                    for star, value in sorted(summary.mean_attempts_by_star.items())
-                )
-                print(f"  by star    {breakdown}")
-            print()
+        print(summary.report(percentiles))
+        if show_attempts_by_star:
+            breakdown = "  ".join(
+                f"{star}:{value:.1f}"
+                for star, value in sorted(summary.mean_attempts_by_star.items())
+            )
+            print(f"  by star     {breakdown}")
+        print()
 
     print_comparison(results, percentiles)
 
@@ -134,6 +180,7 @@ def main(
 
 if __name__ == "__main__":
     main(
+        equipment=EQUIPMENT,
         level=LEVEL,
         runs=RUNS,
         policies=POLICIES,

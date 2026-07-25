@@ -1,6 +1,10 @@
-"""Official MapleStory TW star force tables (V272, effective 2025-07-30).
+"""Fixed data: the official MapleStory TW star force tables.
 
-Sources:
+These only change when NEXON publishes a new balance patch. Anything that moves
+with the market - star scroll prices, equipment prices - lives in
+:mod:`starforce.volatile_data` instead.
+
+Sources (V272, effective 2025-07-30):
     Enhancement rates and costs
         https://maplestory.beanfun.com/bulletin?bid=74681
     Equipment trace repair costs
@@ -314,22 +318,7 @@ REPAIR_EQUIPMENT: dict[int, int] = {
     22: 4,
 }
 
-# Star scroll: sets an item's star force directly to the scroll's star. Scrolls
-# exist for 10 through 20 stars and cost meso.
+# Star scroll: sets an item's star force directly to the scroll's star. Which
+# scrolls exist is a fixed rule; what they cost is not, and lives in
+# starforce.volatile_data.
 STAR_SCROLL_STARS: tuple[int, ...] = tuple(range(10, 21))
-
-# Meso per scroll. These are flat across item levels, unlike every other table
-# in this module, so they are keyed by star alone.
-STAR_SCROLL_COST: dict[int, int] = {
-    10: 20_000_000,
-    11: 20_000_000,
-    12: 20_000_000,
-    13: 20_000_000,
-    14: 20_000_000,
-    15: 40_000_000,
-    16: 280_000_000,
-    17: 1_580_000_000,
-    18: 2_500_000_000,
-    19: 6_400_000_000,
-    20: 33_000_000_000,
-}

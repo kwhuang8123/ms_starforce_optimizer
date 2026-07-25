@@ -1,4 +1,4 @@
-"""Engine behaviour: config validation, scripted runs, and analytic anchors."""
+﻿"""Engine behaviour: config validation, scripted runs, and analytic anchors."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import json
 import random
 import unittest
 
-from starforce import data, rules
+from starforce import rules, static_data as data
 from starforce.engine import RepairPolicy, RunConfig, simulate_once
 from starforce.stats import simulate
 from starforce.units import YI, format_meso, to_yi
@@ -68,8 +68,105 @@ class RunConfigTest(unittest.TestCase):
                 "start_star": 15,
                 "target_star": 22,
                 "repair_policy": "to_12",
+                "equipment_name": None,
+                "equipment_price": 0,
             },
         )
+
+    def test_negative_equipment_price_raises(self) -> None:
+        with self.assertRaises(ValueError):
+            RunConfig(
+                level=140, start_star=15, target_star=22, equipment_price=-1
+            )
+
+
+class ForEquipmentTest(unittest.TestCase):
+    def test_level_and_price_come_from_the_catalogue(self) -> None:
+        config = RunConfig.for_equipment("控制核心", 15, 22)
+        self.assertEqual(config.level, 200)
+        self.assertEqual(config.equipment_name, "控制核心")
+        self.assertEqual(config.equipment_price, 20_000_000_000)
+
+    def test_an_alias_form_resolves_to_the_canonical_name(self) -> None:
+        config = RunConfig.for_equipment("永恆上4", 15, 22)
+        self.assertEqual(config.equipment_name, "永恆上四")
+        self.assertEqual(config.level, 250)
+
+    def test_repair_policy_is_forwarded(self) -> None:
+        config = RunConfig.for_equipment(
+            "頂培", 15, 22, repair_policy=RepairPolicy.TO_12
+        )
+        self.assertIs(config.repair_policy, RepairPolicy.TO_12)
+
+    def test_unknown_equipment_raises(self) -> None:
+        with self.assertRaises(ValueError):
+            RunConfig.for_equipment("不存在的裝備", 15, 22)
+
+    def test_a_level_130_equipment_would_still_hit_the_target_cap(self) -> None:
+        # No catalogue entry is level 130 today, but the cap must still apply.
+        config = RunConfig(level=130, start_star=10, target_star=15)
+        self.assertEqual(config.target_star, 15)
+
+
+class EquipmentCostTest(unittest.TestCase):
+    PRICE = 1_000_000_000  # 10e
+
+    def test_no_destruction_means_no_equipment_cost(self) -> None:
+        config = RunConfig(
+            level=140, start_star=10, target_star=13, equipment_price=self.PRICE
+        )
+        result = simulate_once(config, ScriptedRandom([0, 0, 0]))
+        self.assertEqual(result.equipment_used, 0)
+        self.assertEqual(result.equipment_cost, 0)
+        self.assertEqual(result.total_cost, result.total_meso)
+
+    def test_full_repair_charges_one_piece(self) -> None:
+        config = RunConfig(
+            level=140, start_star=15, target_star=16, equipment_price=self.PRICE
+        )
+        result = simulate_once(config, ScriptedRandom([3100, 0]))
+        self.assertEqual(result.equipment_used, 1)
+        self.assertEqual(result.equipment_cost, self.PRICE)
+        self.assertEqual(result.total_cost, result.total_meso + self.PRICE)
+
+    def test_a_22_star_trace_charges_four_pieces(self) -> None:
+        config = RunConfig(
+            level=140, start_star=20, target_star=26, equipment_price=self.PRICE
+        )
+        result = simulate_once(
+            config, ScriptedRandom([0, 0, 0, 0, 0, 1000, 0, 0, 0, 0])
+        )
+        self.assertEqual(result.equipment_used, 4)
+        self.assertEqual(result.equipment_cost, self.PRICE * 4)
+
+    def test_cheap_repair_charges_one_piece_per_destruction(self) -> None:
+        config = RunConfig(
+            level=140,
+            start_star=15,
+            target_star=16,
+            repair_policy=RepairPolicy.TO_12,
+            equipment_price=self.PRICE,
+        )
+        result = simulate_once(config, ScriptedRandom([3100, 3100, 0]))
+        self.assertEqual(result.destroys, 2)
+        self.assertEqual(result.equipment_used, 2)
+        self.assertEqual(result.equipment_cost, self.PRICE * 2)
+
+    def test_price_zero_leaves_total_cost_equal_to_meso(self) -> None:
+        config = RunConfig(level=140, start_star=15, target_star=16)
+        result = simulate_once(config, ScriptedRandom([3100, 0]))
+        self.assertEqual(result.equipment_used, 1)
+        self.assertEqual(result.equipment_cost, 0)
+        self.assertEqual(result.total_cost, result.total_meso)
+
+    def test_base_equipment_is_not_charged(self) -> None:
+        # A run that never gets destroyed pays nothing for the item it started
+        # from: the base piece is a constant across every strategy.
+        config = RunConfig(
+            level=140, start_star=10, target_star=11, equipment_price=self.PRICE
+        )
+        result = simulate_once(config, ScriptedRandom([0]))
+        self.assertEqual(result.equipment_cost, 0)
 
 
 class ScriptedRunTest(unittest.TestCase):
@@ -281,6 +378,35 @@ class SimulationSummaryTest(unittest.TestCase):
         self.assertEqual(payload["config"]["start_star"], 15)
         self.assertEqual(payload["config"]["target_star"], 17)
 
+    def test_total_cost_is_meso_plus_equipment_cost(self) -> None:
+        summary = simulate(
+            RunConfig.for_equipment("控制核心", 15, 20), trials=2_000, seed=11
+        )
+        self.assertAlmostEqual(
+            summary.total_cost.mean,
+            summary.meso.mean + summary.equipment_cost.mean,
+            places=2,
+        )
+        self.assertGreater(summary.equipment_cost.mean, 0)
+
+    def test_equipment_cost_tracks_the_piece_count(self) -> None:
+        config = RunConfig.for_equipment("眼罩", 15, 20)
+        summary = simulate(config, trials=2_000, seed=12)
+        self.assertAlmostEqual(
+            summary.equipment_cost.mean,
+            summary.equipment.mean * config.equipment_price,
+            places=2,
+        )
+
+    def test_report_names_the_equipment(self) -> None:
+        summary = simulate(
+            RunConfig.for_equipment("苦痛", 15, 18), trials=200, seed=13
+        )
+        report = summary.report()
+        self.assertIn("equipment=苦痛", report)
+        self.assertIn("total", report)
+        self.assertIn("equip cost", report)
+
     def test_report_shows_meso_in_yi(self) -> None:
         summary = simulate(
             RunConfig(level=140, start_star=15, target_star=18), trials=200, seed=5
@@ -297,3 +423,4 @@ class SimulationSummaryTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
