@@ -53,12 +53,14 @@ class SimulationSummary:
     config: RunConfig
     trials: int
     seed: int | None
-    #: Meso spent plus the value of the equipment burned.
+    #: Meso spent, plus the equipment burned, plus any rebuilds.
     total_cost: Distribution
     #: Enhancement fees, repair meso and star scrolls.
     meso: Distribution
     #: Repair equipment valued at the config's equipment price.
     equipment_cost: Distribution
+    #: Climbing an OWNED run back to 22 stars after a 12 star repair.
+    rebuild_cost: Distribution
     #: Repair equipment as a piece count.
     equipment: Distribution
     scrolls: Distribution
@@ -73,7 +75,7 @@ class SimulationSummary:
             "trials": self.trials,
             "seed": self.seed,
         }
-        for label in ("total_cost", "meso", "equipment_cost"):
+        for label in ("total_cost", "meso", "equipment_cost", "rebuild_cost"):
             distribution: Distribution = getattr(self, label)
             payload[label] = distribution.to_dict()
             payload[f"{label}_yi"] = distribution.to_yi_dict()
@@ -90,7 +92,7 @@ class SimulationSummary:
         config = self.config
         headline = (
             f"level {config.level}  {config.start_star} -> {config.target_star} stars  "
-            f"repair={config.repair_policy.value}"
+            f"start={config.start_mode.value}  repair={config.repair_policy.value}"
         )
         if config.equipment_name is not None:
             headline += (
@@ -104,6 +106,7 @@ class SimulationSummary:
             ("total", self.total_cost),
             ("meso", self.meso),
             ("equip cost", self.equipment_cost),
+            ("rebuild", self.rebuild_cost),
         ):
             lines.append(
                 f"  {label:<11} mean {format_meso(distribution.mean):>14}"
@@ -171,6 +174,7 @@ def simulate(
         "total_cost": [],
         "meso": [],
         "equipment_cost": [],
+        "rebuild_cost": [],
         "equipment": [],
         "scrolls": [],
         "attempts": [],
@@ -183,6 +187,7 @@ def simulate(
         samples["total_cost"].append(result.total_cost)
         samples["meso"].append(result.total_meso)
         samples["equipment_cost"].append(result.equipment_cost)
+        samples["rebuild_cost"].append(result.rebuild_cost)
         samples["equipment"].append(result.equipment_used)
         samples["scrolls"].append(result.scrolls_used)
         samples["attempts"].append(result.attempts)
@@ -197,6 +202,7 @@ def simulate(
         total_cost=_summarise(samples["total_cost"], percentiles),
         meso=_summarise(samples["meso"], percentiles),
         equipment_cost=_summarise(samples["equipment_cost"], percentiles),
+        rebuild_cost=_summarise(samples["rebuild_cost"], percentiles),
         equipment=_summarise(samples["equipment"], percentiles),
         scrolls=_summarise(samples["scrolls"], percentiles),
         attempts=_summarise(samples["attempts"], percentiles),

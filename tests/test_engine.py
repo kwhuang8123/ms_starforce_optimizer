@@ -7,7 +7,7 @@ import random
 import unittest
 
 from starforce import rules, static_data as data
-from starforce.engine import RepairPolicy, RunConfig, simulate_once
+from starforce.engine import RepairPolicy, RunConfig, StartMode, simulate_once
 from starforce.stats import simulate
 from starforce.units import YI, format_meso, to_yi
 
@@ -68,6 +68,8 @@ class RunConfigTest(unittest.TestCase):
                 "start_star": 15,
                 "target_star": 22,
                 "repair_policy": "to_12",
+                "start_mode": "scroll",
+                "rebuild_cost": 0,
                 "equipment_name": None,
                 "equipment_price": 0,
             },
@@ -106,6 +108,127 @@ class ForEquipmentTest(unittest.TestCase):
         # No catalogue entry is level 130 today, but the cap must still apply.
         config = RunConfig(level=130, start_star=10, target_star=15)
         self.assertEqual(config.target_star, 15)
+
+
+class OwnedStartTest(unittest.TestCase):
+    """Runs that begin from an item already at start_star."""
+
+    REBUILD = 90_000_000_000  # 900e
+
+    def owned(self, **kwargs) -> RunConfig:
+        defaults = dict(
+            level=200,
+            start_star=22,
+            target_star=23,
+            start_mode=StartMode.OWNED,
+        )
+        return RunConfig(**{**defaults, **kwargs})
+
+    def test_start_star_may_sit_above_the_scroll_range(self) -> None:
+        config = self.owned(start_star=24, target_star=25)
+        self.assertEqual(config.start_star, 24)
+
+    def test_scroll_mode_still_rejects_the_same_star(self) -> None:
+        with self.assertRaises(ValueError):
+            RunConfig(level=200, start_star=24, target_star=25)
+
+    def test_negative_start_star_raises(self) -> None:
+        with self.assertRaises(ValueError):
+            self.owned(start_star=-1)
+
+    def test_no_scroll_is_bought_at_the_start(self) -> None:
+        config = self.owned()
+        result = simulate_once(config, ScriptedRandom([0]))
+        self.assertEqual(result.scrolls_used, 0)
+        self.assertEqual(result.total_meso, rules.enhance_cost(200, 22))
+
+    def test_full_repair_returns_to_the_22_star_trace(self) -> None:
+        config = self.owned(start_star=23, target_star=24)
+        # 23 -> 24 is (850, 1800, 7350): 1000 lands in the destruction band.
+        result = simulate_once(config, ScriptedRandom([1000, 0, 0]))
+        self.assertEqual(result.destroys, 1)
+        self.assertEqual(result.equipment_used, 4)
+        self.assertEqual(result.rebuild_cost, 0)
+        # Destroyed at 23, repaired to 22, then 22 -> 23 -> 24.
+        self.assertEqual(result.attempts_by_star, {23: 2, 22: 1})
+
+    def test_cheap_repair_charges_the_rebuild_and_resumes_at_22(self) -> None:
+        config = self.owned(
+            start_star=23,
+            target_star=24,
+            repair_policy=RepairPolicy.TO_12,
+            rebuild_cost=self.REBUILD,
+            equipment_price=1_000_000_000,
+        )
+        result = simulate_once(config, ScriptedRandom([1000, 0, 0]))
+        self.assertEqual(result.destroys, 1)
+        self.assertEqual(result.equipment_used, 1)
+        self.assertEqual(result.equipment_cost, 1_000_000_000)
+        self.assertEqual(result.rebuild_cost, self.REBUILD)
+        self.assertEqual(result.scrolls_used, 0)
+        self.assertEqual(result.attempts_by_star, {23: 2, 22: 1})
+        self.assertEqual(
+            result.total_cost,
+            result.total_meso + 1_000_000_000 + self.REBUILD,
+        )
+
+    def test_rebuild_cost_is_required_for_a_12_star_repair(self) -> None:
+        with self.assertRaises(ValueError) as caught:
+            self.owned(repair_policy=RepairPolicy.TO_12)
+        self.assertIn("needs a positive rebuild_cost", str(caught.exception))
+
+    def test_starting_below_the_rebuild_star_raises(self) -> None:
+        with self.assertRaises(ValueError) as caught:
+            self.owned(
+                start_star=21,
+                repair_policy=RepairPolicy.TO_12,
+                rebuild_cost=self.REBUILD,
+            )
+        self.assertIn("must start at or above it", str(caught.exception))
+
+    def test_rebuild_cost_is_rejected_where_it_does_not_apply(self) -> None:
+        with self.assertRaises(ValueError):
+            self.owned(rebuild_cost=self.REBUILD)  # OWNED + FULL
+        with self.assertRaises(ValueError):
+            RunConfig(  # SCROLL + TO_12
+                level=200,
+                start_star=19,
+                target_star=22,
+                repair_policy=RepairPolicy.TO_12,
+                rebuild_cost=self.REBUILD,
+            )
+
+    def test_both_policies_follow_the_same_trajectory(self) -> None:
+        # Destruction resumes at 22 either way, so only the charge differs.
+        rolls = [1000, 0, 0]
+        full = simulate_once(
+            self.owned(start_star=23, target_star=24), ScriptedRandom(rolls)
+        )
+        cheap = simulate_once(
+            self.owned(
+                start_star=23,
+                target_star=24,
+                repair_policy=RepairPolicy.TO_12,
+                rebuild_cost=self.REBUILD,
+            ),
+            ScriptedRandom(rolls),
+        )
+        self.assertEqual(full.attempts, cheap.attempts)
+        self.assertEqual(full.destroys, cheap.destroys)
+        self.assertEqual(full.attempts_by_star, cheap.attempts_by_star)
+
+    def test_for_equipment_forwards_the_owned_mode(self) -> None:
+        config = RunConfig.for_equipment(
+            "控制核心",
+            22,
+            25,
+            repair_policy=RepairPolicy.TO_12,
+            start_mode=StartMode.OWNED,
+            rebuild_cost=self.REBUILD,
+        )
+        self.assertIs(config.start_mode, StartMode.OWNED)
+        self.assertEqual(config.rebuild_cost, self.REBUILD)
+        self.assertEqual(config.level, 200)
 
 
 class EquipmentCostTest(unittest.TestCase):

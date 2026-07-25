@@ -38,6 +38,11 @@ TRACE_STAR_CAP = 22
 CHEAP_REPAIR_STAR = 12
 CHEAP_REPAIR_EQUIPMENT = 1
 
+# Where a rebuild lands when a run that started from an already-owned item is
+# destroyed: repair to 12 stars, then climb back to 22. 22 is the star the
+# rebuild cost is priced against, so the two must stay in step.
+REBUILD_STAR = 22
+
 
 def check_level(level: int) -> None:
     """Raise unless ``level`` is one of the six published levels."""
