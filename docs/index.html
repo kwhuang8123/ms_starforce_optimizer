@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>楓之谷 星力模擬器</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <h1>楓之谷 星力模擬器 <small>V272</small></h1>
+  <nav class="tabs">
+    <button class="tab active" data-tab="play">手動模擬</button>
+    <button class="tab" data-tab="data">數據瀏覽</button>
+    <button class="tab" data-tab="prices">物價設定</button>
+  </nav>
+</header>
+
+<main>
+  <p id="boot-error" class="banner bad" hidden></p>
+
+  <!-- ------------------------------------------------------------------ -->
+  <section id="tab-play" class="panel">
+    <div class="card">
+      <h2>建立裝備</h2>
+      <div class="row">
+        <label>裝備
+          <select id="play-equipment"></select>
+        </label>
+        <label id="play-level-field" hidden>等級
+          <select id="play-level"></select>
+        </label>
+        <label>起始星數
+          <input id="play-start-star" type="number" min="0" value="0" inputmode="numeric">
+        </label>
+        <button id="play-new" class="primary">重新開始</button>
+      </div>
+      <p class="muted">起始星數不收費用；破壞後修復消耗的同款裝備才會計價。</p>
+    </div>
+
+    <div class="card state-card">
+      <div class="state">
+        <div class="star-box">
+          <span id="play-star">0</span><small>星</small>
+        </div>
+        <div class="cost-box">
+          <div>累計花費 <strong id="play-total">0.00億</strong></div>
+          <div class="muted" id="play-subtotal"></div>
+        </div>
+      </div>
+      <p id="play-flag" class="flag" hidden></p>
+      <div class="row actions">
+        <button id="play-enhance" class="primary">強化一次</button>
+        <span class="group">
+          <select id="play-scroll-star"></select>
+          <button id="play-scroll">使用星捲</button>
+        </span>
+        <button id="play-repair-full">完整修復</button>
+        <button id="play-repair-12">修復至 12 星</button>
+      </div>
+      <p id="play-error" class="banner bad" hidden></p>
+    </div>
+
+    <div class="card">
+      <h2>自動模擬</h2>
+      <div class="row">
+        <label>破壞後修復方式
+          <select id="auto-repair">
+            <option value="full">完整修復</option>
+            <option value="to_12">修復至 12 星</option>
+          </select>
+        </label>
+        <label>自動補星捲
+          <select id="auto-scroll"></select>
+        </label>
+      </div>
+      <hr>
+      <div class="row">
+        <label>預算
+          <input id="auto-budget" value="100e" size="8">
+        </label>
+        <label>目標星力
+          <input id="auto-budget-target" value="22c" size="6">
+        </label>
+        <button id="auto-budget-run" class="primary">依預算模擬</button>
+        <span class="muted">花完預算或達標就停，不會超支。</span>
+      </div>
+      <div class="row">
+        <label>目標星力
+          <input id="auto-star-target" value="22c" size="6">
+        </label>
+        <label>保險絲預算
+          <input id="auto-star-budget" size="10">
+        </label>
+        <button id="auto-star-run" class="primary">跑到目標星力</button>
+      </div>
+      <p class="muted" id="auto-star-hint"></p>
+      <p id="auto-result" class="banner" hidden></p>
+    </div>
+
+    <div class="card">
+      <h2>操作紀錄 <button id="play-copy" class="link">複製</button></h2>
+      <div class="table-scroll">
+        <table id="play-log">
+          <thead>
+            <tr>
+              <th>#</th><th>動作</th><th>星數</th><th>結果</th>
+              <th class="num">本次花費</th><th class="num">累計</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p id="play-summary" class="muted">尚未有任何操作。</p>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------------------ -->
+  <section id="tab-data" class="panel" hidden>
+    <div class="card">
+      <h2>資料集</h2>
+      <div class="row">
+        <label>來源
+          <select id="data-source">
+            <option value="simulations">從零開始（買星捲起手）</option>
+            <option value="marginal">已持有裝備（22 星以上續衝）</option>
+          </select>
+        </label>
+        <label>裝備 <select id="data-equipment"></select></label>
+        <label>目標星力 <select id="data-target"></select></label>
+        <label>起始星數 <select id="data-start"></select></label>
+        <label>修復方式
+          <select id="data-policy">
+            <option value="">全部</option>
+            <option value="full">完整修復</option>
+            <option value="to_12">修復至 12 星</option>
+          </select>
+        </label>
+      </div>
+      <p class="muted" id="data-meta"></p>
+      <p class="banner warn" id="data-price-warning" hidden></p>
+    </div>
+
+    <div class="card">
+      <div class="table-scroll">
+        <table id="data-table" class="sortable">
+          <thead>
+            <tr>
+              <th data-sort="equipment">裝備</th>
+              <th data-sort="level" class="num">等級</th>
+              <th data-sort="start_star" class="num">起始</th>
+              <th data-sort="target_star" class="num">目標</th>
+              <th data-sort="repair_policy">修復</th>
+              <th data-sort="total_cost_mean" class="num">平均總成本</th>
+              <th data-sort="p50" class="num">p50</th>
+              <th data-sort="p75" class="num">p75</th>
+              <th data-sort="p90" class="num">p90</th>
+              <th data-sort="p95" class="num">p95</th>
+              <th data-sort="meso_mean" class="num">楓幣</th>
+              <th data-sort="equipment_cost_mean" class="num">裝備成本</th>
+              <th data-sort="destroys_mean" class="num">破壞次數</th>
+              <th data-sort="attempts_mean" class="num">嘗試次數</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="muted" id="data-count"></p>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------------------ -->
+  <section id="tab-prices" class="panel" hidden>
+    <div class="card">
+      <h2>物價設定</h2>
+      <p class="muted">
+        這裡的價格只存在瀏覽器（localStorage），會立即影響「手動模擬」的計價。
+        <strong>靜態網頁無法寫回 repo</strong>：要讓「數據瀏覽」的模擬結果跟著更新，
+        請用下方按鈕匯出 JSON，貼回 <code>data/volatile.json</code>，再重跑 <code>sweep.py</code>。
+      </p>
+      <div class="row">
+        <button id="prices-save" class="primary">儲存</button>
+        <button id="prices-reset">還原成內建價格</button>
+        <button id="prices-export">匯出 JSON</button>
+        <span id="prices-status" class="muted"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>星捲價格</h2>
+      <div class="table-scroll">
+        <table id="prices-scrolls">
+          <thead><tr><th>星數</th><th class="num">價格（億）</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>裝備價格 <button id="prices-add" class="link">新增一件</button></h2>
+      <div class="table-scroll">
+        <table id="prices-equipment">
+          <thead>
+            <tr><th>名稱</th><th>等級</th><th class="num">價格（億）</th><th></th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="muted">名稱不可重複；等級限官方公布的六個等級。</p>
+    </div>
+
+    <div class="card" id="prices-export-card" hidden>
+      <h2>貼回 <code>data/volatile.json</code></h2>
+      <textarea id="prices-json" rows="16" readonly></textarea>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span id="footer-meta"></span>
+  <a href="selftest.html">引擎對拍</a>
+</footer>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

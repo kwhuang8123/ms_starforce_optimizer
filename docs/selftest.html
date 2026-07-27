@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>引擎對拍 - 星力模擬器</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="selftest">
+<header>
+  <h1>引擎對拍</h1>
+  <p class="muted">
+    重播 <code>data/parity.json</code> 裡由 Python 引擎產生的黃金測資。骰子序列是固定的，
+    所以兩邊的亂數產生器不同也能逐欄比對。任何一列紅字，就代表
+    <code>docs/js</code> 的移植與 <code>starforce/</code> 已經走鐘。
+  </p>
+</header>
+
+<main>
+  <p id="summary" class="summary">載入中…</p>
+  <table id="results">
+    <thead>
+      <tr><th>案例</th><th>種類</th><th>骰數</th><th>紀錄</th><th>結果</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <p class="muted"><a href="index.html">← 回到模擬器</a></p>
+</main>
+
+<script type="module">
+import * as rules from "./js/rules.js";
+import { Session, scriptedRng, RepairPolicy } from "./js/session.js";
+import { runWithinBudget, autoPolicy } from "./js/autorun.js";
+
+/** Deep compare, returning the path of the first difference or null. */
+function diff(expected, actual, path = "") {
+  if (expected === null || typeof expected !== "object") {
+    return Object.is(expected, actual) ? null : `${path || "值"}: 期待 ${expected}，得到 ${actual}`;
+  }
+  if (Array.isArray(expected)) {
+    if (!Array.isArray(actual)) return `${path}: 期待陣列`;
+    if (expected.length !== actual.length) {
+      return `${path}: 長度 期待 ${expected.length}，得到 ${actual.length}`;
+    }
+    for (let i = 0; i < expected.length; i += 1) {
+      const found = diff(expected[i], actual[i], `${path}[${i}]`);
+      if (found) return found;
+    }
+    return null;
+  }
+  for (const key of Object.keys(expected)) {
+    const found = diff(expected[key], actual[key], path ? `${path}.${key}` : key);
+    if (found) return found;
+  }
+  return null;
+}
+
+function stateOf(session) {
+  return {
+    star: session.star,
+    destroyed: session.destroyed,
+    totals: {
+      total_meso: session.totals.total_meso,
+      equipment_used: session.totals.equipment_used,
+      equipment_cost: session.totals.equipment_cost,
+      scrolls_used: session.totals.scrolls_used,
+      attempts: session.totals.attempts,
+      destroys: session.totals.destroys,
+      total_cost: session.totalCost,
+      attempts_by_star: session.totals.attempts_by_star,
+    },
+    log: session.log,
+  };
+}
+
+function replay(testCase) {
+  const session = new Session({
+    level: testCase.session.level,
+    startStar: testCase.session.start_star,
+    equipmentPrice: testCase.session.equipment_price,
+    rng: scriptedRng(testCase.rolls),
+  });
+
+  if (testCase.kind === "auto") {
+    const policy = autoPolicy({
+      repairPolicy: testCase.policy.repair_policy,
+      scrollStar: testCase.policy.scroll_star,
+    });
+    const result = runWithinBudget(
+      session, testCase.target_star, testCase.budget, policy
+    );
+    const state = stateOf(session);
+    state.stop_reason = result.stop_reason;
+    state.spent = result.spent;
+    return state;
+  }
+
+  for (const action of testCase.actions) {
+    if (action[0] === "enhance") session.enhance();
+    else if (action[0] === "scroll") session.useScroll(action[1]);
+    else if (action[0] === "repair") session.repair(action[1] === "full" ? RepairPolicy.FULL : RepairPolicy.TO_12);
+    else throw new Error(`未知的動作 ${action[0]}`);
+  }
+  return stateOf(session);
+}
+
+async function run() {
+  const [staticData, parity] = await Promise.all([
+    fetch("data/static.json").then((r) => r.json()),
+    fetch("data/parity.json").then((r) => r.json()),
+  ]);
+  // The cases carry the scroll prices they were built against, so this page
+  // never depends on data/prices.json or on anything saved in the browser.
+  rules.configure(staticData, { star_scroll_cost: parity.star_scroll_cost });
+
+  const body = document.querySelector("#results tbody");
+  let passed = 0;
+
+  for (const testCase of parity.cases) {
+    const row = document.createElement("tr");
+    let verdict;
+    try {
+      const found = diff(testCase.expected, replay(testCase));
+      if (found === null) {
+        verdict = "<span class=\"ok\">通過</span>";
+        passed += 1;
+      } else {
+        verdict = `<span class="bad">不符</span> ${found}`;
+      }
+    } catch (error) {
+      verdict = `<span class="bad">例外</span> ${error.message}`;
+    }
+    row.innerHTML = `
+      <td>${testCase.name}</td>
+      <td>${testCase.kind}</td>
+      <td class="num">${testCase.rolls.length}</td>
+      <td class="num">${testCase.expected.log.length}</td>
+      <td>${verdict}</td>`;
+    body.appendChild(row);
+  }
+
+  const summary = document.getElementById("summary");
+  const total = parity.cases.length;
+  summary.textContent = `${passed} / ${total} 案例通過（測資產生於 ${parity.generated_at}）`;
+  summary.className = passed === total ? "summary ok" : "summary bad";
+}
+
+run().catch((error) => {
+  const summary = document.getElementById("summary");
+  summary.className = "summary bad";
+  summary.textContent = `無法執行：${error.message}（這頁需要用 HTTP 開啟，不能直接雙擊檔案）`;
+});
+</script>
+</body>
+</html>
