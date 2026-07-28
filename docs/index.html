@@ -21,23 +21,6 @@
 
   <!-- ------------------------------------------------------------------ -->
   <section id="tab-play" class="panel">
-    <div class="card">
-      <h2>建立裝備</h2>
-      <div class="row">
-        <label>裝備
-          <select id="play-equipment"></select>
-        </label>
-        <label id="play-level-field" hidden>等級
-          <select id="play-level"></select>
-        </label>
-        <label>起始星數
-          <input id="play-start-star" type="number" min="0" value="0" inputmode="numeric">
-        </label>
-        <button id="play-new" class="primary">重新開始</button>
-      </div>
-      <p class="muted">起始星數不收費用；破壞後修復消耗的同款裝備才會計價。</p>
-    </div>
-
     <div class="card state-card">
       <div class="state">
         <div class="star-box">
@@ -96,6 +79,23 @@
       </div>
       <p class="muted" id="auto-star-hint"></p>
       <p id="auto-result" class="banner" hidden></p>
+    </div>
+
+    <div class="card">
+      <h2>建立裝備</h2>
+      <div class="row">
+        <label>裝備
+          <select id="play-equipment"></select>
+        </label>
+        <label id="play-level-field" hidden>等級
+          <select id="play-level"></select>
+        </label>
+        <label>起始星數
+          <input id="play-start-star" type="number" min="0" value="0" inputmode="numeric">
+        </label>
+        <button id="play-new" class="primary">重新開始</button>
+      </div>
+      <p class="muted">起始星數不收費用；破壞後修復消耗的同款裝備才會計價。</p>
     </div>
 
     <div class="card">

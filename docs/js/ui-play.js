@@ -11,7 +11,7 @@ import * as rules from "./rules.js";
 import * as store from "./prices-store.js";
 import { Session, RepairPolicy } from "./session.js";
 import { runWithinBudget, runToStar, autoPolicy, StopReason } from "./autorun.js";
-import { formatMeso, parseMeso, parseStar } from "./format.js";
+import { formatMeso, parseMeso, parseStar, toYi } from "./format.js";
 
 const ACTION_LABEL = {
   enhance: "強化",
@@ -25,6 +25,13 @@ const OUTCOME_LABEL = {
   maintain: "維持",
   destroy: "破壞",
 };
+
+/**
+ * What the page starts on, so a visitor can enhance something immediately
+ * instead of picking an item first. Falls back to "不指定" when the price table
+ * no longer has it - renaming or deleting it costs the default, not the page.
+ */
+const DEFAULT_EQUIPMENT = "頂培";
 
 let datasets = null;
 let session = null;
@@ -48,19 +55,27 @@ function bind() {
 
 function fillSetup() {
   const prices = store.currentPrices();
+  // Only the very first fill picks the default. Later fills come from a price
+  // edit, and resetting the operator's choice every time they touched a price
+  // would be its own bug.
+  const first = el["play-equipment"].options.length === 0;
   const chosen = el["play-equipment"].value;
+
   el["play-equipment"].innerHTML =
-    `<option value="">不指定（修復裝備計 0）</option>` +
     prices.equipment
       .map(
         (item) =>
           `<option value="${item.name}">${item.name}（Lv${item.level}・${formatMeso(item.price)}）</option>`
       )
-      .join("");
-  el["play-equipment"].value = chosen;
-  if (el["play-equipment"].value === "" && chosen !== "") {
-    // The equipment this session used has been removed from the price table.
-    el["play-equipment"].value = "";
+      .join("") + `<option value="">不指定（修復裝備計 0）</option>`;
+
+  if (first) {
+    const known = prices.equipment.some((item) => item.name === DEFAULT_EQUIPMENT);
+    el["play-equipment"].value = known ? DEFAULT_EQUIPMENT : "";
+  } else {
+    // Assigning a value no option carries leaves the select empty, which is
+    // exactly the right answer when the chosen equipment has just been deleted.
+    el["play-equipment"].value = chosen;
   }
 
   el["play-level"].innerHTML = rules
@@ -174,24 +189,26 @@ function runTarget() {
 
 /**
  * The p95 total cost of the cheapest measured route to this target, used as the
- * default fuse. It is a measured figure, not a guess - and it is only a rough
- * fit, because the dataset's rows start from their own stars, not from wherever
- * this session happens to be.
+ * fuse. It is a measured figure, not a guess - and it is only a rough fit,
+ * because the dataset's rows start from their own stars, not from wherever this
+ * session happens to be.
+ *
+ * Returns {p95, hint}, with p95 null when there is nothing to suggest.
  */
-function suggestBudget() {
+function budgetSuggestion() {
   const name = el["play-equipment"].value;
-  const hint = el["auto-star-hint"];
   let target;
   try {
     target = parseStar(el["auto-star-target"].value);
   } catch (error) {
-    hint.textContent = error.message;
-    return;
+    return { p95: null, hint: error.message };
   }
 
   if (name === "" || datasets === null) {
-    hint.textContent = "選擇資料集內的裝備後，這裡會帶出建議的保險絲預算。";
-    return;
+    return {
+      p95: null,
+      hint: "選擇資料集內的裝備後，這裡會帶出建議的保險絲預算。",
+    };
   }
 
   let best = null;
@@ -204,17 +221,39 @@ function suggestBudget() {
   }
 
   if (best === null) {
-    hint.textContent = `資料集裡沒有「${name}」到 ${target} 星的結果，請自行填一個上限。`;
-    return;
+    return {
+      p95: null,
+      hint: `資料集裡沒有「${name}」到 ${target} 星的結果，請自行填一個上限。`,
+    };
   }
 
   const p95 = best.total_cost_percentiles["95"];
-  if (el["auto-star-budget"].value.trim() === "") {
-    el["auto-star-budget"].value = `${(p95 / 100000000).toFixed(1)}e`;
+  return {
+    p95,
+    hint:
+      `建議上限 ${formatMeso(p95)}：資料集中「${name}」到 ${target} 星最便宜路線` +
+      `（${best.start_star} 星起手、${best.repair_policy === "full" ? "完整修復" : "修復至 12 星"}）的 p95。`,
+  };
+}
+
+/** Refresh the wording only. Safe to call after every action. */
+function renderBudgetHint() {
+  el["auto-star-hint"].textContent = budgetSuggestion().hint;
+}
+
+/**
+ * Overwrite the fuse with the suggestion for what is selected now.
+ *
+ * Only ever called when the equipment or the target changes, and once at
+ * startup. Calling it from render() would wipe a hand-typed budget on the next
+ * enhancement, because render() runs after every single action.
+ */
+function applyBudgetSuggestion() {
+  const { p95, hint } = budgetSuggestion();
+  el["auto-star-hint"].textContent = hint;
+  if (p95 !== null) {
+    el["auto-star-budget"].value = `${toYi(p95).toFixed(1)}e`;
   }
-  hint.textContent =
-    `建議上限 ${formatMeso(p95)}：資料集中「${name}」到 ${target} 星最便宜路線` +
-    `（${best.start_star} 星起手、${best.repair_policy === "full" ? "完整修復" : "修復至 12 星"}）的 p95。`;
 }
 
 function renderLog() {
@@ -273,7 +312,7 @@ function render() {
   el["play-scroll"].disabled = scrolls.length === 0;
 
   renderLog();
-  suggestBudget();
+  renderBudgetHint();
 }
 
 function copyLog() {
@@ -302,7 +341,10 @@ export function initPlay(loadedDatasets) {
   bind();
   fillSetup();
 
-  el["play-equipment"].addEventListener("change", () => { syncLevelField(); suggestBudget(); });
+  el["play-equipment"].addEventListener("change", () => {
+    syncLevelField();
+    applyBudgetSuggestion();
+  });
   el["play-level"].addEventListener("change", () => {
     el["play-start-star"].max = String(rules.maxTargetStar(chosenLevel()));
   });
@@ -319,7 +361,7 @@ export function initPlay(loadedDatasets) {
   );
   el["auto-budget-run"].addEventListener("click", runBudget);
   el["auto-star-run"].addEventListener("click", runTarget);
-  el["auto-star-target"].addEventListener("change", suggestBudget);
+  el["auto-star-target"].addEventListener("change", applyBudgetSuggestion);
   el["play-copy"].addEventListener("click", copyLog);
 
   store.onChange(() => {
@@ -327,5 +369,8 @@ export function initPlay(loadedDatasets) {
     render();
   });
 
+  // The default equipment is only useful if the fuse arrives with it, so the
+  // suggestion is applied once here rather than waiting for a change event.
+  applyBudgetSuggestion();
   newSession();
 }
