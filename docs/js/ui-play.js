@@ -45,7 +45,8 @@ function bind() {
     "play-enhance", "play-scroll-star", "play-scroll", "play-repair-full",
     "play-repair-12", "play-error", "play-copy", "play-summary",
     "auto-repair", "auto-scroll", "auto-budget", "auto-budget-target",
-    "auto-budget-run", "auto-star-target", "auto-star-budget", "auto-star-run",
+    "auto-budget-run", "auto-budget-reset-run", "auto-star-target",
+    "auto-star-budget", "auto-star-run", "auto-star-reset-run",
     "auto-star-hint", "auto-result",
   ]) {
     el[id] = document.getElementById(id);
@@ -153,6 +154,20 @@ function reportAuto(result) {
   const box = el["auto-result"];
   box.hidden = false;
   box.className = "banner";
+
+  // A run that took no action at all reads as if it had run and got nowhere,
+  // so it says plainly that nothing happened and why. The budget caps the
+  // session's lifetime cost, not this run's, so a second run on the same item
+  // with the same budget has nothing left to spend.
+  if (result.entries.length === 0) {
+    box.className = "banner warn";
+    box.textContent =
+      result.stop_reason === StopReason.REACHED_TARGET
+        ? `已經在 ${result.star} 星，沒有需要執行的動作。`
+        : "累計花費已達預算上限，這次沒有執行任何動作。要重跑一次請按「重設後模擬」。";
+    return;
+  }
+
   if (result.stop_reason === StopReason.REACHED_TARGET) {
     box.textContent = `達標：${result.star} 星，本次花費 ${formatMeso(result.spent)}`;
   } else if (result.destroyed) {
@@ -185,6 +200,25 @@ function runTarget() {
     }
     reportAuto(runToStar(session, target, parseMeso(raw), currentPolicy()));
   });
+}
+
+/**
+ * Throw the current item away and run again from the 建立裝備 settings.
+ *
+ * The two run buttons continue the item they are given, which is what makes
+ * "click a few times by hand, then let it finish" work. This is the other
+ * thing people want - another independent attempt - and it has to reset first,
+ * because a budget caps the session's lifetime cost and a spent session has
+ * nothing left to run with.
+ */
+function resetAndRun(runner) {
+  newSession();
+  if (session === null) {
+    // newSession already reported why it could not build the item; running
+    // anyway would only replace that with a vaguer message.
+    return;
+  }
+  runner();
 }
 
 /**
@@ -361,6 +395,8 @@ export function initPlay(loadedDatasets) {
   );
   el["auto-budget-run"].addEventListener("click", runBudget);
   el["auto-star-run"].addEventListener("click", runTarget);
+  el["auto-budget-reset-run"].addEventListener("click", () => resetAndRun(runBudget));
+  el["auto-star-reset-run"].addEventListener("click", () => resetAndRun(runTarget));
   el["auto-star-target"].addEventListener("change", applyBudgetSuggestion);
   el["play-copy"].addEventListener("click", copyLog);
 
