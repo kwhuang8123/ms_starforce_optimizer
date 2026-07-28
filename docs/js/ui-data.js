@@ -8,19 +8,20 @@
  */
 
 import * as store from "./prices-store.js";
+import { rebuildBasis, repricedMean } from "./reprice.js";
 import { formatYi } from "./format.js";
 
 const POLICY_LABEL = { full: "完整修復", to_12: "修復至 12 星" };
 
 let datasets = null;
-let sort = { key: "total_cost_mean", direction: 1 };
+let sort = { key: "repriced_mean", direction: 1 };
 
 const el = {};
 
 function bind() {
   for (const id of [
     "data-source", "data-equipment", "data-target", "data-start", "data-policy",
-    "data-meta", "data-price-warning", "data-count",
+    "data-meta", "data-price-warning", "data-reprice-note", "data-count",
   ]) {
     el[id] = document.getElementById(id);
   }
@@ -78,10 +79,68 @@ function priceDrift(dataset) {
 }
 
 function sortValue(row, key) {
+  if (key === "repriced_mean" || key === "repriced_delta") {
+    if (row.repriced === null) {
+      // Unknown rows sort last either way rather than pretending to be free.
+      return Number.POSITIVE_INFINITY;
+    }
+    return key === "repriced_mean"
+      ? row.repriced
+      : row.repriced / row.total_cost_mean;
+  }
   if (key.startsWith("p")) {
     return row.total_cost_percentiles[key.slice(1)];
   }
   return row[key];
+}
+
+/**
+ * Attach each row's mean at today's prices.
+ *
+ * A marginal run that repairs to 12 stars has to climb back to 22, and that
+ * figure comes from the from-scratch dataset - so re-pricing this dataset needs
+ * the other one re-priced first. When it is not there, the rows say so instead
+ * of quietly keeping the old number.
+ */
+function withRepricedMeans(rows, prices) {
+  const scratch = datasets.simulations;
+  const basis = scratch ? rebuildBasis(scratch.results, prices) : new Map();
+  return rows.map((row) => {
+    const rebuild = basis.has(row.equipment) ? basis.get(row.equipment) : null;
+    return { ...row, repriced: repricedMean(row, prices, rebuild) };
+  });
+}
+
+/** How far today's prices moved this row, against the sweep's snapshot. */
+function deltaCell(row) {
+  if (row.repriced === null) {
+    return "—";
+  }
+  const ratio = row.repriced / row.total_cost_mean - 1;
+  if (Math.abs(ratio) < 0.0005) {
+    return "±0%";
+  }
+  const text = `${ratio > 0 ? "+" : ""}${(ratio * 100).toFixed(1)}%`;
+  return `<span class="${ratio > 0 ? "bad-text" : "ok-text"}">${text}</span>`;
+}
+
+function renderRepriceNote(rows, modified) {
+  const note = el["data-reprice-note"];
+  const unknown = rows.filter((row) => row.repriced === null).length;
+
+  if (!modified) {
+    note.hidden = true;
+    return;
+  }
+  note.hidden = false;
+  note.className = unknown ? "banner warn" : "banner";
+  note.textContent =
+    "「現價平均」是用目前的價格重新計算的 - 因為價格不影響模擬過程，平均值可以精確換算。" +
+    "分位數（p50~p95）做不到這件事：換價格會改變每次試驗之間的排序，所以那幾欄仍然是快照價的結果。";
+  if (unknown) {
+    note.textContent +=
+      `　有 ${unknown} 列無法重算（裝備已從價格表移除，或是缺少可據以計算的 22 星重建成本），以「—」表示。`;
+  }
 }
 
 function renderMeta() {
@@ -124,18 +183,30 @@ function render() {
   const start = el["data-start"].value;
   const policy = el["data-policy"].value;
 
-  const rows = dataset.results
+  const modified = store.isModified();
+  el.table.querySelectorAll(".repriced").forEach((cell) => {
+    cell.hidden = !modified;
+  });
+
+  // Sorting defaults to the re-priced mean, which is what the reader is
+  // actually after. With untouched prices that column is not shown, so this
+  // render falls back to the stored mean without forgetting the default.
+  const sorting = !modified && sort.key.startsWith("repriced")
+    ? { key: "total_cost_mean", direction: sort.direction }
+    : sort;
+
+  const rows = withRepricedMeans(dataset.results, store.currentPrices())
     .filter((row) => equipment === "" || row.equipment === equipment)
     .filter((row) => target === "" || String(row.target_star) === target)
     .filter((row) => start === "" || String(row.start_star) === start)
     .filter((row) => policy === "" || row.repair_policy === policy)
     .sort((a, b) => {
-      const left = sortValue(a, sort.key);
-      const right = sortValue(b, sort.key);
+      const left = sortValue(a, sorting.key);
+      const right = sortValue(b, sorting.key);
       if (typeof left === "string") {
-        return left.localeCompare(right) * sort.direction;
+        return left.localeCompare(right) * sorting.direction;
       }
-      return (left - right) * sort.direction;
+      return (left - right) * sorting.direction;
     });
 
   el.body.innerHTML = rows
@@ -146,7 +217,11 @@ function render() {
         <td class="num">${row.start_star}</td>
         <td class="num">${row.target_star}</td>
         <td>${POLICY_LABEL[row.repair_policy]}</td>
-        <td class="num strong">${formatYi(row.total_cost_mean)}</td>
+        <td class="num strong repriced"${modified ? "" : " hidden"}>${
+          row.repriced === null ? "—" : formatYi(row.repriced)
+        }</td>
+        <td class="num repriced"${modified ? "" : " hidden"}>${deltaCell(row)}</td>
+        <td class="num">${formatYi(row.total_cost_mean)}</td>
         <td class="num">${formatYi(row.total_cost_percentiles["50"])}</td>
         <td class="num">${formatYi(row.total_cost_percentiles["75"])}</td>
         <td class="num">${formatYi(row.total_cost_percentiles["90"])}</td>
@@ -159,6 +234,7 @@ function render() {
     )
     .join("");
 
+  renderRepriceNote(rows, modified);
   el["data-count"].textContent = `${rows.length} / ${dataset.results.length} 組合`;
 }
 

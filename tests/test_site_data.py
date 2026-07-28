@@ -131,6 +131,127 @@ class ParityTest(unittest.TestCase):
                 )
 
 
+class RepriceTest(unittest.TestCase):
+    """The split the page re-prices from must add back up to what it came from.
+
+    Everything here rides on one property: no price can change a trajectory, so
+    the mean is exactly linear in the prices. If the engine ever gains a
+    price-dependent decision - a run that buys the cheaper of two scrolls, say -
+    these break, which is the point.
+    """
+
+    #: Meso means are shipped rounded to whole meso, so a reconstruction can
+    #: land one meso either side. The figures being checked run to 1e10, which
+    #: makes this a rounding allowance rather than a fudge factor.
+    TOLERANCE = 1.0
+
+    def rows(self):
+        for name in ("simulations.json", "marginal.json"):
+            path = DATA_DIR / name
+            if not path.is_file():
+                continue
+            for row in json.loads(path.read_text(encoding="utf-8"))["results"]:
+                yield name, row
+
+    def test_the_static_part_plus_the_scrolls_rebuilds_the_meso_mean(self) -> None:
+        prices = build_site_data.build_prices()["star_scroll_cost"]
+        for name, row in self.rows():
+            with self.subTest(dataset=name, row=row["equipment"], target=row["target_star"]):
+                scroll_price = (
+                    0 if row["scroll_star"] is None else prices[str(row["scroll_star"])]
+                )
+                rebuilt = row["static_meso_mean"] + row["scrolls_mean"] * scroll_price
+                self.assertAlmostEqual(rebuilt, row["meso_mean"], delta=self.TOLERANCE)
+
+    def test_the_four_parts_rebuild_the_total(self) -> None:
+        prices = build_site_data.build_prices()["star_scroll_cost"]
+        for name, row in self.rows():
+            with self.subTest(dataset=name, row=row["equipment"], target=row["target_star"]):
+                scroll_price = (
+                    0 if row["scroll_star"] is None else prices[str(row["scroll_star"])]
+                )
+                rebuilt = (
+                    row["static_meso_mean"]
+                    + row["scrolls_mean"] * scroll_price
+                    + row["equipment_mean"] * row["equipment_price"]
+                    + row["rebuild_count_mean"] * row["rebuild_cost"]
+                )
+                self.assertAlmostEqual(
+                    rebuilt, row["total_cost_mean"], delta=self.TOLERANCE
+                )
+
+    def test_only_a_scrolled_run_carries_a_scroll_star(self) -> None:
+        for name, row in self.rows():
+            with self.subTest(dataset=name, mode=row["start_mode"]):
+                if row["start_mode"] == "scroll":
+                    self.assertEqual(row["scroll_star"], row["start_star"])
+                    self.assertGreaterEqual(row["scrolls_mean"], 1.0)
+                else:
+                    self.assertIsNone(row["scroll_star"])
+                    self.assertEqual(row["scrolls_mean"], 0.0)
+
+    def test_a_rebuild_count_appears_only_where_a_rebuild_is_priced(self) -> None:
+        for name, row in self.rows():
+            with self.subTest(dataset=name, policy=row["repair_policy"]):
+                if row["rebuild_cost"] == 0:
+                    self.assertEqual(row["rebuild_count_mean"], 0.0)
+                else:
+                    self.assertGreater(row["rebuild_count_mean"], 0.0)
+
+    def test_the_golden_cases_were_measured_not_derived(self) -> None:
+        # The expectation must come from a second simulation at the new prices,
+        # not from applying the same formula twice. Both halves must therefore
+        # be present and the prices must actually differ.
+        cases = read("parity.json")["reprice"]
+        self.assertTrue(cases)
+        shipped = build_site_data.build_prices()
+        for case in cases:
+            with self.subTest(case=case["name"]):
+                self.assertNotEqual(case["prices"], shipped)
+                self.assertIn("expected_total_cost_mean", case)
+                self.assertIn("static_meso_mean", case["row"])
+
+    def test_repricing_a_golden_case_lands_on_the_measured_mean(self) -> None:
+        # The same arithmetic docs/js/reprice.js performs, checked here too so a
+        # failure points at the data rather than only at the browser.
+        for case in read("parity.json")["reprice"]:
+            row = case["row"]
+            prices = case["prices"]
+            with self.subTest(case=case["name"]):
+                scroll_price = (
+                    0
+                    if row["scroll_star"] is None
+                    else prices["star_scroll_cost"][str(row["scroll_star"])]
+                )
+                equipment_price = next(
+                    item["price"]
+                    for item in prices["equipment"]
+                    if item["name"] == row["equipment"]
+                )
+                repriced = round(
+                    row["static_meso_mean"]
+                    + row["scrolls_mean"] * scroll_price
+                    + row["equipment_mean"] * equipment_price
+                    + row["rebuild_count_mean"] * case["rebuild_cost"]
+                )
+                self.assertAlmostEqual(
+                    repriced,
+                    case["expected_total_cost_mean"],
+                    delta=self.TOLERANCE,
+                )
+
+    def test_the_rebuild_term_is_exercised_by_a_case(self) -> None:
+        # Without this the rebuild multiplier could be dropped entirely and
+        # every remaining case would still pass.
+        cases = read("parity.json")["reprice"]
+        rebuilding = [case for case in cases if case["rebuild_cost"] > 0]
+        self.assertTrue(rebuilding, "no re-pricing case rebuilds")
+        for case in rebuilding:
+            with self.subTest(case=case["name"]):
+                self.assertGreater(case["row"]["rebuild_count_mean"], 0)
+                self.assertNotEqual(case["rebuild_cost"], case["row"]["rebuild_cost"])
+
+
 class SiteFilesTest(unittest.TestCase):
     def test_the_pages_and_scripts_are_committed(self) -> None:
         root = DATA_DIR.parent
@@ -148,6 +269,7 @@ class SiteFilesTest(unittest.TestCase):
             "js/ui-play.js",
             "js/ui-data.js",
             "js/ui-prices.js",
+            "js/reprice.js",
         ):
             with self.subTest(name=name):
                 self.assertTrue((root / name).is_file(), f"{name} is missing")

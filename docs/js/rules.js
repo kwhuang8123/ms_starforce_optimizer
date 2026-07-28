@@ -61,6 +61,12 @@ export function destroyStartStar() {
   return STATIC.destroy_start_star;
 }
 
+/** The star a rebuild is priced against after a cheap repair. */
+export function rebuildStar() {
+  requireConfigured();
+  return STATIC.rebuild_star;
+}
+
 export function checkLevel(level) {
   requireConfigured();
   if (!STATIC.supported_levels.includes(level)) {
