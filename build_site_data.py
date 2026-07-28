@@ -29,14 +29,15 @@ from __future__ import annotations
 
 import json
 import random
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Sequence
 
-from starforce import rules, volatile_data
+from starforce import load_rebuild_basis, rules, simulate, volatile_data
 from starforce import static_data as data
 from starforce.autorun import AutoPolicy, run_within_budget
-from starforce.engine import RepairPolicy
+from starforce.engine import RepairPolicy, RunConfig, StartMode
 from starforce.session import Session
 from starforce.units import YI
 
@@ -46,6 +47,9 @@ OUTPUT_DIR = ROOT / "docs" / "data"
 
 #: Budget that no parity case can reach, so those runs stop on their target.
 UNCAPPED = 1_000_000 * YI
+
+#: Fixed so the re-pricing cases are reproducible.
+REPRICE_SEED = 20260729
 
 
 class _ScriptedRandom(random.Random):
@@ -124,41 +128,81 @@ def build_prices() -> dict[str, Any]:
     }
 
 
+def slim_result(entry: dict[str, Any], scroll_costs: dict[str, int]) -> dict[str, Any]:
+    """One combination, flattened and split into its price-dependent parts.
+
+    A run's trajectory does not depend on any price - the engine only ever adds
+    them up - so the mean total cost is exactly linear in them:
+
+        total = static_meso_mean
+              + scrolls_mean       x star scroll price
+              + equipment_mean     x equipment price
+              + rebuild_count_mean x rebuild cost
+
+    Splitting the figures out here is what lets the page re-price a dataset for
+    edited prices without simulating anything. ``scroll_costs`` must be the
+    snapshot the dataset was generated against, not today's prices.
+    """
+    config = entry["config"]
+    scrolled = config["start_mode"] == "scroll"
+    scroll_star = config["start_star"] if scrolled else None
+    scroll_price = scroll_costs[str(scroll_star)] if scrolled else 0
+
+    # Meso figures round to whole meso; the counts they get multiplied by do
+    # not round at all. The page multiplies these by prices that can reach 1e11,
+    # so trimming even eight decimals here would show up as hundreds of meso of
+    # disagreement against a directly measured mean.
+    meso_mean = round(entry["meso"]["mean"])
+    scrolls_mean = entry["scrolls"]["mean"]
+    equipment_mean = entry["equipment"]["mean"]
+    rebuild_cost = config["rebuild_cost"]
+    rebuild_count_mean = (
+        entry["rebuild_cost"]["mean"] / rebuild_cost if rebuild_cost else 0.0
+    )
+
+    return {
+        "equipment": config["equipment_name"],
+        "level": config["level"],
+        "equipment_price": config["equipment_price"],
+        "start_star": config["start_star"],
+        "target_star": config["target_star"],
+        "start_mode": config["start_mode"],
+        "repair_policy": config["repair_policy"],
+        # Which star scroll this run buys, or null when it buys none. The page
+        # needs the star to look the price up, and start_star is not it for a
+        # run that starts from an item it already owns.
+        "scroll_star": scroll_star,
+        "rebuild_cost": rebuild_cost,
+        "trials": entry["trials"],
+        "total_cost_mean": round(entry["total_cost"]["mean"]),
+        "total_cost_percentiles": {
+            label: round(value)
+            for label, value in entry["total_cost"]["percentiles"].items()
+        },
+        "meso_mean": meso_mean,
+        # Enhancement fees and repair meso: fixed by the level, not the market.
+        "static_meso_mean": round(meso_mean - scrolls_mean * scroll_price, 6),
+        "equipment_cost_mean": round(entry["equipment_cost"]["mean"]),
+        "rebuild_cost_mean": round(entry["rebuild_cost"]["mean"]),
+        "rebuild_count_mean": rebuild_count_mean,
+        "equipment_mean": equipment_mean,
+        "scrolls_mean": scrolls_mean,
+        "attempts_mean": round(entry["attempts"]["mean"], 2),
+        "destroys_mean": round(entry["destroys"]["mean"], 3),
+        "attempts_by_star": {
+            star: round(value, 3)
+            for star, value in entry["mean_attempts_by_star"].items()
+        },
+    }
+
+
 def slim_dataset(payload: dict[str, Any]) -> dict[str, Any]:
     """Flatten a sweep dataset to one row per combination, rounded for size."""
-    results = []
-    for entry in payload["results"]:
-        config = entry["config"]
-        results.append(
-            {
-                "equipment": config["equipment_name"],
-                "level": config["level"],
-                "equipment_price": config["equipment_price"],
-                "start_star": config["start_star"],
-                "target_star": config["target_star"],
-                "start_mode": config["start_mode"],
-                "repair_policy": config["repair_policy"],
-                "rebuild_cost": config["rebuild_cost"],
-                "trials": entry["trials"],
-                "total_cost_mean": round(entry["total_cost"]["mean"]),
-                "total_cost_percentiles": {
-                    label: round(value)
-                    for label, value in entry["total_cost"]["percentiles"].items()
-                },
-                "meso_mean": round(entry["meso"]["mean"]),
-                "equipment_cost_mean": round(entry["equipment_cost"]["mean"]),
-                "rebuild_cost_mean": round(entry["rebuild_cost"]["mean"]),
-                "equipment_mean": round(entry["equipment"]["mean"], 3),
-                "scrolls_mean": round(entry["scrolls"]["mean"], 3),
-                "attempts_mean": round(entry["attempts"]["mean"], 2),
-                "destroys_mean": round(entry["destroys"]["mean"], 3),
-                "attempts_by_star": {
-                    star: round(value, 3)
-                    for star, value in entry["mean_attempts_by_star"].items()
-                },
-            }
-        )
-    return {"meta": payload["meta"], "results": results}
+    scroll_costs = payload["meta"]["prices"]["star_scroll_cost"]
+    return {
+        "meta": payload["meta"],
+        "results": [slim_result(entry, scroll_costs) for entry in payload["results"]],
+    }
 
 
 def load_dataset(path: Path) -> dict[str, Any] | None:
@@ -366,7 +410,125 @@ def build_parity() -> dict[str, Any]:
             for star in data.STAR_SCROLL_STARS
         },
         "cases": cases,
+        "reprice": build_reprice_cases(),
     }
+
+
+# ---------------------------------------------------------------------------
+# Re-pricing golden cases
+# ---------------------------------------------------------------------------
+
+#: Trials per re-pricing case. These only need the two runs to agree, not a
+#: converged distribution, so a small number keeps the build quick.
+REPRICE_TRIALS = 3_000
+
+#: Prices the "after" half of each case is measured against. Deliberately far
+#: from the shipped ones so a term that was quietly dropped cannot still match.
+REPRICE_SCROLL_MULTIPLIER = 3
+REPRICE_EQUIPMENT_MULTIPLIER = 5
+
+
+def _price_payload(scroll_multiplier: int, equipment_multiplier: int) -> dict[str, Any]:
+    """The shipped catalogue with every price scaled."""
+    return {
+        "star_scroll_cost": {
+            str(star): volatile_data.STAR_SCROLL_COST[star] * scroll_multiplier
+            for star in data.STAR_SCROLL_STARS
+        },
+        "equipment": [
+            {
+                "name": item.name,
+                "level": item.level,
+                "price": item.price * equipment_multiplier,
+                "aliases": list(item.aliases),
+            }
+            for item in volatile_data.CATALOG.values()
+        ],
+    }
+
+
+def _measure(config: RunConfig, scroll_costs: dict[str, int]) -> dict[str, Any]:
+    """Run one config and flatten it the way the site's datasets are flattened."""
+    summary = simulate(config, trials=REPRICE_TRIALS, seed=REPRICE_SEED)
+    return slim_result(summary.to_dict(), scroll_costs)
+
+
+def build_reprice_cases() -> list[dict[str, Any]]:
+    """Cases proving the page can re-price a row without re-simulating.
+
+    Each case measures the same configuration twice - once at the shipped
+    prices, once at scaled ones - with the same seed. Because no price can
+    change a trajectory, the second run's mean is what re-pricing the first
+    run's row must produce, to the meso. Generating the expectation by actually
+    simulating rather than by applying the same formula twice is what makes this
+    a check instead of a tautology.
+    """
+    shipped_scrolls = {
+        str(star): volatile_data.STAR_SCROLL_COST[star]
+        for star in data.STAR_SCROLL_STARS
+    }
+    after_prices = _price_payload(
+        REPRICE_SCROLL_MULTIPLIER, REPRICE_EQUIPMENT_MULTIPLIER
+    )
+
+    # A marginal run that repairs to 12 stars is priced against a rebuild cost
+    # that moves with the market too, so its case carries a different figure on
+    # each side - that is the only way the rebuild term gets exercised.
+    rebuild_before = load_rebuild_basis().cost("頂培")
+    rebuild_after = rebuild_before * 3
+
+    plans = [
+        ("scrolled climb, full repair", "頂培", 15, 22, RepairPolicy.FULL, StartMode.SCROLL, 0, 0),
+        ("scrolled climb, cheap repair", "頂培", 15, 22, RepairPolicy.TO_12, StartMode.SCROLL, 0, 0),
+        ("dearer scroll, dearer equipment", "控制核心", 19, 23, RepairPolicy.TO_12, StartMode.SCROLL, 0, 0),
+        ("owned item, no scroll at all", "眼罩", 22, 23, RepairPolicy.FULL, StartMode.OWNED, 0, 0),
+        (
+            "owned item rebuilding to 22 stars", "頂培", 22, 24,
+            RepairPolicy.TO_12, StartMode.OWNED, rebuild_before, rebuild_after,
+        ),
+    ]
+
+    before_rows = []
+    for _, name, start, target, policy, mode, rebuild, _after in plans:
+        config = RunConfig.for_equipment(
+            name, start, target,
+            repair_policy=policy, start_mode=mode, rebuild_cost=rebuild,
+        )
+        before_rows.append(_measure(config, shipped_scrolls))
+
+    handle = tempfile.NamedTemporaryFile(
+        "w", suffix=".json", delete=False, encoding="utf-8"
+    )
+    try:
+        json.dump(after_prices, handle, ensure_ascii=False)
+        handle.close()
+        volatile_data.load(handle.name)
+
+        cases = []
+        for (label, name, start, target, policy, mode, _before, rebuild), row in zip(
+            plans, before_rows
+        ):
+            config = RunConfig.for_equipment(
+                name, start, target,
+                repair_policy=policy, start_mode=mode, rebuild_cost=rebuild,
+            )
+            after = simulate(config, trials=REPRICE_TRIALS, seed=REPRICE_SEED)
+            cases.append(
+                {
+                    "name": label,
+                    "row": row,
+                    "prices": after_prices,
+                    "rebuild_cost": rebuild,
+                    "expected_total_cost_mean": round(after.total_cost.mean),
+                }
+            )
+    finally:
+        volatile_data.load()
+        Path(handle.name).unlink(missing_ok=True)
+
+    if volatile_data.SOURCE_PATH != volatile_data.DEFAULT_PATH:
+        raise RuntimeError("failed to restore the shipped prices after re-pricing cases")
+    return cases
 
 
 def write_json(payload: dict[str, Any], path: Path) -> None:

@@ -31,6 +31,7 @@
 import * as rules from "./js/rules.js";
 import { Session, scriptedRng, RepairPolicy } from "./js/session.js";
 import { runWithinBudget, autoPolicy } from "./js/autorun.js";
+import { repricedMean } from "./js/reprice.js";
 
 /** Deep compare, returning the path of the first difference or null. */
 function diff(expected, actual, path = "") {
@@ -139,8 +140,37 @@ async function run() {
     body.appendChild(row);
   }
 
+  // Re-pricing: each case holds a row measured at one set of prices and the
+  // mean a real simulation produced at another. Multiplying the row's parts out
+  // must land on that figure exactly, or the page is showing invented numbers.
+  for (const testCase of parity.reprice) {
+    const row = document.createElement("tr");
+    let verdict;
+    try {
+      const rebuild = testCase.rebuild_cost || null;
+      const actual = repricedMean(testCase.row, testCase.prices, rebuild);
+      // One meso of slack: the stored meso means are rounded to whole meso,
+      // while the expectation comes from an unrounded simulation.
+      if (Math.abs(actual - testCase.expected_total_cost_mean) <= 1) {
+        verdict = "<span class=\"ok\">通過</span>";
+        passed += 1;
+      } else {
+        verdict = `<span class="bad">不符</span> 期待 ${testCase.expected_total_cost_mean}，得到 ${actual}`;
+      }
+    } catch (error) {
+      verdict = `<span class="bad">例外</span> ${error.message}`;
+    }
+    row.innerHTML = `
+      <td>${testCase.name}</td>
+      <td>reprice</td>
+      <td class="num">-</td>
+      <td class="num">-</td>
+      <td>${verdict}</td>`;
+    body.appendChild(row);
+  }
+
   const summary = document.getElementById("summary");
-  const total = parity.cases.length;
+  const total = parity.cases.length + parity.reprice.length;
   summary.textContent = `${passed} / ${total} 案例通過（測資產生於 ${parity.generated_at}）`;
   summary.className = passed === total ? "summary ok" : "summary bad";
 }

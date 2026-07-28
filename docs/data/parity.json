@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-07-27T18:28:27+00:00",
+ "generated_at": "2026-07-28T18:05:12+00:00",
  "rate_basis": 10000,
  "star_scroll_cost": {
   "10": 20000000,
@@ -3319,6 +3319,564 @@
      }
     ]
    }
+  }
+ ],
+ "reprice": [
+  {
+   "name": "scrolled climb, full repair",
+   "row": {
+    "equipment": "頂培",
+    "level": 150,
+    "equipment_price": 150000000,
+    "start_star": 15,
+    "target_star": 22,
+    "start_mode": "scroll",
+    "repair_policy": "full",
+    "scroll_star": 15,
+    "rebuild_cost": 0,
+    "trials": 3000,
+    "total_cost_mean": 24945892078,
+    "total_cost_percentiles": {
+     "50": 20623431150,
+     "75": 33828834200,
+     "90": 49656370060,
+     "95": 60584864665,
+     "99": 83903633351
+    },
+    "meso_mean": 24120942078,
+    "static_meso_mean": 24080942078.0,
+    "equipment_cost_mean": 824950000,
+    "rebuild_cost_mean": 0,
+    "rebuild_count_mean": 0.0,
+    "equipment_mean": 5.499666666666666,
+    "scrolls_mean": 1.0,
+    "attempts_mean": 40.17,
+    "destroys_mean": 3.088,
+    "attempts_by_star": {
+     "15": 3.319,
+     "16": 3.335,
+     "17": 6.699,
+     "18": 8.494,
+     "19": 10.051,
+     "20": 3.329,
+     "21": 4.941
+    }
+   },
+   "prices": {
+    "star_scroll_cost": {
+     "10": 60000000,
+     "11": 60000000,
+     "12": 60000000,
+     "13": 60000000,
+     "14": 60000000,
+     "15": 120000000,
+     "16": 840000000,
+     "17": 4740000000,
+     "18": 7500000000,
+     "19": 19200000000,
+     "20": 99000000000
+    },
+    "equipment": [
+     {
+      "name": "頂培",
+      "level": 150,
+      "price": 750000000,
+      "aliases": []
+     },
+     {
+      "name": "神秘",
+      "level": 200,
+      "price": 250000000,
+      "aliases": []
+     },
+     {
+      "name": "永恆上四",
+      "level": 250,
+      "price": 1500000000,
+      "aliases": []
+     },
+     {
+      "name": "永恆下三",
+      "level": 250,
+      "price": 4000000000,
+      "aliases": []
+     },
+     {
+      "name": "口紅",
+      "level": 160,
+      "price": 2500000000,
+      "aliases": []
+     },
+     {
+      "name": "眼罩",
+      "level": 160,
+      "price": 5000000000,
+      "aliases": []
+     },
+     {
+      "name": "苦痛",
+      "level": 160,
+      "price": 10000000000,
+      "aliases": []
+     },
+     {
+      "name": "巨大",
+      "level": 200,
+      "price": 10000000000,
+      "aliases": []
+     },
+     {
+      "name": "控制核心",
+      "level": 200,
+      "price": 100000000000,
+      "aliases": []
+     }
+    ]
+   },
+   "rebuild_cost": 0,
+   "expected_total_cost_mean": 28325692078
+  },
+  {
+   "name": "scrolled climb, cheap repair",
+   "row": {
+    "equipment": "頂培",
+    "level": 150,
+    "equipment_price": 150000000,
+    "start_star": 15,
+    "target_star": 22,
+    "start_mode": "scroll",
+    "repair_policy": "to_12",
+    "scroll_star": 15,
+    "rebuild_cost": 0,
+    "trials": 3000,
+    "total_cost_mean": 24862167677,
+    "total_cost_percentiles": {
+     "50": 18209673250,
+     "75": 33088347600,
+     "90": 53212774910,
+     "95": 69946506615,
+     "99": 104484985420
+    },
+    "meso_mean": 23317467677,
+    "static_meso_mean": 22865547677.0,
+    "equipment_cost_mean": 1544700000,
+    "rebuild_cost_mean": 0,
+    "rebuild_count_mean": 0.0,
+    "equipment_mean": 10.298,
+    "scrolls_mean": 11.298,
+    "attempts_mean": 178.41,
+    "destroys_mean": 10.298,
+    "attempts_by_star": {
+     "15": 35.133,
+     "16": 33.061,
+     "17": 45.125,
+     "18": 33.808,
+     "19": 21.165,
+     "20": 5.204,
+     "21": 4.909
+    }
+   },
+   "prices": {
+    "star_scroll_cost": {
+     "10": 60000000,
+     "11": 60000000,
+     "12": 60000000,
+     "13": 60000000,
+     "14": 60000000,
+     "15": 120000000,
+     "16": 840000000,
+     "17": 4740000000,
+     "18": 7500000000,
+     "19": 19200000000,
+     "20": 99000000000
+    },
+    "equipment": [
+     {
+      "name": "頂培",
+      "level": 150,
+      "price": 750000000,
+      "aliases": []
+     },
+     {
+      "name": "神秘",
+      "level": 200,
+      "price": 250000000,
+      "aliases": []
+     },
+     {
+      "name": "永恆上四",
+      "level": 250,
+      "price": 1500000000,
+      "aliases": []
+     },
+     {
+      "name": "永恆下三",
+      "level": 250,
+      "price": 4000000000,
+      "aliases": []
+     },
+     {
+      "name": "口紅",
+      "level": 160,
+      "price": 2500000000,
+      "aliases": []
+     },
+     {
+      "name": "眼罩",
+      "level": 160,
+      "price": 5000000000,
+      "aliases": []
+     },
+     {
+      "name": "苦痛",
+      "level": 160,
+      "price": 10000000000,
+      "aliases": []
+     },
+     {
+      "name": "巨大",
+      "level": 200,
+      "price": 10000000000,
+      "aliases": []
+     },
+     {
+      "name": "控制核心",
+      "level": 200,
+      "price": 100000000000,
+      "aliases": []
+     }
+    ]
+   },
+   "rebuild_cost": 0,
+   "expected_total_cost_mean": 31944807677
+  },
+  {
+   "name": "dearer scroll, dearer equipment",
+   "row": {
+    "equipment": "控制核心",
+    "level": 200,
+    "equipment_price": 20000000000,
+    "start_star": 19,
+    "target_star": 23,
+    "start_mode": "scroll",
+    "repair_policy": "to_12",
+    "scroll_star": 19,
+    "rebuild_cost": 0,
+    "trials": 3000,
+    "total_cost_mean": 194266833946,
+    "total_cost_percentiles": {
+     "50": 134359864600,
+     "75": 263902658950,
+     "90": 447594504760,
+     "95": 585193515390,
+     "99": 891696617714
+    },
+    "meso_mean": 78960167279,
+    "static_meso_mean": 35662033945.666664,
+    "equipment_cost_mean": 115306666667,
+    "rebuild_cost_mean": 0,
+    "rebuild_count_mean": 0.0,
+    "equipment_mean": 5.765333333333333,
+    "scrolls_mean": 6.765333333333333,
+    "attempts_mean": 58.66,
+    "destroys_mean": 5.765,
+    "attempts_by_star": {
+     "19": 35.697,
+     "20": 8.936,
+     "21": 8.378,
+     "22": 5.65
+    }
+   },
+   "prices": {
+    "star_scroll_cost": {
+     "10": 60000000,
+     "11": 60000000,
+     "12": 60000000,
+     "13": 60000000,
+     "14": 60000000,
+     "15": 120000000,
+     "16": 840000000,
+     "17": 4740000000,
+     "18": 7500000000,
+     "19": 19200000000,
+     "20": 99000000000
+    },
+    "equipment": [
+     {
+      "name": "頂培",
+      "level": 150,
+      "price": 750000000,
+      "aliases": []
+     },
+     {
+      "name": "神秘",
+      "level": 200,
+      "price": 250000000,
+      "aliases": []
+     },
+     {
+      "name": "永恆上四",
+      "level": 250,
+      "price": 1500000000,
+      "aliases": []
+     },
+     {
+      "name": "永恆下三",
+      "level": 250,
+      "price": 4000000000,
+      "aliases": []
+     },
+     {
+      "name": "口紅",
+      "level": 160,
+      "price": 2500000000,
+      "aliases": []
+     },
+     {
+      "name": "眼罩",
+      "level": 160,
+      "price": 5000000000,
+      "aliases": []
+     },
+     {
+      "name": "苦痛",
+      "level": 160,
+      "price": 10000000000,
+      "aliases": []
+     },
+     {
+      "name": "巨大",
+      "level": 200,
+      "price": 10000000000,
+      "aliases": []
+     },
+     {
+      "name": "控制核心",
+      "level": 200,
+      "price": 100000000000,
+      "aliases": []
+     }
+    ]
+   },
+   "rebuild_cost": 0,
+   "expected_total_cost_mean": 742089767279
+  },
+  {
+   "name": "owned item, no scroll at all",
+   "row": {
+    "equipment": "眼罩",
+    "level": 160,
+    "equipment_price": 1000000000,
+    "start_star": 22,
+    "target_star": 23,
+    "start_mode": "owned",
+    "repair_policy": "full",
+    "scroll_star": null,
+    "rebuild_cost": 0,
+    "trials": 3000,
+    "total_cost_mean": 18075444394,
+    "total_cost_percentiles": {
+     "50": 583647600,
+     "75": 25680922200,
+     "90": 51167295200,
+     "95": 76264569800,
+     "99": 126653668200
+    },
+    "meso_mean": 15272777727,
+    "static_meso_mean": 15272777727.0,
+    "equipment_cost_mean": 2802666667,
+    "rebuild_cost_mean": 0,
+    "rebuild_count_mean": 0.0,
+    "equipment_mean": 2.8026666666666666,
+    "scrolls_mean": 0.0,
+    "attempts_mean": 5.74,
+    "destroys_mean": 0.701,
+    "attempts_by_star": {
+     "22": 5.744
+    }
+   },
+   "prices": {
+    "star_scroll_cost": {
+     "10": 60000000,
+     "11": 60000000,
+     "12": 60000000,
+     "13": 60000000,
+     "14": 60000000,
+     "15": 120000000,
+     "16": 840000000,
+     "17": 4740000000,
+     "18": 7500000000,
+     "19": 19200000000,
+     "20": 99000000000
+    },
+    "equipment": [
+     {
+      "name": "頂培",
+      "level": 150,
+      "price": 750000000,
+      "aliases": []
+     },
+     {
+      "name": "神秘",
+      "level": 200,
+      "price": 250000000,
+      "aliases": []
+     },
+     {
+      "name": "永恆上四",
+      "level": 250,
+      "price": 1500000000,
+      "aliases": []
+     },
+     {
+      "name": "永恆下三",
+      "level": 250,
+      "price": 4000000000,
+      "aliases": []
+     },
+     {
+      "name": "口紅",
+      "level": 160,
+      "price": 2500000000,
+      "aliases": []
+     },
+     {
+      "name": "眼罩",
+      "level": 160,
+      "price": 5000000000,
+      "aliases": []
+     },
+     {
+      "name": "苦痛",
+      "level": 160,
+      "price": 10000000000,
+      "aliases": []
+     },
+     {
+      "name": "巨大",
+      "level": 200,
+      "price": 10000000000,
+      "aliases": []
+     },
+     {
+      "name": "控制核心",
+      "level": 200,
+      "price": 100000000000,
+      "aliases": []
+     }
+    ]
+   },
+   "rebuild_cost": 0,
+   "expected_total_cost_mean": 29286111061
+  },
+  {
+   "name": "owned item rebuilding to 22 stars",
+   "row": {
+    "equipment": "頂培",
+    "level": 150,
+    "equipment_price": 150000000,
+    "start_star": 22,
+    "target_star": 24,
+    "start_mode": "owned",
+    "repair_policy": "to_12",
+    "scroll_star": null,
+    "rebuild_cost": 24843877116,
+    "trials": 3000,
+    "total_cost_mean": 111534410850,
+    "total_cost_percentiles": {
+     "50": 76597242198,
+     "75": 153937959996,
+     "90": 278121249156,
+     "95": 356651190619,
+     "99": 534255717753
+    },
+    "meso_mean": 2527781455,
+    "static_meso_mean": 2527781455.0,
+    "equipment_cost_mean": 654200000,
+    "rebuild_cost_mean": 108352429395,
+    "rebuild_count_mean": 4.3613333333333335,
+    "equipment_mean": 4.3613333333333335,
+    "scrolls_mean": 0.0,
+    "attempts_mean": 30.09,
+    "destroys_mean": 4.361,
+    "attempts_by_star": {
+     "22": 18.161,
+     "23": 11.924
+    }
+   },
+   "prices": {
+    "star_scroll_cost": {
+     "10": 60000000,
+     "11": 60000000,
+     "12": 60000000,
+     "13": 60000000,
+     "14": 60000000,
+     "15": 120000000,
+     "16": 840000000,
+     "17": 4740000000,
+     "18": 7500000000,
+     "19": 19200000000,
+     "20": 99000000000
+    },
+    "equipment": [
+     {
+      "name": "頂培",
+      "level": 150,
+      "price": 750000000,
+      "aliases": []
+     },
+     {
+      "name": "神秘",
+      "level": 200,
+      "price": 250000000,
+      "aliases": []
+     },
+     {
+      "name": "永恆上四",
+      "level": 250,
+      "price": 1500000000,
+      "aliases": []
+     },
+     {
+      "name": "永恆下三",
+      "level": 250,
+      "price": 4000000000,
+      "aliases": []
+     },
+     {
+      "name": "口紅",
+      "level": 160,
+      "price": 2500000000,
+      "aliases": []
+     },
+     {
+      "name": "眼罩",
+      "level": 160,
+      "price": 5000000000,
+      "aliases": []
+     },
+     {
+      "name": "苦痛",
+      "level": 160,
+      "price": 10000000000,
+      "aliases": []
+     },
+     {
+      "name": "巨大",
+      "level": 200,
+      "price": 10000000000,
+      "aliases": []
+     },
+     {
+      "name": "控制核心",
+      "level": 200,
+      "price": 100000000000,
+      "aliases": []
+     }
+    ]
+   },
+   "rebuild_cost": 74531631348,
+   "expected_total_cost_mean": 330856069640
   }
  ]
 }
