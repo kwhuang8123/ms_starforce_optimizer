@@ -41,7 +41,9 @@ const el = {};
 function bind() {
   for (const id of [
     "play-equipment", "play-level", "play-level-field", "play-start-star",
-    "play-new", "play-star", "play-total", "play-subtotal", "play-flag",
+    "play-new", "play-name", "play-star", "play-star-grid", "play-next-star",
+    "play-arrow", "play-rates", "play-cost", "play-total", "play-subtotal",
+    "play-flag",
     "play-enhance", "play-scroll-star", "play-scroll", "play-repair-full",
     "play-repair-12", "play-error", "play-copy", "play-summary",
     "auto-repair", "auto-scroll", "auto-budget", "auto-budget-target",
@@ -317,12 +319,90 @@ function renderLog() {
     `　總計 ${formatMeso(session.totalCost)}　星捲 ${t.scrolls_used}　強化 ${t.attempts} 次　破壞 ${t.destroys} 次`;
 }
 
+/** One row inside a panel block: label on the left, figure on the right. */
+function panelRow(label, value, className = "") {
+  return `<div class="sf-row"><span>${label}</span>` +
+    `<span class="num ${className}">${value}</span></div>`;
+}
+
+/**
+ * The star grid, five to a cluster and three clusters to a row, the way the
+ * game lays it out. Slots run to the level's cap, so a 130 item shows fewer.
+ */
+function renderStarGrid() {
+  if (session === null) {
+    el["play-star-grid"].innerHTML = "";
+    return;
+  }
+  const clusters = [];
+  for (let base = 0; base < session.maxStar; base += 5) {
+    const stars = [];
+    for (let star = base + 1; star <= Math.min(base + 5, session.maxStar); star += 1) {
+      stars.push(`<span class="sf-star${star <= session.star ? " on" : ""}">★</span>`);
+    }
+    clusters.push(`<span class="sf-cluster">${stars.join("")}</span>`);
+  }
+  el["play-star-grid"].innerHTML = clusters.join("");
+}
+
+/**
+ * The odds and the fee for the attempt that is available right now.
+ *
+ * These are the published base figures. The game shows whatever is in effect
+ * including any event bonus, so the two will not always agree - hence the note
+ * in the markup rather than a silent difference.
+ */
+function renderNextAttempt() {
+  const rates = el["play-rates"];
+  const cost = el["play-cost"];
+
+  if (session === null) {
+    rates.innerHTML = panelRow("—", "—");
+    cost.innerHTML = panelRow("—", "—");
+    return;
+  }
+  if (session.destroyed) {
+    rates.innerHTML = panelRow("裝備已破壞", "先修復才有下一次強化");
+    cost.innerHTML = panelRow("修復費用", "見下方修復按鈕");
+    return;
+  }
+  if (session.star >= session.maxStar) {
+    rates.innerHTML = panelRow("已達等級上限", `${session.maxStar} 星`);
+    cost.innerHTML = panelRow("—", "—");
+    return;
+  }
+
+  const basis = rules.rateBasis();
+  const [success, destroy, maintain] = rules.enhanceRates(session.star);
+  const percent = (value) => `${((value / basis) * 100).toFixed(2)}%`;
+  rates.innerHTML =
+    panelRow("成功", percent(success), "ok-text") +
+    panelRow("失敗（維持星數）", percent(maintain)) +
+    panelRow("破壞", percent(destroy), "bad-text");
+
+  const fee = rules.enhanceCost(session.level, session.star);
+  cost.innerHTML =
+    panelRow("本次強化", formatMeso(fee), "gold") +
+    panelRow("", `${fee.toLocaleString("en-US")} 楓幣`, "muted");
+}
+
 function render() {
   const live = session !== null;
+  el["play-name"].textContent = live
+    ? session.equipmentName || `未指定裝備（${session.level} 等）`
+    : "—";
   el["play-star"].textContent = live ? session.star : "-";
+
+  const climbing = live && !session.destroyed && session.star < session.maxStar;
+  el["play-next-star"].textContent = climbing ? session.star + 1 : "-";
+  el["play-arrow"].style.visibility = climbing ? "visible" : "hidden";
+
+  renderStarGrid();
+  renderNextAttempt();
+
   el["play-total"].textContent = live ? formatMeso(session.totalCost) : "0.00億";
   el["play-subtotal"].textContent = live
-    ? `等級 ${session.level}・${session.equipmentName || "未指定裝備"}・上限 ${session.maxStar} 星`
+    ? `等級 ${session.level}・上限 ${session.maxStar} 星`
     : "";
 
   el["play-flag"].hidden = !(live && session.destroyed);
