@@ -1,32 +1,26 @@
 /* Plain CSS, no build step and no dependencies, matching the Python side's
-   zero-dependency stance. Light and dark both come from prefers-color-scheme. */
+   zero-dependency stance.
+
+   One dark theme, no prefers-color-scheme branch: the look is borrowed from the
+   game's own STARFORCE panel, which is dark by nature, and carrying a light
+   variant would compromise every colour decision. No game art is used - the
+   panels, stars and blocks are all CSS and Unicode. */
 
 :root {
-  --bg: #f6f7f9;
-  --card: #ffffff;
-  --ink: #1c2024;
-  --muted: #6b7280;
-  --line: #dfe3e8;
-  --accent: #2563eb;
-  --ok: #15803d;
-  --bad: #b91c1c;
-  --warn: #b45309;
-  --destroy-bg: #fdecec;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #14171a;
-    --card: #1c2024;
-    --ink: #e6e8ea;
-    --muted: #9aa3ad;
-    --line: #2c3238;
-    --accent: #60a5fa;
-    --ok: #4ade80;
-    --bad: #f87171;
-    --warn: #fbbf24;
-    --destroy-bg: #3a1d1d;
-  }
+  --bg: #0d1a26;
+  --panel: #172c40;
+  --panel-inner: #12222f;
+  --titlebar: #1f4f7a;
+  --line: #2f4f6d;
+  --ink: #e6eef6;
+  --muted: #90a9c0;
+  --gold: #ffd24a;
+  --star-empty: #3f566b;
+  --accent: #3d8fd1;
+  --ok: #5fd68a;
+  --bad: #ff7a7a;
+  --warn: #ffc34a;
+  --destroy-bg: #3a1a22;
 }
 
 * { box-sizing: border-box; }
@@ -41,7 +35,7 @@ body {
 header {
   padding: 18px 24px 0;
   border-bottom: 1px solid var(--line);
-  background: var(--card);
+  background: var(--panel);
 }
 
 h1 { margin: 0 0 12px; font-size: 20px; }
@@ -72,7 +66,7 @@ h2 { margin: 0 0 12px; font-size: 15px; }
 main { padding: 20px 24px 40px; max-width: 1400px; }
 
 .card {
-  background: var(--card);
+  background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 16px;
@@ -94,7 +88,7 @@ input, select, textarea {
   padding: 6px 8px;
   border: 1px solid var(--line);
   border-radius: 5px;
-  background: var(--bg);
+  background: var(--panel-inner);
   color: var(--ink);
   font: inherit;
 }
@@ -106,16 +100,16 @@ button {
   padding: 7px 14px;
   border: 1px solid var(--line);
   border-radius: 5px;
-  background: var(--card);
+  background: var(--panel-inner);
   color: var(--ink);
   font: inherit;
   cursor: pointer;
 }
 
 button:hover:not(:disabled) { border-color: var(--accent); }
-button:disabled { opacity: 0.4; cursor: not-allowed; }
+button:disabled { opacity: 0.35; cursor: not-allowed; }
 
-button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #06131d; font-weight: 600; }
 button.link {
   padding: 0 4px;
   border: none;
@@ -137,28 +131,111 @@ hr { border: none; border-top: 1px solid var(--line); margin: 14px 0; }
   padding: 8px 12px;
   border-radius: 5px;
   border: 1px solid var(--line);
+  background: var(--panel-inner);
   font-size: 13px;
 }
 
 .banner.bad { border-color: var(--bad); color: var(--bad); }
 .banner.warn { border-color: var(--warn); color: var(--warn); }
 
-.state { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+/* --- the star force panel ------------------------------------------------ */
 
-.star-box { font-size: 46px; font-weight: 700; line-height: 1; }
-.star-box small { font-size: 15px; font-weight: normal; color: var(--muted); margin-left: 4px; }
-.cost-box strong { font-size: 20px; }
+.starforce { max-width: 520px; }
+
+.sf-name {
+  margin: 0 auto 16px;
+  padding: 8px 20px;
+  max-width: 24em;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel-inner);
+  text-align: center;
+  font-weight: 600;
+}
+
+.sf-stars {
+  display: grid;
+  grid-template-columns: repeat(3, max-content);
+  gap: 4px 18px;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.sf-cluster { display: flex; gap: 3px; }
+
+.sf-star {
+  color: var(--star-empty);
+  font-size: 17px;
+  line-height: 1;
+}
+
+.sf-star.on {
+  color: var(--gold);
+  text-shadow: 0 0 6px rgba(255, 210, 74, 0.55);
+}
+
+.sf-step {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding: 8px;
+  border-radius: 6px;
+  background: var(--panel-inner);
+  font-size: 18px;
+}
+
+.sf-step b { color: var(--gold); font-size: 22px; }
+.sf-arrow { color: var(--accent); letter-spacing: 2px; }
+
+.sf-block {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-inner);
+}
+
+.sf-label {
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.sf-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 2px 0;
+  font-size: 14px;
+}
+
+.sf-row .num { font-variant-numeric: tabular-nums; }
+.sf-row .gold { color: var(--gold); font-weight: 600; }
+
+.sf-actions { margin-top: 16px; text-align: center; }
+
+button.big {
+  min-width: 200px;
+  padding: 11px 24px;
+  font-size: 16px;
+}
+
+.sf-actions .row { justify-content: center; margin-top: 12px; }
 
 .flag {
   margin: 12px 0 0;
   padding: 8px 12px;
   border-radius: 5px;
   background: var(--destroy-bg);
+  border: 1px solid var(--bad);
   color: var(--bad);
   font-size: 13px;
 }
 
-.actions { margin-top: 14px; }
+/* --- tables -------------------------------------------------------------- */
 
 .table-scroll { overflow-x: auto; }
 
@@ -172,13 +249,15 @@ th, td {
 }
 
 th { color: var(--muted); font-weight: 600; }
-th small { display: block; font-weight: normal; font-size: 11px; opacity: 0.7; }
+th small { display: block; font-weight: normal; font-size: 11px; opacity: 0.75; }
 .sortable th[data-sort] { cursor: pointer; user-select: none; }
 .sortable th.asc::after { content: " ▲"; }
 .sortable th.desc::after { content: " ▼"; }
 
+tbody tr:hover { background: var(--panel-inner); }
+
 td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
-tr.destroy { background: var(--destroy-bg); }
+tr.destroy, tr.destroy:hover { background: var(--destroy-bg); }
 
 footer {
   padding: 14px 24px;

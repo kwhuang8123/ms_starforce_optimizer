@@ -22,25 +22,51 @@
 
   <!-- ------------------------------------------------------------------ -->
   <section id="tab-play" class="panel">
-    <div class="card state-card">
-      <div class="state">
-        <div class="star-box">
-          <span id="play-star">0</span><small>星</small>
+    <div class="card starforce">
+      <div class="sf-name" id="play-name">—</div>
+
+      <div class="sf-stars" id="play-star-grid"></div>
+
+      <div class="sf-step">
+        <span>★ <b id="play-star">0</b></span>
+        <span class="sf-arrow" id="play-arrow">▶▶▶</span>
+        <span>★ <b id="play-next-star">1</b></span>
+      </div>
+
+      <div class="sf-block">
+        <div class="sf-label">成功機率</div>
+        <div id="play-rates"></div>
+        <p class="muted" style="margin-top:6px">官方公布之基礎機率，不含活動加成。</p>
+      </div>
+
+      <div class="sf-block">
+        <div class="sf-label">使用費用</div>
+        <div id="play-cost"></div>
+      </div>
+
+      <div class="sf-block">
+        <div class="sf-label">累計花費</div>
+        <div class="sf-row">
+          <span>總計</span>
+          <span class="num gold" id="play-total">0.00億</span>
         </div>
-        <div class="cost-box">
-          <div>累計花費 <strong id="play-total">0.00億</strong></div>
-          <div class="muted" id="play-subtotal"></div>
+        <div class="sf-row">
+          <span class="muted" id="play-subtotal"></span>
         </div>
       </div>
+
       <p id="play-flag" class="flag" hidden></p>
-      <div class="row actions">
-        <button id="play-enhance" class="primary">強化一次</button>
-        <span class="group">
-          <select id="play-scroll-star"></select>
-          <button id="play-scroll">使用星捲</button>
-        </span>
-        <button id="play-repair-full">完整修復</button>
-        <button id="play-repair-12">修復至 12 星</button>
+
+      <div class="sf-actions">
+        <button id="play-enhance" class="primary big">強化</button>
+        <div class="row">
+          <span class="group">
+            <select id="play-scroll-star"></select>
+            <button id="play-scroll">使用星捲</button>
+          </span>
+          <button id="play-repair-full">完整修復</button>
+          <button id="play-repair-12">修復至 12 星</button>
+        </div>
       </div>
       <p id="play-error" class="banner bad" hidden></p>
     </div>
