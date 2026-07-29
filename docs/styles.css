@@ -229,6 +229,50 @@ hr { border: none; border-top: 1px solid var(--line); margin: 14px 0; }
 
 .sf-scroll-price { color: var(--muted); font-size: 11px; }
 
+/* Motion. Every animation lives behind this query, so a system that asks for
+   reduced motion simply never sees one - the JS check covers playback, this
+   covers the rest without needing a second switch. */
+@media (prefers-reduced-motion: no-preference) {
+  .starforce.flash-success { animation: sf-success 0.5s ease-out; }
+  .starforce.flash-maintain { animation: sf-maintain 0.3s ease-out; }
+  .starforce.flash-destroy { animation: sf-destroy 0.6s ease-out; }
+  .sf-star.just-on { animation: sf-star-pop 0.45s ease-out; }
+}
+
+@keyframes sf-success {
+  0% { box-shadow: 0 0 0 rgba(255, 210, 74, 0); }
+  30% { box-shadow: 0 0 24px rgba(255, 210, 74, 0.5); }
+  100% { box-shadow: 0 0 0 rgba(255, 210, 74, 0); }
+}
+
+@keyframes sf-maintain {
+  0%, 100% { border-color: var(--line); }
+  50% { border-color: var(--muted); }
+}
+
+@keyframes sf-destroy {
+  0%, 100% { transform: translateX(0); box-shadow: 0 0 0 rgba(255, 122, 122, 0); }
+  15% { transform: translateX(-6px); box-shadow: 0 0 26px rgba(255, 122, 122, 0.55); }
+  35% { transform: translateX(6px); }
+  55% { transform: translateX(-4px); box-shadow: 0 0 18px rgba(255, 122, 122, 0.4); }
+  75% { transform: translateX(4px); }
+}
+
+@keyframes sf-star-pop {
+  0% { transform: scale(0.4); opacity: 0.3; }
+  60% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+
+.sf-star { display: inline-block; }
+
+label.inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink);
+}
+
 .sf-name {
   margin: 0 auto 16px;
   padding: 8px 20px;
