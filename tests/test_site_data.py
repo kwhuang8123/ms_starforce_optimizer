@@ -267,6 +267,7 @@ class SiteFilesTest(unittest.TestCase):
             "js/format.js",
             "js/prices-store.js",
             "js/ui-play.js",
+            "js/ui-best.js",
             "js/ui-data.js",
             "js/ui-prices.js",
             "js/reprice.js",

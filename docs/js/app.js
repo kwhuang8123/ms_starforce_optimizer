@@ -8,6 +8,7 @@
 import * as rules from "./rules.js";
 import * as store from "./prices-store.js";
 import { initPlay } from "./ui-play.js";
+import { initBest } from "./ui-best.js";
 import { initData } from "./ui-data.js";
 import { initPrices } from "./ui-prices.js";
 
@@ -61,6 +62,7 @@ async function boot() {
   initTabs();
   initPrices();
   initPlay(datasets);
+  initBest(datasets);
   initData(datasets);
   renderFooter(datasets);
 }
