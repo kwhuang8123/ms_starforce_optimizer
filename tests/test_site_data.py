@@ -252,6 +252,47 @@ class RepriceTest(unittest.TestCase):
                 self.assertNotEqual(case["rebuild_cost"], case["row"]["rebuild_cost"])
 
 
+class AssetManifestTest(unittest.TestCase):
+    """Artwork is optional, but a path that points nowhere is a typo, not a choice.
+
+    The page degrades to text when a file is missing, which is exactly what makes
+    a mistyped path easy to miss on screen - so it gets caught here instead.
+    """
+
+    def setUp(self) -> None:
+        self.root = DATA_DIR.parent
+        path = self.root / "assets" / "manifest.json"
+        if not path.is_file():
+            self.skipTest("no asset manifest committed")
+        self.manifest = json.loads(path.read_text(encoding="utf-8"))
+
+    def paths(self):
+        for name, path in (self.manifest.get("equipment") or {}).items():
+            yield name, path
+        if self.manifest.get("scroll"):
+            yield "scroll", self.manifest["scroll"]
+
+    def test_every_referenced_file_exists(self) -> None:
+        for name, path in self.paths():
+            with self.subTest(name=name, path=path):
+                self.assertTrue(
+                    (self.root / path).is_file(), f"{path} 不存在（{name}）"
+                )
+
+    def test_paths_are_relative_to_the_site_root(self) -> None:
+        # An absolute path would work locally and break under the project's
+        # /ms_starforce_optimizer/ prefix on GitHub Pages.
+        for name, path in self.paths():
+            with self.subTest(name=name):
+                self.assertFalse(path.startswith("/"), f"{path} 不可以用絕對路徑")
+
+    def test_named_equipment_is_in_the_catalogue(self) -> None:
+        known = {item["name"] for item in build_site_data.build_prices()["equipment"]}
+        for name in (self.manifest.get("equipment") or {}):
+            with self.subTest(name=name):
+                self.assertIn(name, known, f"{name} 不在 data/volatile.json 的目錄裡")
+
+
 class SiteFilesTest(unittest.TestCase):
     def test_the_pages_and_scripts_are_committed(self) -> None:
         root = DATA_DIR.parent
@@ -266,6 +307,7 @@ class SiteFilesTest(unittest.TestCase):
             "js/autorun.js",
             "js/format.js",
             "js/prices-store.js",
+            "js/assets.js",
             "js/ui-play.js",
             "js/ui-best.js",
             "js/ui-data.js",

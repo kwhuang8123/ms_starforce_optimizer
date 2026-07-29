@@ -11,6 +11,7 @@ import * as rules from "./rules.js";
 import * as store from "./prices-store.js";
 import { Session, RepairPolicy } from "./session.js";
 import { runWithinBudget, runToStar, autoPolicy, StopReason } from "./autorun.js";
+import { equipmentIcon, iconOrText, iconTag, scrollIcon } from "./assets.js";
 import { formatMeso, parseMeso, parseStar, toYi } from "./format.js";
 
 const ACTION_LABEL = {
@@ -41,10 +42,10 @@ const el = {};
 function bind() {
   for (const id of [
     "play-equipment", "play-level", "play-level-field", "play-start-star",
-    "play-new", "play-name", "play-star", "play-star-grid", "play-next-star",
-    "play-arrow", "play-rates", "play-cost", "play-total", "play-subtotal",
-    "play-flag",
-    "play-enhance", "play-scroll-star", "play-scroll", "play-repair-full",
+    "play-new", "play-name", "play-icon", "play-star", "play-star-grid",
+    "play-next-star", "play-arrow", "play-rates", "play-cost", "play-total",
+    "play-subtotal", "play-flag",
+    "play-enhance", "play-scrolls", "play-scroll-note", "play-repair-full",
     "play-repair-12", "play-error", "play-copy", "play-summary",
     "auto-repair", "auto-scroll", "auto-budget", "auto-budget-target",
     "auto-budget-run", "auto-budget-reset-run", "auto-star-target",
@@ -386,11 +387,62 @@ function renderNextAttempt() {
     panelRow("", `${fee.toLocaleString("en-US")} 楓幣`, "muted");
 }
 
+/**
+ * The scrolls that would actually raise this item, one button each.
+ *
+ * A click spends immediately - there is no confirm step - so the star and the
+ * price are on the face of every button. That is the only guard available when
+ * a 20 star scroll costs 330億 and one click buys it.
+ */
+function renderScrolls() {
+  const stars = session === null ? [] : session.availableScrolls();
+  if (stars.length === 0) {
+    el["play-scrolls"].innerHTML = "";
+    el["play-scroll-note"].hidden = true;
+    return;
+  }
+  el["play-scroll-note"].hidden = false;
+  const icon = scrollIcon();
+  el["play-scrolls"].innerHTML = stars
+    .map((star) => {
+      const price = rules.starScrollCost(star);
+      // Without artwork the star reads as plain text; with it, the number sits
+      // on the corner of the icon the way an item count does in game.
+      const art = icon
+        ? `<span class="sf-scroll-art">${iconTag(icon, "星捲", "sf-scroll-img")}` +
+          `<span class="sf-scroll-star">${star}</span></span>`
+        : `<span class="sf-scroll-star plain">${star} 星</span>`;
+      return `<button class="sf-scroll" data-star="${star}"
+        title="${star} 星星捲，點下去直接花費 ${formatMeso(price)}">
+        ${art}
+        <span class="sf-scroll-price">${formatMeso(price)}</span>
+      </button>`;
+    })
+    .join("");
+}
+
+/** The item's artwork, or its name when there is none for it. */
+function renderIcon() {
+  if (session === null) {
+    el["play-icon"].innerHTML = "";
+    return;
+  }
+  const name = session.equipmentName;
+  const label = name || `${session.level} 等`;
+  el["play-icon"].innerHTML = iconOrText(
+    equipmentIcon(name),
+    label,
+    "sf-icon-img",
+    `<span class="sf-icon-text">${label}</span>`
+  );
+}
+
 function render() {
   const live = session !== null;
   el["play-name"].textContent = live
     ? session.equipmentName || `未指定裝備（${session.level} 等）`
     : "—";
+  renderIcon();
   el["play-star"].textContent = live ? session.star : "-";
 
   const climbing = live && !session.destroyed && session.star < session.maxStar;
@@ -414,17 +466,7 @@ function render() {
   el["play-repair-full"].disabled = !live || !session.destroyed;
   el["play-repair-12"].disabled = !live || !session.destroyed;
 
-  const scrolls = live ? session.availableScrolls() : [];
-  const chosen = el["play-scroll-star"].value;
-  el["play-scroll-star"].innerHTML = scrolls
-    .map((star) => `<option value="${star}">${star} 星星捲　${formatMeso(rules.starScrollCost(star))}</option>`)
-    .join("");
-  if (scrolls.includes(Number(chosen))) {
-    el["play-scroll-star"].value = chosen;
-  }
-  el["play-scroll-star"].disabled = scrolls.length === 0;
-  el["play-scroll"].disabled = scrolls.length === 0;
-
+  renderScrolls();
   renderLog();
   renderBudgetHint();
 }
@@ -464,9 +506,13 @@ export function initPlay(loadedDatasets) {
   });
   el["play-new"].addEventListener("click", newSession);
   el["play-enhance"].addEventListener("click", () => act(() => session.enhance()));
-  el["play-scroll"].addEventListener("click", () =>
-    act(() => session.useScroll(Number(el["play-scroll-star"].value)))
-  );
+  // Delegated: the buttons are rebuilt on every render.
+  el["play-scrolls"].addEventListener("click", (event) => {
+    const button = event.target.closest("[data-star]");
+    if (button !== null) {
+      act(() => session.useScroll(Number(button.dataset.star)));
+    }
+  });
   el["play-repair-full"].addEventListener("click", () =>
     act(() => session.repair(RepairPolicy.FULL))
   );

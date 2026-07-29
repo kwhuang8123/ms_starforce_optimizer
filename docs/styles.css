@@ -142,6 +142,93 @@ hr { border: none; border-top: 1px solid var(--line); margin: 14px 0; }
 
 .starforce { max-width: 520px; }
 
+/* The item slot. Its dark interior is also what contains the supplied artwork:
+   the icons available today are screen captures with their own background baked
+   in, so a frame around them reads better than a bare image on the panel. */
+.sf-slot {
+  width: 104px;
+  height: 104px;
+  margin: 0 auto 14px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-inner);
+}
+
+.sf-slot-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border: 1px dashed var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.sf-icon-img {
+  max-width: 76px;
+  max-height: 76px;
+  filter: drop-shadow(0 0 5px rgba(255, 210, 74, 0.35));
+}
+
+.sf-icon-text {
+  padding: 0 6px;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* Star scrolls. A click spends immediately, so every button wears its price. */
+.sf-scrolls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.sf-scroll {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 8px;
+  min-width: 68px;
+}
+
+.sf-scroll-art {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  min-height: 34px;
+}
+
+.sf-scroll-img { width: 34px; height: 34px; }
+
+.sf-scroll-star {
+  position: absolute;
+  right: -2px;
+  bottom: -4px;
+  padding: 0 3px;
+  border-radius: 3px;
+  background: rgba(6, 19, 29, 0.85);
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.sf-scroll-star.plain {
+  position: static;
+  padding: 0;
+  background: none;
+  font-size: 14px;
+}
+
+.sf-scroll-price { color: var(--muted); font-size: 11px; }
+
 .sf-name {
   margin: 0 auto 16px;
   padding: 8px 20px;

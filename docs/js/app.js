@@ -7,6 +7,7 @@
 
 import * as rules from "./rules.js";
 import * as store from "./prices-store.js";
+import { loadManifest } from "./assets.js";
 import { initPlay } from "./ui-play.js";
 import { initBest } from "./ui-best.js";
 import { initData } from "./ui-data.js";
@@ -53,6 +54,10 @@ async function boot() {
     loadJson("data/simulations.json", { required: false }),
     loadJson("data/marginal.json", { required: false }),
   ]);
+
+  // Artwork is optional: loadManifest swallows its own failures and the page
+  // falls back to text, so this deliberately does not gate the boot.
+  await loadManifest();
 
   const prices = store.init(shippedPrices);
   rules.configure(staticData, prices);
