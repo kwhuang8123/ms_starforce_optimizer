@@ -11,6 +11,7 @@
   <h1>楓之谷 星力模擬器 <small>V272</small></h1>
   <nav class="tabs">
     <button class="tab active" data-tab="play">手動模擬</button>
+    <button class="tab" data-tab="best">懶人包</button>
     <button class="tab" data-tab="data">數據瀏覽</button>
     <button class="tab" data-tab="prices">物價設定</button>
   </nav>
@@ -114,6 +115,76 @@
         </table>
       </div>
       <p id="play-summary" class="muted">尚未有任何操作。</p>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------------------ -->
+  <section id="tab-best" class="panel" hidden>
+    <div class="card">
+      <h2>懶人包</h2>
+      <p class="muted">
+        每件裝備、每個目標星力，把資料集裡所有起手星與修復方式的組合濃縮成一列。
+        「最優解」是平均總成本最低的走法；「穩定解」是尾巴較短、花費比較不會失控的替代走法，
+        只在它真的划算時才會出現。
+      </p>
+      <p class="muted" id="best-meta"></p>
+      <p class="banner" id="best-reprice-note" hidden></p>
+    </div>
+
+    <div class="card">
+      <h2>從零開始（買星捲起手）</h2>
+      <div class="table-scroll">
+        <table id="best-scratch">
+          <thead>
+            <tr>
+              <th>裝備</th>
+              <th class="num">目標</th>
+              <th>最優解</th>
+              <th class="num">平均</th>
+              <th class="num">p50<small>快照價</small></th>
+              <th class="num">p95<small>快照價</small></th>
+              <th class="num">與次佳</th>
+              <th>穩定解<small>快照價</small></th>
+              <th class="num">平均多付</th>
+              <th class="num">p95 省</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="muted">
+        穩定解的挑選規則：該組 p95 最低者，且 p95 的改善幅度必須大於平均的增加幅度、
+        並且至少改善 1%（1% 是 50,000 次試驗下 p95 本身的抖動水準）。不符合就不提供。
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>已持有（22 星以上續衝）</h2>
+      <div class="row">
+        <label>目前星數
+          <select id="best-start"></select>
+        </label>
+      </div>
+      <div class="table-scroll">
+        <table id="best-marginal">
+          <thead>
+            <tr>
+              <th>裝備</th>
+              <th class="num">目標</th>
+              <th>最優解</th>
+              <th class="num">平均</th>
+              <th class="num">p50<small>快照價</small></th>
+              <th class="num">p95<small>快照價</small></th>
+              <th class="num">與次佳</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="muted">
+        這張表沒有穩定解欄位：每組只有兩種修復方式可選，而且實測 54 組裡
+        p95 最低的一律就是平均最低的那一個，欄位只會是重複的。
+      </p>
     </div>
   </section>
 
