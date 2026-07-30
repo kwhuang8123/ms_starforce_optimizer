@@ -1,7 +1,15 @@
 {
   "_comment": "圖檔對應表，只給前端用。裝備可在物價頁改名或新增，所以圖示不能寫死在程式裡；這裡沒列到的名稱會退回文字顯示。路徑相對於 docs/。",
   "equipment": {
-    "永恆上四": "assets/eternal_top_4.png"
+    "頂培": "assets/top.png",
+    "神秘": "assets/arcane.png",
+    "永恆上四": "assets/eternal_top_4.png",
+    "永恆下三": "assets/eternal_bot_3.png",
+    "口紅": "assets/lipstick.png",
+    "眼罩": "assets/eye.png",
+    "苦痛": "assets/pain.png",
+    "巨大": "assets/big.png",
+    "控制核心": "assets/control_core.png"
   },
   "scroll": "assets/scroll.jpeg"
 }

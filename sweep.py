@@ -29,7 +29,14 @@ from starforce.units import to_yi
 #: Target stars to sweep. Cost climbs steeply past 22: destruction runs at 18%
 #: from 23 stars up, and a 23+ star item only ever leaves a 22 star trace, so
 #: every destruction there costs the whole 22 -> target climb again.
-TARGET_STARS: tuple[int, ...] = (22, 23, 24)
+#:
+#: 24 stars is deliberately not swept from scratch. It is by far the dearest
+#: combination to measure - the 15 -> 24 climb repairing to 12 stars averages 972
+#: attempts per trial, against 40 for 15 -> 22 - and the question it answers is
+#: better answered by sweep_marginal.py: reach 22, then price 22 -> 24 on its
+#: own. Note that composing the two gives the right mean but not the right
+#: percentiles, because percentiles do not add.
+TARGET_STARS: tuple[int, ...] = (22, 23)
 
 #: Starting stars to compare. 10-14 are omitted: those scrolls all cost the
 #: same 0.2e and carry no destruction risk, so they barely differ from 15.
