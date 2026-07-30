@@ -198,9 +198,18 @@ def slim_result(entry: dict[str, Any], scroll_costs: dict[str, int]) -> dict[str
 
 def slim_dataset(payload: dict[str, Any]) -> dict[str, Any]:
     """Flatten a sweep dataset to one row per combination, rounded for size."""
-    scroll_costs = payload["meta"]["prices"]["star_scroll_cost"]
+    meta = dict(payload["meta"])
+    # The published copy advertises the targets it actually carries. A sweep that
+    # was configured for more than it finished - or, as with 24 stars from
+    # scratch, was configured for something since dropped - would otherwise have
+    # the site reporting a gap that nobody intends to fill.
+    completed = meta.get("targets_completed")
+    if completed:
+        meta["target_stars"] = list(completed)
+
+    scroll_costs = meta["prices"]["star_scroll_cost"]
     return {
-        "meta": payload["meta"],
+        "meta": meta,
         "results": [slim_result(entry, scroll_costs) for entry in payload["results"]],
     }
 

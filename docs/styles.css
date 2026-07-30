@@ -142,6 +142,137 @@ hr { border: none; border-top: 1px solid var(--line); margin: 14px 0; }
 
 .starforce { max-width: 520px; }
 
+/* The item slot. Its dark interior is also what contains the supplied artwork:
+   the icons available today are screen captures with their own background baked
+   in, so a frame around them reads better than a bare image on the panel. */
+.sf-slot {
+  width: 104px;
+  height: 104px;
+  margin: 0 auto 14px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-inner);
+}
+
+.sf-slot-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border: 1px dashed var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.sf-icon-img {
+  max-width: 76px;
+  max-height: 76px;
+  filter: drop-shadow(0 0 5px rgba(255, 210, 74, 0.35));
+}
+
+.sf-icon-text {
+  padding: 0 6px;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* Star scrolls. A click spends immediately, so every button wears its price. */
+.sf-scrolls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.sf-scroll {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 8px;
+  min-width: 68px;
+}
+
+.sf-scroll-art {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  min-height: 34px;
+}
+
+.sf-scroll-img { width: 34px; height: 34px; }
+
+.sf-scroll-star {
+  position: absolute;
+  right: -2px;
+  bottom: -4px;
+  padding: 0 3px;
+  border-radius: 3px;
+  background: rgba(6, 19, 29, 0.85);
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.sf-scroll-star.plain {
+  position: static;
+  padding: 0;
+  background: none;
+  font-size: 14px;
+}
+
+.sf-scroll-price { color: var(--muted); font-size: 11px; }
+
+/* Motion. Every animation lives behind this query, so a system that asks for
+   reduced motion simply never sees one - the JS check covers playback, this
+   covers the rest without needing a second switch. */
+@media (prefers-reduced-motion: no-preference) {
+  .starforce.flash-success { animation: sf-success 0.5s ease-out; }
+  .starforce.flash-maintain { animation: sf-maintain 0.3s ease-out; }
+  .starforce.flash-destroy { animation: sf-destroy 0.6s ease-out; }
+  .sf-star.just-on { animation: sf-star-pop 0.45s ease-out; }
+}
+
+@keyframes sf-success {
+  0% { box-shadow: 0 0 0 rgba(255, 210, 74, 0); }
+  30% { box-shadow: 0 0 24px rgba(255, 210, 74, 0.5); }
+  100% { box-shadow: 0 0 0 rgba(255, 210, 74, 0); }
+}
+
+@keyframes sf-maintain {
+  0%, 100% { border-color: var(--line); }
+  50% { border-color: var(--muted); }
+}
+
+@keyframes sf-destroy {
+  0%, 100% { transform: translateX(0); box-shadow: 0 0 0 rgba(255, 122, 122, 0); }
+  15% { transform: translateX(-6px); box-shadow: 0 0 26px rgba(255, 122, 122, 0.55); }
+  35% { transform: translateX(6px); }
+  55% { transform: translateX(-4px); box-shadow: 0 0 18px rgba(255, 122, 122, 0.4); }
+  75% { transform: translateX(4px); }
+}
+
+@keyframes sf-star-pop {
+  0% { transform: scale(0.4); opacity: 0.3; }
+  60% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+
+.sf-star { display: inline-block; }
+
+label.inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink);
+}
+
 .sf-name {
   margin: 0 auto 16px;
   padding: 8px 20px;

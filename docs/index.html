@@ -23,6 +23,7 @@
   <!-- ------------------------------------------------------------------ -->
   <section id="tab-play" class="panel">
     <div class="card starforce">
+      <div class="sf-slot"><div class="sf-slot-inner" id="play-icon"></div></div>
       <div class="sf-name" id="play-name">—</div>
 
       <div class="sf-stars" id="play-star-grid"></div>
@@ -59,11 +60,9 @@
 
       <div class="sf-actions">
         <button id="play-enhance" class="primary big">強化</button>
+        <div class="sf-scrolls" id="play-scrolls"></div>
+        <p class="muted" id="play-scroll-note">星捲點下去直接使用，沒有二次確認。</p>
         <div class="row">
-          <span class="group">
-            <select id="play-scroll-star"></select>
-            <button id="play-scroll">使用星捲</button>
-          </span>
           <button id="play-repair-full">完整修復</button>
           <button id="play-repair-12">修復至 12 星</button>
         </div>
@@ -83,6 +82,11 @@
         <label>自動補星捲
           <select id="auto-scroll"></select>
         </label>
+        <label class="inline">
+          <input type="checkbox" id="play-animate" checked>
+          強化動畫
+        </label>
+        <button id="play-skip" hidden>跳過</button>
       </div>
       <hr>
       <div class="row">

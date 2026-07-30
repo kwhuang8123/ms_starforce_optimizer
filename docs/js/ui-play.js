@@ -11,6 +11,7 @@ import * as rules from "./rules.js";
 import * as store from "./prices-store.js";
 import { Session, RepairPolicy } from "./session.js";
 import { runWithinBudget, runToStar, autoPolicy, StopReason } from "./autorun.js";
+import { equipmentIcon, iconOrText, iconTag, scrollIcon } from "./assets.js";
 import { formatMeso, parseMeso, parseStar, toYi } from "./format.js";
 
 const ACTION_LABEL = {
@@ -36,16 +37,45 @@ const DEFAULT_EQUIPMENT = "頂培";
 let datasets = null;
 let session = null;
 
+/**
+ * A finished automatic run being played back, or null.
+ *
+ * The engine runs to completion in one go, so by the time there is anything to
+ * show the session already holds the final state. Playback therefore reads the
+ * panel out of the log entry at `index` rather than out of the session - every
+ * figure it needs is on the entry. Nothing about the engine changes for this.
+ *
+ * While it is running every action is locked: letting the session move while
+ * the display is deliberately behind is how the two get out of step.
+ */
+let replay = null;
+
+/**
+ * A star gained by hand, waiting for its pop. Playback carries the same thing
+ * on the log entry it is showing; a live action has no entry to hang it on, and
+ * it has to be cleared after one render or every later repaint - a price edit,
+ * a tab switch - would replay the animation.
+ */
+let pendingPop = null;
+
+const ANIMATION_KEY = "ms-starforce/animate";
+
+//: Playback aims to finish inside this, however many entries there are.
+const REPLAY_BUDGET_MS = 6000;
+const REPLAY_MIN_STEP_MS = 40;
+const REPLAY_MAX_STEP_MS = 400;
+
 const el = {};
 
 function bind() {
   for (const id of [
     "play-equipment", "play-level", "play-level-field", "play-start-star",
-    "play-new", "play-name", "play-star", "play-star-grid", "play-next-star",
-    "play-arrow", "play-rates", "play-cost", "play-total", "play-subtotal",
-    "play-flag",
-    "play-enhance", "play-scroll-star", "play-scroll", "play-repair-full",
+    "play-new", "play-name", "play-icon", "play-star", "play-star-grid",
+    "play-next-star", "play-arrow", "play-rates", "play-cost", "play-total",
+    "play-subtotal", "play-flag",
+    "play-enhance", "play-scrolls", "play-scroll-note", "play-repair-full",
     "play-repair-12", "play-error", "play-copy", "play-summary",
+    "play-animate", "play-skip",
     "auto-repair", "auto-scroll", "auto-budget", "auto-budget-target",
     "auto-budget-run", "auto-budget-reset-run", "auto-star-target",
     "auto-star-budget", "auto-star-run", "auto-star-reset-run",
@@ -116,6 +146,7 @@ function showError(message) {
 }
 
 function newSession() {
+  stopReplay(false);
   showError(null);
   el["auto-result"].hidden = true;
   try {
@@ -134,14 +165,85 @@ function newSession() {
   render();
 }
 
+/**
+ * What the panel should be showing: the live session, or the frame of the
+ * playback currently on screen.
+ *
+ * Everything comes off a single log entry. An item is destroyed only in the
+ * instant after a destruction, and the entry that repairs it carries no
+ * outcome, so `outcome === "destroy"` is the whole test.
+ */
+function view() {
+  if (session === null) {
+    return null;
+  }
+  if (replay === null) {
+    return {
+      star: session.star,
+      destroyed: session.destroyed,
+      total: session.totalCost,
+      logCount: session.log.length,
+      live: true,
+      gained: pendingPop,
+    };
+  }
+  const entry = replay.entries[replay.index];
+  return {
+    star: entry.star_after,
+    destroyed: entry.outcome === "destroy",
+    total: entry.total_cost_after,
+    logCount: replay.firstEntry + replay.index + 1,
+    live: false,
+    entry,
+  };
+}
+
+/** True unless the operator or the system has asked for no motion. */
+function animationsOn() {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    return false;
+  }
+  return el["play-animate"].checked;
+}
+
+/** Replay the outcome of a single hand-driven action. Never blocks. */
+function flashOutcome(outcome) {
+  if (outcome === null || !animationsOn()) {
+    return;
+  }
+  const card = document.querySelector(".starforce");
+  const className = `flash-${outcome}`;
+  card.classList.remove("flash-success", "flash-maintain", "flash-destroy");
+  // Force a reflow so re-clicking the same outcome restarts the animation.
+  void card.offsetWidth;
+  card.classList.add(className);
+  window.setTimeout(() => card.classList.remove(className), 700);
+}
+
 function act(fn) {
   showError(null);
+  const before = session === null ? 0 : session.log.length;
   try {
     fn();
   } catch (error) {
     showError(error.message);
   }
+
+  // Only a hand-driven action lands exactly one entry; an automatic run adds
+  // many and animates them itself.
+  const single =
+    session !== null && session.log.length === before + 1 && replay === null;
+  const entry = single ? session.log[session.log.length - 1] : null;
+  if (entry !== null && entry.outcome === "success" && animationsOn()) {
+    pendingPop = entry.star_after;
+  }
+
   render();
+  pendingPop = null;
+
+  if (entry !== null) {
+    flashOutcome(entry.outcome);
+  }
 }
 
 function currentPolicy() {
@@ -183,12 +285,69 @@ function reportAuto(result) {
   }
 }
 
+/**
+ * Play a finished run back one entry at a time.
+ *
+ * The step is scaled so the whole thing lands inside REPLAY_BUDGET_MS: a ten
+ * entry run plays slowly, a hundred and forty entry run fast-forwards, and
+ * neither leaves the operator waiting. With animation off, or nothing to show,
+ * it reports straight away exactly as before.
+ */
+function startReplay(result) {
+  stopReplay(false);
+  if (!animationsOn() || result.entries.length === 0) {
+    reportAuto(result);
+    render();
+    return;
+  }
+
+  replay = {
+    entries: result.entries,
+    // entries is the tail of the log, so this is where the run began.
+    firstEntry: session.log.length - result.entries.length,
+    index: 0,
+    result,
+    timer: null,
+  };
+
+  const step = Math.min(
+    REPLAY_MAX_STEP_MS,
+    Math.max(REPLAY_MIN_STEP_MS, Math.round(REPLAY_BUDGET_MS / result.entries.length))
+  );
+  el["play-skip"].hidden = false;
+  render();
+
+  replay.timer = window.setInterval(() => {
+    replay.index += 1;
+    if (replay.index >= replay.entries.length) {
+      stopReplay(true);
+      return;
+    }
+    render();
+  }, step);
+}
+
+/** End playback, whether it ran out or was skipped. Always clears the timer. */
+function stopReplay(report) {
+  if (replay === null) {
+    return;
+  }
+  window.clearInterval(replay.timer);
+  const { result } = replay;
+  replay = null;
+  el["play-skip"].hidden = true;
+  if (report) {
+    reportAuto(result);
+  }
+  render();
+}
+
 function runBudget() {
   act(() => {
     if (session === null) throw new Error("請先建立裝備");
     const budget = parseMeso(el["auto-budget"].value);
     const target = parseStar(el["auto-budget-target"].value);
-    reportAuto(runWithinBudget(session, target, budget, currentPolicy()));
+    startReplay(runWithinBudget(session, target, budget, currentPolicy()));
   });
 }
 
@@ -200,7 +359,7 @@ function runTarget() {
     if (raw === "") {
       throw new Error("請填保險絲預算：沒有上限的話，跑不完的組合會讓瀏覽器停不下來");
     }
-    reportAuto(runToStar(session, target, parseMeso(raw), currentPolicy()));
+    startReplay(runToStar(session, target, parseMeso(raw), currentPolicy()));
   });
 }
 
@@ -292,8 +451,10 @@ function applyBudgetSuggestion() {
   }
 }
 
-function renderLog() {
-  const rows = session === null ? [] : session.log;
+function renderLog(state) {
+  // During playback the table grows a row at a time, so it stays in step with
+  // the panel instead of showing the ending before the panel gets there.
+  const rows = state === null ? [] : session.log.slice(0, state.logCount);
   el.logBody.innerHTML = rows
     .map((entry) => {
       const outcome = entry.outcome === null ? "" : OUTCOME_LABEL[entry.outcome];
@@ -313,6 +474,13 @@ function renderLog() {
     el["play-summary"].textContent = "尚未有任何操作。";
     return;
   }
+  if (!state.live) {
+    // The session totals are already final, so quoting them here would run
+    // ahead of the rows on screen. Show progress instead.
+    el["play-summary"].textContent =
+      `重播中　${replay.index + 1} / ${replay.entries.length} 筆`;
+    return;
+  }
   const t = session.totals;
   el["play-summary"].textContent =
     `楓幣 ${formatMeso(t.total_meso)}　裝備成本 ${formatMeso(t.equipment_cost)}（${t.equipment_used} 件）` +
@@ -329,16 +497,28 @@ function panelRow(label, value, className = "") {
  * The star grid, five to a cluster and three clusters to a row, the way the
  * game lays it out. Slots run to the level's cap, so a 130 item shows fewer.
  */
-function renderStarGrid() {
-  if (session === null) {
+function renderStarGrid(state) {
+  if (state === null) {
     el["play-star-grid"].innerHTML = "";
     return;
   }
+  // The star just gained pops; during playback that is what carries the sense
+  // of progress, since nothing else on the panel moves.
+  const gained =
+    state.entry !== undefined
+      ? state.entry.outcome === "success"
+        ? state.entry.star_after
+        : null
+      : state.gained;
+
   const clusters = [];
   for (let base = 0; base < session.maxStar; base += 5) {
     const stars = [];
     for (let star = base + 1; star <= Math.min(base + 5, session.maxStar); star += 1) {
-      stars.push(`<span class="sf-star${star <= session.star ? " on" : ""}">★</span>`);
+      const classes =
+        (star <= state.star ? "sf-star on" : "sf-star") +
+        (star === gained ? " just-on" : "");
+      stars.push(`<span class="${classes}">★</span>`);
     }
     clusters.push(`<span class="sf-cluster">${stars.join("")}</span>`);
   }
@@ -352,80 +532,136 @@ function renderStarGrid() {
  * including any event bonus, so the two will not always agree - hence the note
  * in the markup rather than a silent difference.
  */
-function renderNextAttempt() {
+function renderNextAttempt(state) {
   const rates = el["play-rates"];
   const cost = el["play-cost"];
 
-  if (session === null) {
+  if (state === null) {
     rates.innerHTML = panelRow("—", "—");
     cost.innerHTML = panelRow("—", "—");
     return;
   }
-  if (session.destroyed) {
+  if (state.destroyed) {
     rates.innerHTML = panelRow("裝備已破壞", "先修復才有下一次強化");
     cost.innerHTML = panelRow("修復費用", "見下方修復按鈕");
     return;
   }
-  if (session.star >= session.maxStar) {
+  if (state.star >= session.maxStar) {
     rates.innerHTML = panelRow("已達等級上限", `${session.maxStar} 星`);
     cost.innerHTML = panelRow("—", "—");
     return;
   }
 
   const basis = rules.rateBasis();
-  const [success, destroy, maintain] = rules.enhanceRates(session.star);
+  const [success, destroy, maintain] = rules.enhanceRates(state.star);
   const percent = (value) => `${((value / basis) * 100).toFixed(2)}%`;
   rates.innerHTML =
     panelRow("成功", percent(success), "ok-text") +
     panelRow("失敗（維持星數）", percent(maintain)) +
     panelRow("破壞", percent(destroy), "bad-text");
 
-  const fee = rules.enhanceCost(session.level, session.star);
+  const fee = rules.enhanceCost(session.level, state.star);
   cost.innerHTML =
     panelRow("本次強化", formatMeso(fee), "gold") +
     panelRow("", `${fee.toLocaleString("en-US")} 楓幣`, "muted");
 }
 
+/**
+ * The scrolls that would actually raise this item, one button each.
+ *
+ * A click spends immediately - there is no confirm step - so the star and the
+ * price are on the face of every button. That is the only guard available when
+ * a 20 star scroll costs 330億 and one click buys it.
+ */
+function renderScrolls(state) {
+  // No buttons during playback: the session has already moved on, so anything
+  // offered here would be acting on a state the screen is not showing.
+  const stars = state === null || !state.live ? [] : session.availableScrolls();
+  if (stars.length === 0) {
+    el["play-scrolls"].innerHTML = "";
+    el["play-scroll-note"].hidden = true;
+    return;
+  }
+  el["play-scroll-note"].hidden = false;
+  const icon = scrollIcon();
+  el["play-scrolls"].innerHTML = stars
+    .map((star) => {
+      const price = rules.starScrollCost(star);
+      // Without artwork the star reads as plain text; with it, the number sits
+      // on the corner of the icon the way an item count does in game.
+      const art = icon
+        ? `<span class="sf-scroll-art">${iconTag(icon, "星捲", "sf-scroll-img")}` +
+          `<span class="sf-scroll-star">${star}</span></span>`
+        : `<span class="sf-scroll-star plain">${star} 星</span>`;
+      return `<button class="sf-scroll" data-star="${star}"
+        title="${star} 星星捲，點下去直接花費 ${formatMeso(price)}">
+        ${art}
+        <span class="sf-scroll-price">${formatMeso(price)}</span>
+      </button>`;
+    })
+    .join("");
+}
+
+/** The item's artwork, or its name when there is none for it. */
+function renderIcon() {
+  if (session === null) {
+    el["play-icon"].innerHTML = "";
+    return;
+  }
+  const name = session.equipmentName;
+  const label = name || `${session.level} 等`;
+  el["play-icon"].innerHTML = iconOrText(
+    equipmentIcon(name),
+    label,
+    "sf-icon-img",
+    `<span class="sf-icon-text">${label}</span>`
+  );
+}
+
 function render() {
-  const live = session !== null;
-  el["play-name"].textContent = live
+  const state = view();
+  const has = state !== null;
+  const playing = replay !== null;
+
+  el["play-name"].textContent = has
     ? session.equipmentName || `未指定裝備（${session.level} 等）`
     : "—";
-  el["play-star"].textContent = live ? session.star : "-";
+  renderIcon();
+  el["play-star"].textContent = has ? state.star : "-";
 
-  const climbing = live && !session.destroyed && session.star < session.maxStar;
-  el["play-next-star"].textContent = climbing ? session.star + 1 : "-";
+  const climbing = has && !state.destroyed && state.star < session.maxStar;
+  el["play-next-star"].textContent = climbing ? state.star + 1 : "-";
   el["play-arrow"].style.visibility = climbing ? "visible" : "hidden";
 
-  renderStarGrid();
-  renderNextAttempt();
+  renderStarGrid(state);
+  renderNextAttempt(state);
 
-  el["play-total"].textContent = live ? formatMeso(session.totalCost) : "0.00億";
-  el["play-subtotal"].textContent = live
+  el["play-total"].textContent = has ? formatMeso(state.total) : "0.00億";
+  el["play-subtotal"].textContent = has
     ? `等級 ${session.level}・上限 ${session.maxStar} 星`
     : "";
 
-  el["play-flag"].hidden = !(live && session.destroyed);
-  if (live && session.destroyed) {
-    el["play-flag"].textContent = `裝備已破壞，留下 ${session.star} 星痕跡 - 先修復才能繼續。`;
+  el["play-flag"].hidden = !(has && state.destroyed);
+  if (has && state.destroyed) {
+    el["play-flag"].textContent = `裝備已破壞，留下 ${state.star} 星痕跡 - 先修復才能繼續。`;
   }
 
-  el["play-enhance"].disabled = !live || !session.canEnhance;
-  el["play-repair-full"].disabled = !live || !session.destroyed;
-  el["play-repair-12"].disabled = !live || !session.destroyed;
-
-  const scrolls = live ? session.availableScrolls() : [];
-  const chosen = el["play-scroll-star"].value;
-  el["play-scroll-star"].innerHTML = scrolls
-    .map((star) => `<option value="${star}">${star} 星星捲　${formatMeso(rules.starScrollCost(star))}</option>`)
-    .join("");
-  if (scrolls.includes(Number(chosen))) {
-    el["play-scroll-star"].value = chosen;
+  // Nothing may act while playback is behind the session, or the two diverge.
+  el["play-enhance"].disabled = playing || !has || !session.canEnhance;
+  el["play-repair-full"].disabled = playing || !has || !session.destroyed;
+  el["play-repair-12"].disabled = playing || !has || !session.destroyed;
+  for (const id of [
+    "play-new",
+    "auto-budget-run",
+    "auto-star-run",
+    "auto-budget-reset-run",
+    "auto-star-reset-run",
+  ]) {
+    el[id].disabled = playing;
   }
-  el["play-scroll-star"].disabled = scrolls.length === 0;
-  el["play-scroll"].disabled = scrolls.length === 0;
 
-  renderLog();
+  renderScrolls(state);
+  renderLog(state);
   renderBudgetHint();
 }
 
@@ -464,9 +700,13 @@ export function initPlay(loadedDatasets) {
   });
   el["play-new"].addEventListener("click", newSession);
   el["play-enhance"].addEventListener("click", () => act(() => session.enhance()));
-  el["play-scroll"].addEventListener("click", () =>
-    act(() => session.useScroll(Number(el["play-scroll-star"].value)))
-  );
+  // Delegated: the buttons are rebuilt on every render.
+  el["play-scrolls"].addEventListener("click", (event) => {
+    const button = event.target.closest("[data-star]");
+    if (button !== null) {
+      act(() => session.useScroll(Number(button.dataset.star)));
+    }
+  });
   el["play-repair-full"].addEventListener("click", () =>
     act(() => session.repair(RepairPolicy.FULL))
   );
@@ -479,6 +719,19 @@ export function initPlay(loadedDatasets) {
   el["auto-star-reset-run"].addEventListener("click", () => resetAndRun(runTarget));
   el["auto-star-target"].addEventListener("change", applyBudgetSuggestion);
   el["play-copy"].addEventListener("click", copyLog);
+  el["play-skip"].addEventListener("click", () => stopReplay(true));
+
+  el["play-animate"].checked =
+    window.localStorage.getItem(ANIMATION_KEY) !== "off";
+  el["play-animate"].addEventListener("change", () => {
+    window.localStorage.setItem(
+      ANIMATION_KEY,
+      el["play-animate"].checked ? "on" : "off"
+    );
+    if (!el["play-animate"].checked) {
+      stopReplay(true);
+    }
+  });
 
   store.onChange(() => {
     fillSetup();
