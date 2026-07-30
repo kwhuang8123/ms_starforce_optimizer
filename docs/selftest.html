@@ -32,6 +32,7 @@ import * as rules from "./js/rules.js";
 import { Session, scriptedRng, RepairPolicy } from "./js/session.js";
 import { runWithinBudget, autoPolicy } from "./js/autorun.js";
 import { repricedMean } from "./js/reprice.js";
+import { optimalPolicy, expectedTotal, sameEntries, describe } from "./js/policy.js";
 
 /** Deep compare, returning the path of the first difference or null. */
 function diff(expected, actual, path = "") {
@@ -145,6 +146,48 @@ async function run() {
     body.appendChild(row);
   }
 
+  // The decision layer: the port must pick the same scrolls as the Python
+  // solver and price them the same. This one never simulates - both sides solve
+  // the same recursion - so any difference is a porting error, not variance.
+  for (const testCase of parity.policy) {
+    for (const label of ["optimal", "safe"]) {
+      const row = document.createElement("tr");
+      const expected = testCase.expected[label];
+      let verdict;
+      try {
+        const options = {
+          level: testCase.level,
+          startStar: testCase.start_star,
+          targetStar: testCase.target_star,
+          equipmentPrice: testCase.equipment_price,
+          repairPolicy: testCase.repair_policy,
+        };
+        const chosen = optimalPolicy(options, label === "safe");
+        const total = Math.round(expectedTotal(chosen, options));
+        if (!sameEntries(chosen.entries, expected.entries)) {
+          verdict =
+            `<span class="bad">不符</span> 期待 ` +
+            `${describe({ entries: expected.entries })}，得到 ${describe(chosen)}`;
+        } else if (Math.abs(total - expected.expected_total) > 1) {
+          verdict =
+            `<span class="bad">不符</span> 期待 ${expected.expected_total}，得到 ${total}`;
+        } else {
+          verdict = "<span class=\"ok\">通過</span>";
+          passed += 1;
+        }
+      } catch (error) {
+        verdict = `<span class="bad">例外</span> ${error.message}`;
+      }
+      row.innerHTML = `
+        <td>${testCase.name}</td>
+        <td>policy ${label}</td>
+        <td class="num">-</td>
+        <td class="num">${expected.entries.length}</td>
+        <td>${verdict}</td>`;
+      body.appendChild(row);
+    }
+  }
+
   // Re-pricing: each case holds a row measured at one set of prices and the
   // mean a real simulation produced at another. Multiplying the row's parts out
   // must land on that figure exactly, or the page is showing invented numbers.
@@ -175,7 +218,8 @@ async function run() {
   }
 
   const summary = document.getElementById("summary");
-  const total = parity.cases.length + parity.reprice.length;
+  const total =
+    parity.cases.length + parity.policy.length * 2 + parity.reprice.length;
   summary.textContent = `${passed} / ${total} 案例通過（測資產生於 ${parity.generated_at}）`;
   summary.className = passed === total ? "summary ok" : "summary bad";
 }

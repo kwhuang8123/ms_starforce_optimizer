@@ -24,9 +24,12 @@ from __future__ import annotations
 import random
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from . import rules, static_data, volatile_data
+
+if TYPE_CHECKING:
+    from .policy import BreakthroughPolicy
 
 
 class RepairPolicy(Enum):
@@ -68,6 +71,11 @@ class RunConfig:
     rebuild_cost: int = 0
     equipment_name: str | None = None
     equipment_price: int = 0
+    #: Which stars buy a breakthrough scroll instead of enhancing. None enhances
+    #: throughout, which is what every run did before scrolls existed. Built by
+    #: starforce.policy, which is imported only for typing: it depends on this
+    #: module, so importing it here would close a cycle.
+    breakthrough_policy: "BreakthroughPolicy | None" = None
 
     def __post_init__(self) -> None:
         rules.check_level(self.level)
@@ -94,6 +102,23 @@ class RunConfig:
             )
 
         self._check_rebuild_cost()
+        self._check_breakthrough_policy()
+
+    def _check_breakthrough_policy(self) -> None:
+        """A policy must only name stars this run actually climbs through."""
+        if self.breakthrough_policy is None:
+            return
+        outside = [
+            star
+            for star in self.breakthrough_policy.stars
+            if not self.start_star <= star < self.target_star
+        ]
+        if outside:
+            raise ValueError(
+                f"breakthrough policy {self.breakthrough_policy.name!r} names "
+                f"scrolls for stars {outside}, which a {self.start_star} -> "
+                f"{self.target_star} run never enhances from"
+            )
 
     def _check_rebuild_cost(self) -> None:
         """``rebuild_cost`` applies to exactly one combination, and is required there."""
@@ -131,6 +156,7 @@ class RunConfig:
         repair_policy: RepairPolicy = RepairPolicy.FULL,
         start_mode: StartMode = StartMode.SCROLL,
         rebuild_cost: int = 0,
+        breakthrough_policy: "BreakthroughPolicy | None" = None,
     ) -> RunConfig:
         """Build a config from a catalogue name, alias, or digit variant."""
         item = volatile_data.lookup(name)
@@ -143,6 +169,7 @@ class RunConfig:
             rebuild_cost=rebuild_cost,
             equipment_name=item.name,
             equipment_price=item.price,
+            breakthrough_policy=breakthrough_policy,
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -155,6 +182,11 @@ class RunConfig:
             "rebuild_cost": self.rebuild_cost,
             "equipment_name": self.equipment_name,
             "equipment_price": self.equipment_price,
+            "breakthrough_policy": (
+                None
+                if self.breakthrough_policy is None
+                else self.breakthrough_policy.to_dict()
+            ),
         }
 
 
@@ -172,13 +204,15 @@ class RunResult:
     rebuild_cost: int = 0
     #: Star scrolls consumed, including the one that starts a SCROLL run.
     scrolls_used: int = 0
-    #: Breakthrough scrolls consumed, win or lose. Only a hand-driven session
-    #: ever moves this: no simulated strategy buys one.
+    #: Breakthrough scrolls consumed, win or lose.
     breakthroughs_used: int = 0
     attempts: int = 0
     destroys: int = 0
     #: Attempts made from each star, keyed by the star attempted from.
     attempts_by_star: dict[int, int] = field(default_factory=dict)
+    #: Breakthrough scrolls consumed, keyed by scroll id. Each has its own
+    #: price, so re-pricing a run needs them counted apart rather than totalled.
+    breakthroughs_by_scroll: dict[str, int] = field(default_factory=dict)
 
     @property
     def total_cost(self) -> int:
@@ -197,7 +231,14 @@ def simulate_once(config: RunConfig, rng: random.Random) -> RunResult:
         result.total_meso += scroll_cost
         result.scrolls_used += 1
 
+    policy = config.breakthrough_policy
+
     while star < config.target_star:
+        scroll = None if policy is None else policy.scroll_at(star)
+        if scroll is not None:
+            star = _breakthrough(scroll, star, result, rng)
+            continue
+
         result.total_meso += rules.enhance_cost(config.level, star)
         result.attempts += 1
         result.attempts_by_star[star] = result.attempts_by_star.get(star, 0) + 1
@@ -213,6 +254,27 @@ def simulate_once(config: RunConfig, rng: random.Random) -> RunResult:
         # Otherwise the attempt maintained: star is unchanged.
 
     return result
+
+
+def _breakthrough(
+    scroll: tuple[int, int], star: int, result: RunResult, rng: random.Random
+) -> int:
+    """Buy one breakthrough scroll and take its shot, returning the new star.
+
+    Paid for whether it lands or not, and a miss changes nothing else - there is
+    no destruction on this path, so no repair can follow it. Deliberately not
+    counted as an attempt: ``attempts`` and ``attempts_by_star`` describe
+    enhancement, which is what the published rate tables are about.
+    """
+    cap_star, success = scroll
+    result.total_meso += rules.breakthrough_cost(cap_star, success)
+    result.breakthroughs_used += 1
+    key = static_data.breakthrough_id(cap_star, success)
+    result.breakthroughs_by_scroll[key] = result.breakthroughs_by_scroll.get(key, 0) + 1
+
+    if rng.randrange(static_data.RATE_BASIS) < success:
+        return star + 1
+    return star
 
 
 def _repair(

@@ -18,7 +18,8 @@ from pathlib import Path
 from typing import Sequence
 
 from starforce import RepairPolicy, RunConfig, rules, simulate, volatile_data
-from starforce.static_data import STAR_SCROLL_STARS
+from starforce.policy import NONE, sweep_policies
+from starforce.static_data import BREAKTHROUGH_SCROLLS, STAR_SCROLL_STARS, breakthrough_id
 from starforce.stats import SimulationSummary
 from starforce.units import to_yi
 
@@ -45,6 +46,19 @@ START_STARS: tuple[int, ...] = (15, 16, 17, 18, 19, 20)
 #: Repair policies to compare.
 POLICIES: tuple[RepairPolicy, ...] = (RepairPolicy.FULL, RepairPolicy.TO_12)
 
+#: Targets whose breakthrough scroll policies are explored.
+#:
+#: Every other target is swept enhance-only, exactly as before. The choice space
+#: is far too large to sweep - a 15 to 22 climb has seven decision points - so
+#: starforce.policy solves for the cheapest policy instead and names the two or
+#: three worth measuring. What it cannot solve is percentiles, which is why they
+#: still get simulated here.
+#:
+#: 23 stars is deliberately left out for now: bringing it in is a separate piece
+#: of work, and mixing a target that considers scrolls with one that does not is
+#: something the front end has to label rather than hide.
+BREAKTHROUGH_TARGETS: tuple[int, ...] = (22,)
+
 #: Trials per combination.
 TRIALS = 50_000
 
@@ -70,15 +84,38 @@ def build_configs(
     target_stars: Sequence[int],
     start_stars: Sequence[int],
     policies: Sequence[RepairPolicy],
+    breakthrough_targets: Sequence[int] = BREAKTHROUGH_TARGETS,
 ) -> list[RunConfig]:
-    """Every combination, ordered so each target star finishes before the next."""
-    return [
-        RunConfig.for_equipment(name, start_star, target_star, repair_policy=policy)
-        for target_star in target_stars
-        for name in volatile_data.known_names()
-        for start_star in start_stars
-        for policy in policies
-    ]
+    """Every combination, ordered so each target star finishes before the next.
+
+    A target in ``breakthrough_targets`` is measured once per breakthrough
+    policy worth comparing; every other target is measured enhance-only. The
+    policies come from starforce.policy, which derives them rather than
+    enumerating - see BREAKTHROUGH_TARGETS.
+    """
+    configs: list[RunConfig] = []
+    for target_star in target_stars:
+        for name in volatile_data.known_names():
+            item = volatile_data.lookup(name)
+            for start_star in start_stars:
+                for policy in policies:
+                    if target_star in breakthrough_targets:
+                        chosen = sweep_policies(
+                            item.level, start_star, target_star, item.price, policy
+                        )
+                    else:
+                        chosen = [NONE]
+                    configs.extend(
+                        RunConfig.for_equipment(
+                            name,
+                            start_star,
+                            target_star,
+                            repair_policy=policy,
+                            breakthrough_policy=breakthrough,
+                        )
+                        for breakthrough in chosen
+                    )
+    return configs
 
 
 def build_meta(
@@ -87,6 +124,7 @@ def build_meta(
     trials: int,
     seed: int | None,
     percentiles: Sequence[int],
+    breakthrough_targets: Sequence[int] = BREAKTHROUGH_TARGETS,
 ) -> dict:
     """Record what the dataset was generated from, prices included.
 
@@ -100,11 +138,19 @@ def build_meta(
         "trials": trials,
         "seed": seed,
         "percentiles": list(percentiles),
+        # Which targets had their breakthrough policies explored. Any target not
+        # listed was swept enhance-only, and the front end says so rather than
+        # presenting the two on the same footing.
+        "breakthrough_targets": list(breakthrough_targets),
         "combinations": len(summaries),
         "prices": {
             "source": str(volatile_data.SOURCE_PATH),
             "star_scroll_cost": {
                 str(star): rules.star_scroll_cost(star) for star in STAR_SCROLL_STARS
+            },
+            "breakthrough_scroll_cost": {
+                breakthrough_id(cap, success): rules.breakthrough_cost(cap, success)
+                for cap, success in BREAKTHROUGH_SCROLLS
             },
             "equipment": [
                 {"name": item.name, "level": item.level, "price": item.price}
@@ -136,6 +182,8 @@ def write_csv(
         "target_star",
         "start_mode",
         "policy",
+        "breakthrough",
+        "breakthrough_scrolls",
         "rebuild_cost_e",
         "trials",
         "total_cost_mean_e",
@@ -145,6 +193,7 @@ def write_csv(
         "rebuild_cost_mean_e",
         "equipment_qty_mean",
         "scrolls_mean",
+        "breakthroughs_mean",
         "destroys_mean",
         "attempts_mean",
     ]
@@ -155,6 +204,7 @@ def write_csv(
         writer.writerow(header)
         for summary in summaries:
             config = summary.config
+            breakthrough = config.breakthrough_policy
             writer.writerow(
                 [
                     config.equipment_name,
@@ -164,6 +214,10 @@ def write_csv(
                     config.target_star,
                     config.start_mode.value,
                     config.repair_policy.value,
+                    "none" if breakthrough is None else breakthrough.name,
+                    ""
+                    if breakthrough is None
+                    else breakthrough.describe().split(": ", 1)[1],
                     round(to_yi(config.rebuild_cost), 4),
                     summary.trials,
                     round(to_yi(summary.total_cost.mean), 4),
@@ -176,6 +230,7 @@ def write_csv(
                     round(to_yi(summary.rebuild_cost.mean), 4),
                     round(summary.equipment.mean, 4),
                     round(summary.scrolls.mean, 4),
+                    round(summary.breakthroughs.mean, 4),
                     round(summary.destroys.mean, 4),
                     round(summary.attempts.mean, 4),
                 ]
@@ -191,14 +246,14 @@ def print_ranking(summaries: Sequence[SimulationSummary], top_n: int = TOP_N) ->
         name = config.equipment_name or f"level {config.level}"
         by_target.setdefault(config.target_star, {}).setdefault(name, []).append(summary)
 
-    width = 96
+    width = 118
     for target_star, by_equipment in sorted(by_target.items()):
         print("\n" + "=" * width)
         print(f"target {target_star} stars - cheapest {top_n} approaches per equipment")
         print("=" * width)
         print(
             f"{'equipment':<10}{'lv':>4}{'price':>10}  {'#':<3}{'start':>6}"
-            f"{'policy':>8}{'mean':>12}{'p50':>12}{'meso':>11}{'equip$':>11}"
+            f"{'repair':>8}{'mean':>12}{'p50':>12}{'p95':>12}  breakthrough"
         )
         print("-" * width)
         for name, group in by_equipment.items():
@@ -208,13 +263,15 @@ def print_ranking(summaries: Sequence[SimulationSummary], top_n: int = TOP_N) ->
                 label = name if rank == 1 else ""
                 level = f"{config.level}" if rank == 1 else ""
                 price = f"{to_yi(config.equipment_price):,.1f}e" if rank == 1 else ""
+                breakthrough = config.breakthrough_policy
+                shown = "-" if breakthrough is None else breakthrough.describe()
                 print(
                     f"{label:<10}{level:>4}{price:>10}  {rank:<3}"
                     f"{config.start_star:>6}{config.repair_policy.value:>8}"
                     f"{to_yi(summary.total_cost.mean):>11,.1f}e"
                     f"{to_yi(summary.total_cost.percentiles[50]):>11,.1f}e"
-                    f"{to_yi(summary.meso.mean):>10,.1f}e"
-                    f"{to_yi(summary.equipment_cost.mean):>10,.1f}e"
+                    f"{to_yi(summary.total_cost.percentiles[95]):>11,.1f}e"
+                    f"  {shown}"
                 )
             print("-" * width)
 
@@ -233,10 +290,13 @@ def main(
 
     configs = build_configs(target_stars, start_stars, policies)
     names = volatile_data.known_names()
+    base = len(names) * len(start_stars) * len(policies) * len(target_stars)
     print(
         f"{len(names)} equipment x {len(start_stars)} start stars x "
-        f"{len(policies)} policies x {len(target_stars)} targets = "
-        f"{len(configs)} combinations, {trials:,} trials each\n"
+        f"{len(policies)} repair policies x {len(target_stars)} targets = {base} "
+        f"combinations, expanded to {len(configs)} by the breakthrough policies "
+        f"worth comparing for targets {list(BREAKTHROUGH_TARGETS)}, "
+        f"{trials:,} trials each\n"
     )
 
     summaries: list[SimulationSummary] = []
@@ -244,10 +304,12 @@ def main(
     for index, config in enumerate(configs, start=1):
         summary = simulate(config, trials=trials, seed=seed, percentiles=percentiles)
         summaries.append(summary)
+        breakthrough = config.breakthrough_policy
         print(
-            f"[{index:>3}/{len(configs)}] {config.equipment_name:<6} "
+            f"[{index:>4}/{len(configs)}] {config.equipment_name:<6} "
             f"{config.start_star}->{config.target_star} "
             f"{config.repair_policy.value:<6} "
+            f"{('none' if breakthrough is None else breakthrough.name):<8}"
             f"total {to_yi(summary.total_cost.mean):>10,.1f}e  "
             f"({time.perf_counter() - started:7.1f}s)"
         )

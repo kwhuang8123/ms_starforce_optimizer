@@ -64,10 +64,15 @@ class SimulationSummary:
     #: Repair equipment as a piece count.
     equipment: Distribution
     scrolls: Distribution
+    #: Breakthrough scrolls consumed, all kinds together.
+    breakthroughs: Distribution
     attempts: Distribution
     destroys: Distribution
     #: Mean number of attempts made from each star, keyed by star.
     mean_attempts_by_star: dict[int, float]
+    #: Mean number of each breakthrough scroll bought, keyed by scroll id. Each
+    #: has its own price, so re-pricing needs them apart rather than totalled.
+    mean_breakthroughs_by_scroll: dict[str, float]
 
     def to_dict(self) -> dict[str, Any]:
         payload: dict[str, Any] = {
@@ -79,12 +84,15 @@ class SimulationSummary:
             distribution: Distribution = getattr(self, label)
             payload[label] = distribution.to_dict()
             payload[f"{label}_yi"] = distribution.to_yi_dict()
-        for label in ("equipment", "scrolls", "attempts", "destroys"):
+        for label in ("equipment", "scrolls", "breakthroughs", "attempts", "destroys"):
             payload[label] = getattr(self, label).to_dict()
         payload["mean_attempts_by_star"] = {
             str(star): value
             for star, value in sorted(self.mean_attempts_by_star.items())
         }
+        payload["mean_breakthroughs_by_scroll"] = dict(
+            sorted(self.mean_breakthroughs_by_scroll.items())
+        )
         return payload
 
     def report(self, percentiles: Sequence[int] = DEFAULT_PERCENTILES) -> str:
@@ -118,6 +126,7 @@ class SimulationSummary:
         for label, distribution in (
             ("equip qty", self.equipment),
             ("scrolls", self.scrolls),
+            ("breakthrough", self.breakthroughs),
             ("attempts", self.attempts),
             ("destroys", self.destroys),
         ):
@@ -177,10 +186,12 @@ def simulate(
         "rebuild_cost": [],
         "equipment": [],
         "scrolls": [],
+        "breakthroughs": [],
         "attempts": [],
         "destroys": [],
     }
     attempts_by_star: dict[int, int] = {}
+    breakthroughs_by_scroll: dict[str, int] = {}
 
     for _ in range(trials):
         result = simulate_once(config, rng)
@@ -190,10 +201,13 @@ def simulate(
         samples["rebuild_cost"].append(result.rebuild_cost)
         samples["equipment"].append(result.equipment_used)
         samples["scrolls"].append(result.scrolls_used)
+        samples["breakthroughs"].append(result.breakthroughs_used)
         samples["attempts"].append(result.attempts)
         samples["destroys"].append(result.destroys)
         for star, count in result.attempts_by_star.items():
             attempts_by_star[star] = attempts_by_star.get(star, 0) + count
+        for key, count in result.breakthroughs_by_scroll.items():
+            breakthroughs_by_scroll[key] = breakthroughs_by_scroll.get(key, 0) + count
 
     return SimulationSummary(
         config=config,
@@ -205,9 +219,13 @@ def simulate(
         rebuild_cost=_summarise(samples["rebuild_cost"], percentiles),
         equipment=_summarise(samples["equipment"], percentiles),
         scrolls=_summarise(samples["scrolls"], percentiles),
+        breakthroughs=_summarise(samples["breakthroughs"], percentiles),
         attempts=_summarise(samples["attempts"], percentiles),
         destroys=_summarise(samples["destroys"], percentiles),
         mean_attempts_by_star={
             star: count / trials for star, count in attempts_by_star.items()
+        },
+        mean_breakthroughs_by_scroll={
+            key: count / trials for key, count in breakthroughs_by_scroll.items()
         },
     )

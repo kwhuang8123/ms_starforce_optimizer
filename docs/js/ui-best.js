@@ -1,8 +1,8 @@
 /**
  * The cheat sheet: one line per equipment and target.
  *
- * Condensing 216 measured rows into 18 conclusions throws information away, so
- * this tab says out loud where the conclusion is thin:
+ * Condensing a few hundred measured rows into eighteen conclusions throws
+ * information away, so this tab says out loud where the conclusion is thin:
  *
  *   - When the best and second-best routes are within 1% of each other they are
  *     inside the sampling noise of a 50,000 trial run, so the winner would flip
@@ -10,6 +10,9 @@
  *   - The cheapest route is not always the most predictable one. A "stable"
  *     alternative is offered only when trading mean for tail is actually worth
  *     it, and the price of that trade is always shown.
+ *   - The breakthrough policy each row follows was chosen against the sweep's
+ *     prices. policy.js re-derives the cheapest one for the prices in effect
+ *     now, and the table says so when the two have parted company.
  *
  * The mean is re-priced for whatever prices are in effect; percentiles are not,
  * because changing a price reorders the trials. Every column that depends on a
@@ -18,9 +21,18 @@
 
 import * as store from "./prices-store.js";
 import { rebuildBasis, repricedMean } from "./reprice.js";
+import { describe, expectedTotal, optimalPolicy, sameEntries } from "./policy.js";
 import { formatYi } from "./format.js";
 
 const POLICY_LABEL = { full: "完整修復", to_12: "修復至 12 星" };
+
+/**
+ * How much cheaper a freshly derived policy has to be before the dataset is
+ * called stale. The stored means are sampled and the derived one is exact, so
+ * they disagree by a few tenths of a percent even when they agree perfectly;
+ * 1% is comfortably outside that and matches the near-tie bar below.
+ */
+const POLICY_DRIFT = 0.01;
 
 /** Within this, best and second-best are a coin flip rather than a ranking. */
 const NEAR_TIE = 0.01;
@@ -37,7 +49,12 @@ let datasets = null;
 const el = {};
 
 function bind() {
-  for (const id of ["best-meta", "best-reprice-note", "best-start"]) {
+  for (const id of [
+    "best-meta",
+    "best-reprice-note",
+    "best-policy-note",
+    "best-start",
+  ]) {
     el[id] = document.getElementById(id);
   }
   el.scratch = document.querySelector("#best-scratch tbody");
@@ -45,7 +62,59 @@ function bind() {
 }
 
 function routeLabel(row) {
-  return `${row.start_star} 星起手・${POLICY_LABEL[row.repair_policy]}`;
+  const base = `${row.start_star} 星起手・${POLICY_LABEL[row.repair_policy]}`;
+  const entries = row.breakthrough_entries;
+  if (!entries || entries.length === 0) {
+    return base;
+  }
+  return `${base}<br><span class="muted">${describe({ entries })}</span>`;
+}
+
+/** Targets whose breakthrough policies the sweep actually explored. */
+function exploredTargets(dataset) {
+  return new Set(dataset.meta.breakthrough_targets || []);
+}
+
+/**
+ * The cheapest policy at the prices in effect right now, derived rather than
+ * looked up, across every start star and repair policy the dataset covers.
+ *
+ * This is the whole point of shipping the solver to the browser: the rows were
+ * measured against a policy chosen at the sweep's prices, so once those prices
+ * move the stored ranking can quietly stop being the answer. Re-deriving costs
+ * nothing and catches it.
+ */
+function liveOptimum(equipment, targetStar, startStars, prices) {
+  const item = prices.equipment.find((entry) => entry.name === equipment);
+  if (item === undefined) {
+    return null;
+  }
+  let best = null;
+  for (const startStar of startStars) {
+    for (const repairPolicy of ["full", "to_12"]) {
+      const options = {
+        level: item.level,
+        startStar,
+        targetStar,
+        equipmentPrice: item.price,
+        repairPolicy,
+      };
+      let chosen;
+      let total;
+      try {
+        chosen = optimalPolicy(options);
+        total = expectedTotal(chosen, options);
+      } catch (error) {
+        // A start star the level cannot use, or a target past its cap. The
+        // other combinations still answer the question.
+        continue;
+      }
+      if (best === null || total < best.total) {
+        best = { total, startStar, repairPolicy, policy: chosen };
+      }
+    }
+  }
+  return best;
 }
 
 function percentile(row, label) {
@@ -136,15 +205,42 @@ function renderScratch(prices) {
     priced(dataset.results, prices),
     (row) => `${row.equipment} ${row.target_star}`
   );
+  const explored = exploredTargets(dataset);
+  const startStars = [
+    ...new Set(dataset.results.map((row) => row.start_star)),
+  ].sort((a, b) => a - b);
+  const stale = [];
 
   const lines = [];
   for (const candidates of groups.values()) {
     const ordered = rank(candidates);
     const best = ordered[0];
     const stable = stableAlternative(candidates, best);
+
+    if (explored.has(best.target_star)) {
+      const live = liveOptimum(
+        best.equipment, best.target_star, startStars, prices
+      );
+      if (
+        live !== null &&
+        live.total < best.repriced * (1 - POLICY_DRIFT) &&
+        !(
+          live.startStar === best.start_star &&
+          live.repairPolicy === best.repair_policy &&
+          sameEntries(live.policy.entries, best.breakthrough_entries || [])
+        )
+      ) {
+        stale.push({ row: best, live });
+      }
+    }
+
     lines.push(`<tr>
       <td>${best.equipment}</td>
-      <td class="num">${best.target_star} 星</td>
+      <td class="num">${best.target_star} 星${
+        explored.has(best.target_star)
+          ? ""
+          : `<br><span class="muted">未納入突破星捲</span>`
+      }</td>
       <td>${routeLabel(best)}</td>
       <td class="num strong">${formatYi(best.repriced)}</td>
       <td class="num">${formatYi(percentile(best, "50"))}</td>
@@ -162,6 +258,41 @@ function renderScratch(prices) {
     </tr>`);
   }
   el.scratch.innerHTML = lines.join("");
+  renderPolicyNote(stale);
+}
+
+/**
+ * Say so when the current prices have moved the answer off the dataset.
+ *
+ * The stored means are still exact for the policies they measured - what has
+ * gone stale is which policy is best. Nothing here overwrites the table: the
+ * measured rows are real, and a derived figure has no percentiles to show
+ * beside them, so this points at the gap rather than papering over it.
+ */
+function renderPolicyNote(stale) {
+  const note = el["best-policy-note"];
+  if (stale.length === 0) {
+    note.hidden = true;
+    note.innerHTML = "";
+    return;
+  }
+  const lines = stale
+    .map(({ row, live }) => {
+      const saving = 1 - live.total / row.repriced;
+      return (
+        `<li><strong>${row.equipment} ${row.target_star} 星</strong>：` +
+        `改用 ${live.startStar} 星起手・${POLICY_LABEL[live.repairPolicy]}` +
+        `（${describe(live.policy)}）平均約 ${formatYi(live.total)}，` +
+        `比表上這列再省 ${(saving * 100).toFixed(1)}%</li>`
+      );
+    })
+    .join("");
+  note.hidden = false;
+  note.innerHTML =
+    `<strong>目前物價下，資料集挑出的最優解已經不是最優。</strong>` +
+    `下面這 ${stale.length} 組有更便宜的走法，是用現價即時解出來的精確平均` +
+    `（沒有對應的 p50／p95，因為那需要重跑 sweep）：<ul>${lines}</ul>` +
+    `要讓整張表跟上，重跑 <code>sweep.py</code> 與 <code>build_site_data.py</code>。`;
 }
 
 function fillStartFilter() {

@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generated_at": "2026-07-25T17:11:16+00:00",
+    "generated_at": "2026-07-28T17:30:59+00:00",
     "target_stars": [
       23,
       24,
@@ -25,7 +25,7 @@
     ],
     "combinations": 108,
     "prices": {
-      "source": "C:\\ms_program\\ms_starforce_optimizer\\data\\volatile.json",
+      "source": "D:\\work\\ms_starforce_optimizer\\data\\volatile.json",
       "star_scroll_cost": {
         "10": 20000000,
         "11": 20000000,
@@ -94,8 +94,8 @@
       24
     ],
     "rebuild_basis": {
-      "source": "C:\\ms_program\\ms_starforce_optimizer\\starforce\\sim_data\\simulations.json",
-      "generated_at": "2026-07-25T16:11:08+00:00",
+      "source": "D:\\work\\ms_starforce_optimizer\\starforce\\sim_data\\simulations.json",
+      "generated_at": "2026-07-27T17:51:55+00:00",
       "star": 22,
       "costs": {
         "頂培": {

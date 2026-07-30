@@ -185,7 +185,7 @@ class RepriceTest(unittest.TestCase):
     TOLERANCE = 1.0
 
     def rows(self):
-        """Yield ``(dataset name, row, that dataset's own scroll prices)``.
+        """Yield ``(dataset name, row, that dataset's own price snapshot)``.
 
         The split in each row was measured against the prices the sweep ran on,
         which are recorded in the dataset's meta. Reconciling it against today's
@@ -197,34 +197,53 @@ class RepriceTest(unittest.TestCase):
             if not path.is_file():
                 continue
             payload = json.loads(path.read_text(encoding="utf-8"))
-            snapshot = payload["meta"]["prices"]["star_scroll_cost"]
+            snapshot = payload["meta"]["prices"]
             for row in payload["results"]:
                 yield name, row, snapshot
 
+    @staticmethod
+    def scroll_spend(row, snapshot) -> float:
+        """What this row spent on scrolls of both kinds, at the snapshot prices."""
+        star_price = (
+            0
+            if row["scroll_star"] is None
+            else snapshot["star_scroll_cost"][str(row["scroll_star"])]
+        )
+        # Datasets swept before breakthrough scrolls existed have no prices for
+        # them and no counts either, so the sum is empty rather than missing.
+        breakthrough = snapshot.get("breakthrough_scroll_cost", {})
+        return row["scrolls_mean"] * star_price + sum(
+            count * breakthrough[key]
+            for key, count in row.get("breakthrough_counts_mean", {}).items()
+        )
+
     def test_the_static_part_plus_the_scrolls_rebuilds_the_meso_mean(self) -> None:
-        for name, row, prices in self.rows():
+        for name, row, snapshot in self.rows():
             with self.subTest(dataset=name, row=row["equipment"], target=row["target_star"]):
-                scroll_price = (
-                    0 if row["scroll_star"] is None else prices[str(row["scroll_star"])]
-                )
-                rebuilt = row["static_meso_mean"] + row["scrolls_mean"] * scroll_price
+                rebuilt = row["static_meso_mean"] + self.scroll_spend(row, snapshot)
                 self.assertAlmostEqual(rebuilt, row["meso_mean"], delta=self.TOLERANCE)
 
-    def test_the_four_parts_rebuild_the_total(self) -> None:
-        for name, row, prices in self.rows():
+    def test_the_parts_rebuild_the_total(self) -> None:
+        for name, row, snapshot in self.rows():
             with self.subTest(dataset=name, row=row["equipment"], target=row["target_star"]):
-                scroll_price = (
-                    0 if row["scroll_star"] is None else prices[str(row["scroll_star"])]
-                )
                 rebuilt = (
                     row["static_meso_mean"]
-                    + row["scrolls_mean"] * scroll_price
+                    + self.scroll_spend(row, snapshot)
                     + row["equipment_mean"] * row["equipment_price"]
                     + row["rebuild_count_mean"] * row["rebuild_cost"]
                 )
                 self.assertAlmostEqual(
                     rebuilt, row["total_cost_mean"], delta=self.TOLERANCE
                 )
+
+    def test_a_row_that_bought_no_breakthrough_scroll_says_so(self) -> None:
+        for name, row, _ in self.rows():
+            with self.subTest(dataset=name, policy=row.get("breakthrough_policy")):
+                counts = row.get("breakthrough_counts_mean", {})
+                if row.get("breakthrough_policy", "none") == "none":
+                    self.assertEqual(counts, {})
+                else:
+                    self.assertTrue(counts)
 
     def test_only_a_scrolled_run_carries_a_scroll_star(self) -> None:
         for name, row, _ in self.rows():

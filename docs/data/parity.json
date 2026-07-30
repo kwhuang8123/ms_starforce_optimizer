@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-07-30T18:38:21+00:00",
+ "generated_at": "2026-07-30T20:00:00+00:00",
  "rate_basis": 10000,
  "star_scroll_cost": {
   "15": 20000000,
@@ -3418,6 +3418,503 @@
    }
   }
  ],
+ "policy": [
+  {
+   "name": "頂培 15->22 full",
+   "level": 150,
+   "equipment": "頂培",
+   "equipment_price": 150000000,
+   "start_star": 15,
+   "target_star": 22,
+   "repair_policy": "full",
+   "expected": {
+    "optimal": {
+     "entries": [],
+     "expected_total": 24897265333
+    },
+    "safe": {
+     "entries": [],
+     "expected_total": 24897265333
+    }
+   }
+  },
+  {
+   "name": "頂培 15->22 to_12",
+   "level": 150,
+   "equipment": "頂培",
+   "equipment_price": 150000000,
+   "start_star": 15,
+   "target_star": 22,
+   "repair_policy": "to_12",
+   "expected": {
+    "optimal": {
+     "entries": [],
+     "expected_total": 24672467705
+    },
+    "safe": {
+     "entries": [],
+     "expected_total": 24672467705
+    }
+   }
+  },
+  {
+   "name": "神秘 15->22 full",
+   "level": 200,
+   "equipment": "神秘",
+   "equipment_price": 50000000,
+   "start_star": 15,
+   "target_star": 22,
+   "repair_policy": "full",
+   "expected": {
+    "optimal": {
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ]
+     ],
+     "expected_total": 56291299667
+    },
+    "safe": {
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ]
+     ],
+     "expected_total": 56291299667
+    }
+   }
+  },
+  {
+   "name": "神秘 15->22 to_12",
+   "level": 200,
+   "equipment": "神秘",
+   "equipment_price": 50000000,
+   "start_star": 15,
+   "target_star": 22,
+   "repair_policy": "to_12",
+   "expected": {
+    "optimal": {
+     "entries": [],
+     "expected_total": 55020579689
+    },
+    "safe": {
+     "entries": [],
+     "expected_total": 55020579689
+    }
+   }
+  },
+  {
+   "name": "控制核心 15->22 full",
+   "level": 200,
+   "equipment": "控制核心",
+   "equipment_price": 22000000000,
+   "start_star": 15,
+   "target_star": 22,
+   "repair_policy": "full",
+   "expected": {
+    "optimal": {
+     "entries": [
+      [
+       18,
+       21,
+       10000
+      ],
+      [
+       19,
+       21,
+       10000
+      ],
+      [
+       20,
+       21,
+       10000
+      ],
+      [
+       21,
+       23,
+       5000
+      ]
+     ],
+     "expected_total": 103825867667
+    },
+    "safe": {
+     "entries": [
+      [
+       18,
+       21,
+       10000
+      ],
+      [
+       19,
+       21,
+       10000
+      ],
+      [
+       20,
+       21,
+       10000
+      ],
+      [
+       21,
+       22,
+       10000
+      ]
+     ],
+     "expected_total": 106025867667
+    }
+   }
+  },
+  {
+   "name": "控制核心 15->22 to_12",
+   "level": 200,
+   "equipment": "控制核心",
+   "equipment_price": 22000000000,
+   "start_star": 15,
+   "target_star": 22,
+   "repair_policy": "to_12",
+   "expected": {
+    "optimal": {
+     "entries": [
+      [
+       18,
+       21,
+       10000
+      ],
+      [
+       19,
+       21,
+       10000
+      ],
+      [
+       20,
+       21,
+       10000
+      ],
+      [
+       21,
+       23,
+       5000
+      ]
+     ],
+     "expected_total": 104497313438
+    },
+    "safe": {
+     "entries": [
+      [
+       18,
+       21,
+       10000
+      ],
+      [
+       19,
+       21,
+       10000
+      ],
+      [
+       20,
+       21,
+       10000
+      ],
+      [
+       21,
+       22,
+       10000
+      ]
+     ],
+     "expected_total": 106697313438
+    }
+   }
+  },
+  {
+   "name": "控制核心 19->22 full",
+   "level": 200,
+   "equipment": "控制核心",
+   "equipment_price": 22000000000,
+   "start_star": 19,
+   "target_star": 22,
+   "repair_policy": "full",
+   "expected": {
+    "optimal": {
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ],
+      [
+       20,
+       21,
+       10000
+      ],
+      [
+       21,
+       23,
+       5000
+      ]
+     ],
+     "expected_total": 74300000000
+    },
+    "safe": {
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ],
+      [
+       20,
+       21,
+       10000
+      ],
+      [
+       21,
+       22,
+       10000
+      ]
+     ],
+     "expected_total": 76500000000
+    }
+   }
+  },
+  {
+   "name": "控制核心 19->22 to_12",
+   "level": 200,
+   "equipment": "控制核心",
+   "equipment_price": 22000000000,
+   "start_star": 19,
+   "target_star": 22,
+   "repair_policy": "to_12",
+   "expected": {
+    "optimal": {
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ],
+      [
+       21,
+       23,
+       5000
+      ]
+     ],
+     "expected_total": 72570374667
+    },
+    "safe": {
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ]
+     ],
+     "expected_total": 74746349100
+    }
+   }
+  },
+  {
+   "name": "控制核心 20->22 full",
+   "level": 200,
+   "equipment": "控制核心",
+   "equipment_price": 22000000000,
+   "start_star": 20,
+   "target_star": 22,
+   "repair_policy": "full",
+   "expected": {
+    "optimal": {
+     "entries": [
+      [
+       20,
+       21,
+       10000
+      ],
+      [
+       21,
+       23,
+       5000
+      ]
+     ],
+     "expected_total": 73400000000
+    },
+    "safe": {
+     "entries": [
+      [
+       20,
+       21,
+       10000
+      ],
+      [
+       21,
+       22,
+       10000
+      ]
+     ],
+     "expected_total": 75600000000
+    }
+   }
+  },
+  {
+   "name": "控制核心 20->22 to_12",
+   "level": 200,
+   "equipment": "控制核心",
+   "equipment_price": 22000000000,
+   "start_star": 20,
+   "target_star": 22,
+   "repair_policy": "to_12",
+   "expected": {
+    "optimal": {
+     "entries": [
+      [
+       21,
+       23,
+       5000
+      ]
+     ],
+     "expected_total": 71355374667
+    },
+    "safe": {
+     "entries": [],
+     "expected_total": 72832724100
+    }
+   }
+  },
+  {
+   "name": "永恆下三 18->22 full",
+   "level": 250,
+   "equipment": "永恆下三",
+   "equipment_price": 1100000000,
+   "start_star": 18,
+   "target_star": 22,
+   "repair_policy": "full",
+   "expected": {
+    "optimal": {
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ],
+      [
+       20,
+       21,
+       10000
+      ],
+      [
+       21,
+       23,
+       5000
+      ]
+     ],
+     "expected_total": 87771342500
+    },
+    "safe": {
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ],
+      [
+       20,
+       21,
+       10000
+      ],
+      [
+       21,
+       22,
+       10000
+      ]
+     ],
+     "expected_total": 89971342500
+    }
+   }
+  },
+  {
+   "name": "永恆下三 18->22 to_12",
+   "level": 250,
+   "equipment": "永恆下三",
+   "equipment_price": 1100000000,
+   "start_star": 18,
+   "target_star": 22,
+   "repair_policy": "to_12",
+   "expected": {
+    "optimal": {
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ]
+     ],
+     "expected_total": 68189447316
+    },
+    "safe": {
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ]
+     ],
+     "expected_total": 68189447316
+    }
+   }
+  },
+  {
+   "name": "巨大 19->22 full",
+   "level": 200,
+   "equipment": "巨大",
+   "equipment_price": 3500000000,
+   "start_star": 19,
+   "target_star": 22,
+   "repair_policy": "full",
+   "expected": {
+    "optimal": {
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ]
+     ],
+     "expected_total": 57845883667
+    },
+    "safe": {
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ]
+     ],
+     "expected_total": 57845883667
+    }
+   }
+  },
+  {
+   "name": "巨大 19->22 to_12",
+   "level": 200,
+   "equipment": "巨大",
+   "equipment_price": 3500000000,
+   "start_star": 19,
+   "target_star": 22,
+   "repair_policy": "to_12",
+   "expected": {
+    "optimal": {
+     "entries": [],
+     "expected_total": 50220846860
+    },
+    "safe": {
+     "entries": [],
+     "expected_total": 50220846860
+    }
+   }
+  }
+ ],
  "reprice": [
   {
    "name": "scrolled climb, full repair",
@@ -3429,6 +3926,8 @@
     "target_star": 22,
     "start_mode": "scroll",
     "repair_policy": "full",
+    "breakthrough_policy": "none",
+    "breakthrough_entries": [],
     "scroll_star": 15,
     "rebuild_cost": 0,
     "trials": 3000,
@@ -3447,6 +3946,7 @@
     "rebuild_count_mean": 0.0,
     "equipment_mean": 5.499666666666666,
     "scrolls_mean": 1.0,
+    "breakthrough_counts_mean": {},
     "attempts_mean": 40.17,
     "destroys_mean": 3.088,
     "attempts_by_star": {
@@ -3553,6 +4053,8 @@
     "target_star": 22,
     "start_mode": "scroll",
     "repair_policy": "to_12",
+    "breakthrough_policy": "none",
+    "breakthrough_entries": [],
     "scroll_star": 15,
     "rebuild_cost": 0,
     "trials": 3000,
@@ -3571,6 +4073,7 @@
     "rebuild_count_mean": 0.0,
     "equipment_mean": 10.298,
     "scrolls_mean": 11.298,
+    "breakthrough_counts_mean": {},
     "attempts_mean": 178.41,
     "destroys_mean": 10.298,
     "attempts_by_star": {
@@ -3677,6 +4180,8 @@
     "target_star": 23,
     "start_mode": "scroll",
     "repair_policy": "to_12",
+    "breakthrough_policy": "none",
+    "breakthrough_entries": [],
     "scroll_star": 19,
     "rebuild_cost": 0,
     "trials": 3000,
@@ -3695,6 +4200,7 @@
     "rebuild_count_mean": 0.0,
     "equipment_mean": 5.765333333333333,
     "scrolls_mean": 6.765333333333333,
+    "breakthrough_counts_mean": {},
     "attempts_mean": 58.66,
     "destroys_mean": 5.765,
     "attempts_by_star": {
@@ -3798,6 +4304,8 @@
     "target_star": 23,
     "start_mode": "owned",
     "repair_policy": "full",
+    "breakthrough_policy": "none",
+    "breakthrough_entries": [],
     "scroll_star": null,
     "rebuild_cost": 0,
     "trials": 3000,
@@ -3816,6 +4324,7 @@
     "rebuild_count_mean": 0.0,
     "equipment_mean": 2.8026666666666666,
     "scrolls_mean": 0.0,
+    "breakthrough_counts_mean": {},
     "attempts_mean": 5.74,
     "destroys_mean": 0.701,
     "attempts_by_star": {
@@ -3916,24 +4425,27 @@
     "target_star": 24,
     "start_mode": "owned",
     "repair_policy": "to_12",
+    "breakthrough_policy": "none",
+    "breakthrough_entries": [],
     "scroll_star": null,
-    "rebuild_cost": 24843877116,
+    "rebuild_cost": 23497991198,
     "trials": 3000,
-    "total_cost_mean": 111534410850,
+    "total_cost_mean": 105664553733,
     "total_cost_percentiles": {
-     "50": 76597242198,
-     "75": 153937959996,
-     "90": 278121249156,
-     "95": 356651190619,
-     "99": 534255717753
+     "50": 72559584444,
+     "75": 145862644488,
+     "90": 263316504058,
+     "95": 337808787767,
+     "99": 505992113475
     },
     "meso_mean": 2527781455,
     "static_meso_mean": 2527781455.0,
     "equipment_cost_mean": 654200000,
-    "rebuild_cost_mean": 108352429395,
+    "rebuild_cost_mean": 102482572278,
     "rebuild_count_mean": 4.3613333333333335,
     "equipment_mean": 4.3613333333333335,
     "scrolls_mean": 0.0,
+    "breakthrough_counts_mean": {},
     "attempts_mean": 30.09,
     "destroys_mean": 4.361,
     "attempts_by_star": {
@@ -4022,8 +4534,8 @@
      }
     ]
    },
-   "rebuild_cost": 74531631348,
-   "expected_total_cost_mean": 330856069640
+   "rebuild_cost": 70493973594,
+   "expected_total_cost_mean": 313246498289
   }
  ]
 }

@@ -70,6 +70,7 @@ class RunConfigTest(unittest.TestCase):
                 "rebuild_cost": 0,
                 "equipment_name": None,
                 "equipment_price": 0,
+                "breakthrough_policy": None,
             },
         )
 

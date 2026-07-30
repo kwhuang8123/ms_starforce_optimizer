@@ -5,17 +5,24 @@
  * it never branches on one - so the mean total cost is exactly linear in them:
  *
  *   total = static_meso_mean
- *         + scrolls_mean       x star scroll price
- *         + equipment_mean     x equipment price
- *         + rebuild_count_mean x rebuild cost
+ *         + scrolls_mean        x star scroll price
+ *         + breakthrough counts x each scroll's own price
+ *         + equipment_mean      x equipment price
+ *         + rebuild_count_mean  x rebuild cost
  *
- * build_site_data.py splits every row into those four parts. Multiplying them
- * out is all the re-pricing there is.
+ * build_site_data.py splits every row into those parts. Multiplying them out is
+ * all the re-pricing there is. A breakthrough policy is fixed before the run
+ * starts, so it does not branch on a price either.
  *
  * This works for the MEAN ONLY. Percentiles cannot be re-priced: changing a
  * price reorders the trials, and a stored p95 says nothing about where the new
  * one lands. Callers must keep presenting stored percentiles as belonging to
  * the prices the sweep was run against.
+ *
+ * Nor does it keep the RANKING honest. Each row's mean stays exact, but the
+ * policy each row follows was picked against the snapshot prices, so after a
+ * large enough edit the cheapest row may no longer be the cheapest policy.
+ * policy.js re-derives the optimum live for exactly that reason.
  */
 
 import * as rules from "./rules.js";
@@ -30,6 +37,23 @@ export function scrollPrice(row, prices) {
     throw new Error(`價格表缺少 ${row.scroll_star} 星星捲的價格`);
   }
   return price;
+}
+
+/** What this row spent on breakthrough scrolls, at the given prices. */
+export function breakthroughSpend(row, prices) {
+  const counts = row.breakthrough_counts_mean;
+  if (!counts) {
+    return 0;
+  }
+  let total = 0;
+  for (const [id, count] of Object.entries(counts)) {
+    const price = prices.breakthrough_scroll_cost[id];
+    if (price === undefined) {
+      throw new Error(`價格表缺少突破星捲 ${id} 的價格`);
+    }
+    total += count * price;
+  }
+  return total;
 }
 
 /** This row's equipment price, or null when it is no longer in the table. */
@@ -56,6 +80,7 @@ export function repricedMean(row, prices, rebuildCost = null) {
   return Math.round(
     row.static_meso_mean +
       row.scrolls_mean * scrollPrice(row, prices) +
+      breakthroughSpend(row, prices) +
       row.equipment_mean * equipment +
       row.rebuild_count_mean * (rebuildCost === null ? 0 : rebuildCost)
   );
