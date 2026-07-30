@@ -3,9 +3,9 @@
 :mod:`starforce.engine` answers "what does this strategy cost on average" by
 running a whole climb with every decision fixed up front. This module answers a
 different question: "what happened to *my* item". Each call does exactly one
-thing - one enhancement attempt, one star scroll, one repair - and appends a
-:class:`LogEntry` describing it, so the caller decides what to do next with the
-outcome in hand.
+thing - one enhancement attempt, one scroll of either kind, one repair - and
+appends a :class:`LogEntry` describing it, so the caller decides what to do
+next with the outcome in hand.
 
 A session holds no I/O of its own. ``play.py`` is a thin shell around it, and
 the planned GitHub Pages front end reads :meth:`Session.to_dict`, which is plain
@@ -37,12 +37,17 @@ class Action(Enum):
 
     ENHANCE = "enhance"
     SCROLL = "scroll"
+    BREAKTHROUGH = "breakthrough"
     REPAIR_FULL = "repair_full"
     REPAIR_TO_12 = "repair_to_12"
 
 
 class Outcome(Enum):
-    """How an enhancement attempt landed. Only :attr:`Action.ENHANCE` has one."""
+    """How an attempt landed. Only enhancing and breakthrough scrolls have one.
+
+    A breakthrough scroll never destroys, so it only ever reports SUCCESS or
+    MAINTAIN.
+    """
 
     SUCCESS = "success"
     MAINTAIN = "maintain"
@@ -238,6 +243,47 @@ class Session:
 
         return self._record(Action.SCROLL, star_before, meso, 0)
 
+    def use_breakthrough(self, cap_star: int, success: int) -> LogEntry:
+        """Buy one breakthrough scroll and take its single shot at +1 star.
+
+        The scroll is paid for whether it lands or not, and a miss leaves the
+        item exactly where it was - there is no destruction on this path, so a
+        failed attempt needs no repair.
+
+        ``cap_star`` is the star the scroll refuses to go past, so the scroll is
+        usable from anywhere below it, not only from ``cap_star - 1``.
+        """
+        if self.destroyed:
+            raise ValueError(
+                f"the item is destroyed: repair the {self.star} star trace "
+                f"before using a breakthrough scroll"
+            )
+        rules.check_breakthrough(cap_star, success)
+        if self.star + 1 > cap_star:
+            raise ValueError(
+                f"this scroll will not take an item past {cap_star} stars, "
+                f"and it is already at {self.star}"
+            )
+        if self.star + 1 > self.max_star:
+            raise ValueError(
+                f"level {self.level} cannot be enhanced past {self.max_star} stars, "
+                f"and the item is already at {self.star}"
+            )
+
+        star_before = self.star
+        meso = rules.breakthrough_cost(cap_star, success)
+        self.totals.total_meso += meso
+        self.totals.breakthroughs_used += 1
+
+        roll = self.rng.randrange(static_data.RATE_BASIS)
+        if roll < success:
+            outcome = Outcome.SUCCESS
+            self.star = star_before + 1
+        else:
+            outcome = Outcome.MAINTAIN
+
+        return self._record(Action.BREAKTHROUGH, star_before, meso, 0, outcome=outcome)
+
     def repair(self, policy: RepairPolicy) -> LogEntry:
         """Restore a destroyed item, either to its trace star or to 12 stars."""
         if not self.destroyed:
@@ -320,8 +366,9 @@ class Session:
         )
         lines.append(f"  total       {format_meso(totals.total_cost):>16}")
         lines.append(
-            f"  scrolls {totals.scrolls_used}   attempts {totals.attempts}   "
-            f"destroys {totals.destroys}"
+            f"  scrolls {totals.scrolls_used}   "
+            f"breakthroughs {totals.breakthroughs_used}   "
+            f"attempts {totals.attempts}   destroys {totals.destroys}"
         )
         return "\n".join(lines)
 
@@ -347,6 +394,7 @@ class Session:
                 "total_cost": totals.total_cost,
                 "total_cost_yi": to_yi(totals.total_cost),
                 "scrolls_used": totals.scrolls_used,
+                "breakthroughs_used": totals.breakthroughs_used,
                 "attempts": totals.attempts,
                 "destroys": totals.destroys,
                 "attempts_by_star": {

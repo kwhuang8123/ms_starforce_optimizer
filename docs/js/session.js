@@ -15,6 +15,7 @@ import * as rules from "./rules.js";
 export const Action = {
   ENHANCE: "enhance",
   SCROLL: "scroll",
+  BREAKTHROUGH: "breakthrough",
   REPAIR_FULL: "repair_full",
   REPAIR_TO_12: "repair_to_12",
 };
@@ -52,6 +53,7 @@ function emptyTotals() {
     // ever booked as a flat rebuild. Kept so the shape matches RunResult.
     rebuild_cost: 0,
     scrolls_used: 0,
+    breakthroughs_used: 0,
     attempts: 0,
     destroys: 0,
     attempts_by_star: {},
@@ -110,6 +112,22 @@ export class Session {
     return rules
       .starScrollStars()
       .filter((star) => star > this.star && star <= this.maxStar);
+  }
+
+  /**
+   * The breakthrough scrolls that could be used right now, in table order.
+   *
+   * A scroll caps where it will leave the item, not where it may be used from,
+   * so every scroll capping above the current star qualifies - which is why a
+   * barely enhanced item lists all of them.
+   */
+  availableBreakthroughs() {
+    if (this.destroyed || this.star + 1 > this.maxStar) {
+      return [];
+    }
+    return rules
+      .breakthroughScrolls()
+      .filter(([capStar]) => this.star + 1 <= capStar);
   }
 
   enhance() {
@@ -174,6 +192,44 @@ export class Session {
     this.star = star;
 
     return this._record(Action.SCROLL, starBefore, meso, 0, null, 0);
+  }
+
+  /**
+   * Buy one breakthrough scroll and take its single shot at +1 star.
+   *
+   * The scroll is paid for whether it lands or not, and a miss leaves the item
+   * exactly where it was - nothing on this path can destroy it.
+   */
+  useBreakthrough(capStar, success) {
+    if (this.destroyed) {
+      throw new Error(`裝備已破壞：先修復 ${this.star} 星痕跡才能使用突破星捲`);
+    }
+    rules.checkBreakthrough(capStar, success);
+    if (this.star + 1 > capStar) {
+      throw new Error(
+        `這張捲最高只到 ${capStar} 星，目前已在 ${this.star} 星`
+      );
+    }
+    if (this.star + 1 > this.maxStar) {
+      throw new Error(
+        `等級 ${this.level} 無法強化超過 ${this.maxStar} 星，目前已在 ${this.star} 星`
+      );
+    }
+
+    const starBefore = this.star;
+    const meso = rules.breakthroughCost(capStar, success);
+    this.totals.total_meso += meso;
+    this.totals.breakthroughs_used += 1;
+
+    let outcome;
+    if (this.rng() < success) {
+      outcome = Outcome.SUCCESS;
+      this.star = starBefore + 1;
+    } else {
+      outcome = Outcome.MAINTAIN;
+    }
+
+    return this._record(Action.BREAKTHROUGH, starBefore, meso, 0, outcome, 0);
   }
 
   /** Restore a destroyed item, either to its trace star or to 12 stars. */

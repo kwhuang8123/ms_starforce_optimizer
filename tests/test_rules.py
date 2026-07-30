@@ -111,6 +111,57 @@ class StarScrollTest(unittest.TestCase):
                     rules.star_scroll_cost(star)
 
 
+class BreakthroughTest(unittest.TestCase):
+    def test_every_published_scroll_is_accepted(self) -> None:
+        for cap_star, success in data.BREAKTHROUGH_SCROLLS:
+            with self.subTest(cap_star=cap_star, success=success):
+                rules.check_breakthrough(cap_star, success)
+
+    def test_a_cap_and_rate_that_are_not_sold_together_raises(self) -> None:
+        # 21 and 22 only exist at 100%, and 26 has no 100% version, so these
+        # pairs are each made of two figures that do exist separately.
+        for pair in ((21, 3_000), (22, 5_000), (26, 10_000), (27, 10_000)):
+            with self.subTest(pair=pair):
+                with self.assertRaises(ValueError):
+                    rules.check_breakthrough(*pair)
+
+    def test_cost_is_returned(self) -> None:
+        self.assertEqual(rules.breakthrough_cost(21, 10_000), 13_300_000_000)
+        self.assertEqual(rules.breakthrough_cost(23, 3_000), 10_200_000_000)
+        self.assertEqual(rules.breakthrough_cost(26, 5_000), 466_600_000_000)
+
+    def test_a_scroll_that_does_not_exist_has_no_cost(self) -> None:
+        with self.assertRaises(ValueError):
+            rules.breakthrough_cost(26, 10_000)
+
+    def test_a_scroll_applies_from_anywhere_below_its_cap(self) -> None:
+        # The cap limits where the scroll leaves the item, not where it is used
+        # from, so a fresh item can buy any of them.
+        self.assertEqual(
+            rules.available_breakthroughs(0, 150), list(data.BREAKTHROUGH_SCROLLS)
+        )
+
+    def test_scrolls_drop_off_as_the_item_climbs(self) -> None:
+        # At 22 stars the 21 and 22 caps are spent: +1 would overshoot both.
+        self.assertEqual(
+            rules.available_breakthroughs(22, 150),
+            [
+                scroll
+                for scroll in data.BREAKTHROUGH_SCROLLS
+                if scroll[0] >= 23
+            ],
+        )
+
+    def test_the_last_scroll_goes_at_26_stars(self) -> None:
+        self.assertEqual(rules.available_breakthroughs(25, 150), [(26, 3_000), (26, 5_000)])
+        self.assertEqual(rules.available_breakthroughs(26, 150), [])
+
+    def test_the_level_cap_applies_on_top(self) -> None:
+        # Nothing may take an item past the level's own cap, scroll or not.
+        cap = rules.max_target_star(150)
+        self.assertEqual(rules.available_breakthroughs(cap, 150), [])
+
+
 if __name__ == "__main__":
     unittest.main()
 

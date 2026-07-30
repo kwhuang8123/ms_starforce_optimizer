@@ -11,6 +11,8 @@ bare number means the same thing. Stars accept ``22c`` or a bare ``22``.
 Commands
     e                       one enhancement attempt
     s <star>                buy and apply that star scroll, e.g. ``s 17c``
+    b                       list the breakthrough scrolls usable right now
+    b <cap> <percent>       use one, e.g. ``b 23 50`` for 突破23星50%
     r full | r 12           repair a destroyed item
     auto star <star>        climb to a star, with BUDGET_CAP as the fuse
     auto budget <meso> <star>   spend up to <meso> chasing <star>
@@ -22,7 +24,7 @@ Commands
 
 from __future__ import annotations
 
-from starforce import rules, volatile_data
+from starforce import rules, static_data, volatile_data
 from starforce.autorun import (
     AutoPolicy,
     AutoRunResult,
@@ -87,6 +89,26 @@ def parse_star(text: str) -> int:
         return int(cleaned)
     except ValueError:
         raise ValueError(f"{text!r} is not a star; write it like 22c") from None
+
+
+def parse_percent(text: str) -> int:
+    """Read ``50`` or ``50%`` as the 5,000 basis points the rules speak in."""
+    cleaned = text.strip().rstrip("%")
+    try:
+        percent = float(cleaned)
+    except ValueError:
+        raise ValueError(f"{text!r} is not a rate; write it like 50") from None
+    return round(percent * static_data.RATE_BASIS / 100)
+
+
+def describe_breakthrough(cap_star: int, success: int) -> str:
+    """One listing line: how to type this scroll, and what it costs."""
+    percent = success * 100 / static_data.RATE_BASIS
+    command = f"b {cap_star} {percent:g}"
+    return (
+        f"  {command:<12}up to {cap_star} stars, {percent:g}% success, "
+        f"{format_meso(rules.breakthrough_cost(cap_star, success))}"
+    )
 
 
 def build_session(
@@ -155,6 +177,8 @@ def handle(
         if len(args) != 1:
             raise ValueError("scroll needs a star, e.g. 's 17c'")
         print(session.use_scroll(parse_star(args[0])).describe())
+    elif verb in ("b", "break"):
+        _handle_breakthrough(session, args)
     elif verb in ("r", "repair"):
         if len(args) != 1 or args[0] not in ("full", "12"):
             raise ValueError("repair needs a policy: 'r full' or 'r 12'")
@@ -170,6 +194,29 @@ def handle(
         raise ValueError(f"unknown command {verb!r}; type 'help' for the list")
 
     return True
+
+
+def _handle_breakthrough(session: Session, args: list[str]) -> None:
+    """``b`` lists the scrolls that apply right now; ``b <cap> <percent>`` uses one."""
+    if not args:
+        if session.destroyed:
+            print(f"  the {session.star} star trace has to be repaired first")
+            return
+        usable = rules.available_breakthroughs(session.star, session.level)
+        if not usable:
+            print(f"  no breakthrough scroll applies at {session.star} stars")
+            return
+        for cap_star, success in usable:
+            print(describe_breakthrough(cap_star, success))
+        return
+
+    if len(args) != 2:
+        raise ValueError(
+            "breakthrough needs a cap and a rate, e.g. 'b 23 50'; "
+            "type 'b' on its own to list what applies"
+        )
+    entry = session.use_breakthrough(parse_star(args[0]), parse_percent(args[1]))
+    print(entry.describe())
 
 
 def _handle_auto(

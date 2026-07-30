@@ -51,6 +51,12 @@ export function starScrollStars() {
   return STATIC.star_scroll_stars;
 }
 
+/** [capStar, success] pairs, in the order the official list sells them. */
+export function breakthroughScrolls() {
+  requireConfigured();
+  return STATIC.breakthrough_scrolls;
+}
+
 export function cheapRepairStar() {
   requireConfigured();
   return STATIC.cheap_repair_star;
@@ -155,6 +161,40 @@ export function starScrollCost(star) {
   const cost = PRICES.star_scroll_cost[String(star)];
   if (cost === undefined) {
     throw new Error(`價格表沒有 ${star} 星星捲的價格`);
+  }
+  return cost;
+}
+
+/**
+ * Price file key for one breakthrough scroll. Mirrors
+ * starforce.static_data.breakthrough_id: two numbers identify a scroll, and
+ * both JSON objects and DOM attributes need a single string.
+ */
+export function breakthroughId(capStar, success) {
+  return `${capStar}-${success}`;
+}
+
+/** How the scroll is named in game, e.g. 突破23星50%. */
+export function breakthroughLabel(capStar, success) {
+  return `突破${capStar}星${(success * 100) / rateBasis()}%`;
+}
+
+export function checkBreakthrough(capStar, success) {
+  requireConfigured();
+  const known = STATIC.breakthrough_scrolls.some(
+    ([cap, rate]) => cap === capStar && rate === success
+  );
+  if (!known) {
+    throw new Error(`沒有上限 ${capStar} 星、成功率 ${success} 萬分點的突破星捲`);
+  }
+}
+
+/** Meso cost of one breakthrough scroll, as currently priced. */
+export function breakthroughCost(capStar, success) {
+  checkBreakthrough(capStar, success);
+  const cost = PRICES.breakthrough_scroll_cost[breakthroughId(capStar, success)];
+  if (cost === undefined) {
+    throw new Error(`價格表沒有${breakthroughLabel(capStar, success)}的價格`);
   }
   return cost;
 }

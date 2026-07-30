@@ -107,6 +107,56 @@ class StarScrollTest(unittest.TestCase):
         self.assertFalse(hasattr(data, "STAR_SCROLL_COST"))
 
 
+class BreakthroughScrollTest(unittest.TestCase):
+    def test_the_published_list(self) -> None:
+        self.assertEqual(
+            data.BREAKTHROUGH_SCROLLS,
+            (
+                (21, 10_000),
+                (22, 10_000),
+                (23, 3_000),
+                (23, 5_000),
+                (23, 10_000),
+                (24, 3_000),
+                (24, 5_000),
+                (24, 10_000),
+                (25, 3_000),
+                (25, 5_000),
+                (25, 10_000),
+                (26, 3_000),
+                (26, 5_000),
+            ),
+        )
+
+    def test_no_scroll_is_listed_twice(self) -> None:
+        self.assertEqual(
+            len(set(data.BREAKTHROUGH_SCROLLS)), len(data.BREAKTHROUGH_SCROLLS)
+        )
+
+    def test_every_rate_is_a_real_probability(self) -> None:
+        for cap_star, success in data.BREAKTHROUGH_SCROLLS:
+            with self.subTest(cap_star=cap_star, success=success):
+                self.assertGreater(success, 0)
+                self.assertLessEqual(success, data.RATE_BASIS)
+
+    def test_every_cap_is_reachable_by_enhancing(self) -> None:
+        # A cap nothing can be enhanced to would make the scroll unusable.
+        for cap_star, _ in data.BREAKTHROUGH_SCROLLS:
+            with self.subTest(cap_star=cap_star):
+                self.assertIn(cap_star - 1, data.ENHANCE_RATES)
+
+    def test_ids_are_unique_and_readable(self) -> None:
+        ids = [
+            data.breakthrough_id(cap, success)
+            for cap, success in data.BREAKTHROUGH_SCROLLS
+        ]
+        self.assertEqual(len(set(ids)), len(ids))
+        self.assertEqual(data.breakthrough_id(23, 3_000), "23-3000")
+
+    def test_prices_are_not_fixed_data(self) -> None:
+        self.assertFalse(hasattr(data, "BREAKTHROUGH_SCROLL_COST"))
+
+
 if __name__ == "__main__":
     unittest.main()
 

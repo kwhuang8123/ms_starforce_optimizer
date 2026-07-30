@@ -38,6 +38,10 @@ class StaticDataTest(unittest.TestCase):
     def test_it_carries_every_published_table(self) -> None:
         payload = read("static.json")
         self.assertEqual(payload["rate_basis"], data.RATE_BASIS)
+        self.assertEqual(
+            [tuple(scroll) for scroll in payload["breakthrough_scrolls"]],
+            list(data.BREAKTHROUGH_SCROLLS),
+        )
         self.assertEqual(len(payload["enhance_rates"]), len(data.ENHANCE_RATES))
         self.assertEqual(len(payload["enhance_cost"]), len(data.ENHANCE_COST))
         self.assertEqual(len(payload["repair_meso"]), len(data.REPAIR_MESO))
@@ -71,6 +75,16 @@ class PricesTest(unittest.TestCase):
             list(data.STAR_SCROLL_STARS),
         )
 
+    def test_every_breakthrough_scroll_is_priced(self) -> None:
+        payload = read("prices.json")
+        self.assertEqual(
+            sorted(payload["breakthrough_scroll_cost"]),
+            sorted(
+                data.breakthrough_id(cap, success)
+                for cap, success in data.BREAKTHROUGH_SCROLLS
+            ),
+        )
+
 
 class ParityTest(unittest.TestCase):
     """Replaying a stored case through Python must still produce its expected."""
@@ -98,6 +112,17 @@ class ParityTest(unittest.TestCase):
             list(data.STAR_SCROLL_STARS),
         )
 
+    def test_the_breakthrough_prices_ride_along_too(self) -> None:
+        # Same reason as the scroll prices: selftest.html must not have to load
+        # prices.json, or a browser's saved edits could fail a golden case.
+        self.assertEqual(
+            sorted(self.payload["breakthrough_scroll_cost"]),
+            sorted(
+                data.breakthrough_id(cap, success)
+                for cap, success in data.BREAKTHROUGH_SCROLLS
+            ),
+        )
+
     def test_the_cases_cover_the_paths_worth_guarding(self) -> None:
         kinds = {case["kind"] for case in self.payload["cases"]}
         self.assertEqual(kinds, {"auto", "manual"})
@@ -108,7 +133,8 @@ class ParityTest(unittest.TestCase):
             for entry in case["expected"]["log"]
         }
         self.assertEqual(
-            actions, {"enhance", "scroll", "repair_full", "repair_to_12"}
+            actions,
+            {"enhance", "scroll", "breakthrough", "repair_full", "repair_to_12"},
         )
 
         outcomes = {
@@ -128,7 +154,10 @@ class ParityTest(unittest.TestCase):
 
     def test_a_case_consumes_exactly_the_rolls_it_stores(self) -> None:
         # The stored rolls are trimmed to what the run used, so a port that
-        # draws a different number of rolls cannot silently pass.
+        # draws a different number of rolls cannot silently pass. Enhancing and
+        # breakthrough scrolls are the two actions that roll; a star scroll and
+        # a repair are both certain.
+        rolling = {"enhance", "breakthrough"}
         for case in self.payload["cases"]:
             with self.subTest(case=case["name"]):
                 self.assertEqual(
@@ -136,7 +165,7 @@ class ParityTest(unittest.TestCase):
                     sum(
                         1
                         for entry in case["expected"]["log"]
-                        if entry["action"] == "enhance"
+                        if entry["action"] in rolling
                     ),
                 )
 

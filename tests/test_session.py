@@ -158,6 +158,80 @@ class ScrollTest(unittest.TestCase):
             session.use_scroll(17)
 
 
+class BreakthroughTest(unittest.TestCase):
+    def test_success_adds_exactly_one_star(self) -> None:
+        session = scripted(Session(level=200, start_star=22), [2999])
+        entry = session.use_breakthrough(24, 3_000)
+        self.assertEqual(session.star, 23)
+        self.assertEqual(entry.outcome, "success")
+        self.assertEqual(entry.meso, rules.breakthrough_cost(24, 3_000))
+        self.assertEqual(session.totals.breakthroughs_used, 1)
+
+    def test_failure_leaves_the_star_alone_but_still_charges(self) -> None:
+        session = scripted(Session(level=200, start_star=22), [3_000])
+        entry = session.use_breakthrough(24, 3_000)
+        self.assertEqual(session.star, 22)
+        self.assertEqual(entry.outcome, "maintain")
+        self.assertEqual(session.total_cost, rules.breakthrough_cost(24, 3_000))
+
+    def test_a_miss_never_destroys(self) -> None:
+        # The roll that would destroy a 22 star enhancement attempt is only a
+        # miss here: this path has no destruction band at all.
+        session = scripted(Session(level=200, start_star=22), [9_999])
+        session.use_breakthrough(24, 3_000)
+        self.assertFalse(session.destroyed)
+        self.assertEqual(session.totals.destroys, 0)
+
+    def test_a_100_percent_scroll_always_lands(self) -> None:
+        session = scripted(Session(level=200, start_star=22), [9_999])
+        session.use_breakthrough(23, 10_000)
+        self.assertEqual(session.star, 23)
+
+    def test_it_does_not_count_as_an_enhancement_attempt(self) -> None:
+        # attempts and attempts_by_star feed the sweep datasets, which know
+        # nothing about breakthrough scrolls.
+        session = scripted(Session(level=200, start_star=22), [0])
+        session.use_breakthrough(24, 3_000)
+        self.assertEqual(session.totals.attempts, 0)
+        self.assertEqual(session.totals.attempts_by_star, {})
+        self.assertEqual(session.totals.scrolls_used, 0)
+
+    def test_a_scroll_that_would_overshoot_its_cap_raises(self) -> None:
+        session = Session(level=200, start_star=23)
+        with self.assertRaises(ValueError):
+            session.use_breakthrough(23, 10_000)
+
+    def test_a_scroll_applies_from_well_below_its_cap(self) -> None:
+        session = scripted(Session(level=200), [0])
+        session.use_breakthrough(26, 3_000)
+        self.assertEqual(session.star, 1)
+
+    def test_a_scroll_that_is_not_sold_raises(self) -> None:
+        session = Session(level=200, start_star=22)
+        for pair in ((26, 10_000), (24, 4_000), (27, 10_000)):
+            with self.subTest(pair=pair):
+                with self.assertRaises(ValueError):
+                    session.use_breakthrough(*pair)
+
+    def test_the_level_cap_still_applies(self) -> None:
+        session = Session(level=200, start_star=rules.max_target_star(200))
+        with self.assertRaises(ValueError):
+            session.use_breakthrough(26, 3_000)
+
+    def test_a_destroyed_item_cannot_use_one(self) -> None:
+        session = scripted(Session(level=140, start_star=15), [3100])
+        session.enhance()
+        with self.assertRaises(ValueError):
+            session.use_breakthrough(23, 3_000)
+
+    def test_a_rejected_scroll_charges_nothing(self) -> None:
+        session = Session(level=200, start_star=23)
+        with self.assertRaises(ValueError):
+            session.use_breakthrough(23, 10_000)
+        self.assertEqual(session.total_cost, 0)
+        self.assertEqual(session.log, [])
+
+
 class RepairTest(unittest.TestCase):
     PRICE = 1_000_000_000  # 10億
 

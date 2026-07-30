@@ -11,12 +11,19 @@ import * as rules from "./rules.js";
 import * as store from "./prices-store.js";
 import { Session, RepairPolicy } from "./session.js";
 import { runWithinBudget, runToStar, autoPolicy, StopReason } from "./autorun.js";
-import { equipmentIcon, iconOrText, iconTag, scrollIcon } from "./assets.js";
+import {
+  breakthroughIcon,
+  equipmentIcon,
+  iconOrText,
+  iconTag,
+  scrollIcon,
+} from "./assets.js";
 import { formatMeso, formatYi, parseMeso, parseStar, toYi } from "./format.js";
 
 const ACTION_LABEL = {
   enhance: "強化",
   scroll: "星捲",
+  breakthrough: "突破星捲",
   repair_full: "完整修復",
   repair_to_12: "修復至 12 星",
 };
@@ -74,6 +81,7 @@ function bind() {
     "play-next-star", "play-arrow", "play-rates", "play-cost", "play-total",
     "play-subtotal", "play-flag",
     "play-enhance", "play-scrolls", "play-repair-full",
+    "play-breakthrough", "play-breakthrough-icon", "play-breakthrough-use",
     "play-repair-12", "play-error", "play-copy", "play-summary",
     "play-animate", "play-skip",
     "auto-repair", "auto-scroll", "auto-budget", "auto-budget-target",
@@ -495,7 +503,8 @@ function renderLog(state) {
   const t = session.totals;
   el["play-summary"].textContent =
     `楓幣 ${formatMeso(t.total_meso)}　裝備成本 ${formatMeso(t.equipment_cost)}（${t.equipment_used} 件）` +
-    `　總計 ${formatMeso(session.totalCost)}　星捲 ${t.scrolls_used}　強化 ${t.attempts} 次　破壞 ${t.destroys} 次`;
+    `　總計 ${formatMeso(session.totalCost)}　星捲 ${t.scrolls_used}　突破星捲 ${t.breakthroughs_used}` +
+    `　強化 ${t.attempts} 次　破壞 ${t.destroys} 次`;
 }
 
 /** One row inside a panel block: label on the left, figure on the right. */
@@ -616,6 +625,63 @@ function renderScrolls(state) {
     .join("");
 }
 
+/**
+ * The breakthrough scrolls that apply right now, as a single dropdown.
+ *
+ * A scroll caps where it leaves the item rather than where it may be used, so
+ * eleven of them can apply at once. That is a picker rather than the row of
+ * chips the star scrolls get: eleven more chips would push the whole tab off a
+ * phone screen. The trade is that using one takes two clicks, which for a
+ * 4,666億 scroll is no bad thing.
+ *
+ * The selection has to survive being rebuilt, because render() runs after every
+ * single action.
+ */
+function renderBreakthroughs(state) {
+  const pick = el["play-breakthrough"];
+  const chosen = pick.value;
+  // Nothing may be offered mid-playback: the session has already moved on, so a
+  // scroll bought here would act on a state the screen is not showing.
+  const usable =
+    state === null || !state.live ? [] : session.availableBreakthroughs();
+
+  if (usable.length === 0) {
+    pick.innerHTML = `<option value="">沒有可用的突破星捲</option>`;
+    pick.disabled = true;
+    el["play-breakthrough-use"].disabled = true;
+    return;
+  }
+
+  pick.innerHTML = usable
+    .map(([capStar, success]) => {
+      const label = rules.breakthroughLabel(capStar, success);
+      const price = rules.breakthroughCost(capStar, success);
+      return `<option value="${rules.breakthroughId(capStar, success)}"
+        title="${label}，成功 +1 星，失敗不變，${formatMeso(price)}">
+        ${label}・${formatYi(price)}</option>`;
+    })
+    .join("");
+
+  // Keep what the operator picked while it is still on offer; a climb that put
+  // it out of range falls back to the first one rather than to nothing.
+  pick.value = chosen;
+  if (pick.value === "") {
+    pick.value = pick.options[0].value;
+  }
+  pick.disabled = false;
+  el["play-breakthrough-use"].disabled = false;
+}
+
+/** Use whatever the breakthrough dropdown currently has selected. */
+function useBreakthrough() {
+  const chosen = el["play-breakthrough"].value;
+  if (chosen === "") {
+    return;
+  }
+  const [capStar, success] = chosen.split("-").map(Number);
+  act(() => session.useBreakthrough(capStar, success));
+}
+
 /** The item's artwork, or its name when there is none for it. */
 function renderIcon() {
   if (session === null) {
@@ -673,6 +739,7 @@ function render() {
   }
 
   renderScrolls(state);
+  renderBreakthroughs(state);
   renderLog(state);
   renderBudgetHint();
 }
@@ -703,6 +770,14 @@ export function initPlay(loadedDatasets) {
   bind();
   fillSetup();
 
+  // The manifest is already loaded by the time this runs, and the artwork never
+  // changes, so the icon is written once rather than on every render.
+  el["play-breakthrough-icon"].innerHTML = iconTag(
+    breakthroughIcon(),
+    "突破星捲",
+    "sf-break-img"
+  );
+
   // Equipment and the starting star are the only settings left, and neither can
   // be applied to an item already under way, so changing either starts a new one.
   el["play-equipment"].addEventListener("change", () => {
@@ -720,6 +795,7 @@ export function initPlay(loadedDatasets) {
       act(() => session.useScroll(Number(button.dataset.star)));
     }
   });
+  el["play-breakthrough-use"].addEventListener("click", useBreakthrough);
   el["play-repair-full"].addEventListener("click", () =>
     act(() => session.repair(RepairPolicy.FULL))
   );

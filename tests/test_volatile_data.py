@@ -10,6 +10,14 @@ from pathlib import Path
 from starforce import static_data, volatile_data
 
 
+def breakthrough_costs(price: int = 1) -> dict[str, int]:
+    """Every breakthrough scroll at the same price, for payloads under test."""
+    return {
+        static_data.breakthrough_id(cap, success): price
+        for cap, success in static_data.BREAKTHROUGH_SCROLLS
+    }
+
+
 def write_payload(payload: dict) -> Path:
     """Dump ``payload`` to a temporary JSON file and return its path."""
     handle = tempfile.NamedTemporaryFile(
@@ -56,6 +64,52 @@ class ShippedDataTest(unittest.TestCase):
             for star in static_data.STAR_SCROLL_STARS
         ]
         self.assertEqual(prices, sorted(prices))
+
+    def test_breakthrough_prices(self) -> None:
+        self.assertEqual(
+            volatile_data.BREAKTHROUGH_SCROLL_COST,
+            {
+                "21-10000": 13_300_000_000,
+                "22-10000": 31_000_000_000,
+                "23-3000": 10_200_000_000,
+                "23-5000": 14_200_000_000,
+                "23-10000": 37_000_000_000,
+                "24-3000": 18_100_000_000,
+                "24-5000": 28_000_000_000,
+                "24-10000": 70_000_000_000,
+                "25-3000": 80_500_000_000,
+                "25-5000": 157_500_000_000,
+                "25-10000": 320_000_000_000,
+                "26-3000": 310_000_000_000,
+                "26-5000": 466_600_000_000,
+            },
+        )
+
+    def test_a_better_rate_at_the_same_cap_costs_more(self) -> None:
+        # A sanity check on the snapshot, not a rule the market has to obey. If
+        # prices ever invert, update the figures and this expectation together.
+        by_cap: dict[int, list[tuple[int, int]]] = {}
+        for cap, success in static_data.BREAKTHROUGH_SCROLLS:
+            price = volatile_data.BREAKTHROUGH_SCROLL_COST[
+                static_data.breakthrough_id(cap, success)
+            ]
+            by_cap.setdefault(cap, []).append((success, price))
+        for cap, entries in by_cap.items():
+            with self.subTest(cap=cap):
+                prices = [price for _, price in sorted(entries)]
+                self.assertEqual(prices, sorted(prices))
+
+    def test_a_higher_cap_at_the_same_rate_costs_more(self) -> None:
+        by_rate: dict[int, list[tuple[int, int]]] = {}
+        for cap, success in static_data.BREAKTHROUGH_SCROLLS:
+            price = volatile_data.BREAKTHROUGH_SCROLL_COST[
+                static_data.breakthrough_id(cap, success)
+            ]
+            by_rate.setdefault(success, []).append((cap, price))
+        for success, entries in by_rate.items():
+            with self.subTest(success=success):
+                prices = [price for _, price in sorted(entries)]
+                self.assertEqual(prices, sorted(prices))
 
     def test_catalogue(self) -> None:
         expected = {
@@ -112,6 +166,7 @@ class AliasTest(ReloadingTestCase):
         self.load_payload(
             {
                 "star_scroll_cost": {str(s): 1 for s in static_data.STAR_SCROLL_STARS},
+                "breakthrough_scroll_cost": breakthrough_costs(),
                 "equipment": [
                     {
                         "name": "控制核心",
@@ -133,6 +188,7 @@ class AliasTest(ReloadingTestCase):
                     "star_scroll_cost": {
                         str(s): 1 for s in static_data.STAR_SCROLL_STARS
                     },
+                    "breakthrough_scroll_cost": breakthrough_costs(),
                     "equipment": [
                         {"name": "永恆上四", "level": 250, "price": 1, "aliases": []},
                         {"name": "永恆上4", "level": 250, "price": 1, "aliases": []},
@@ -148,6 +204,7 @@ class ValidationTest(ReloadingTestCase):
             "star_scroll_cost": {
                 str(star): 1 for star in static_data.STAR_SCROLL_STARS
             },
+            "breakthrough_scroll_cost": breakthrough_costs(),
             "equipment": [{"name": "測試", "level": 150, "price": 1, "aliases": []}],
         }
 
@@ -187,6 +244,27 @@ class ValidationTest(ReloadingTestCase):
         with self.assertRaises(ValueError) as caught:
             self.load_payload(payload)
         self.assertIn("no scroll exists for", str(caught.exception))
+
+    def test_missing_breakthrough_scroll_raises(self) -> None:
+        payload = self.valid_payload()
+        del payload["breakthrough_scroll_cost"]["23-3000"]
+        with self.assertRaises(ValueError) as caught:
+            self.load_payload(payload)
+        self.assertIn("missing scrolls ['23-3000']", str(caught.exception))
+
+    def test_a_breakthrough_scroll_that_does_not_exist_raises(self) -> None:
+        payload = self.valid_payload()
+        payload["breakthrough_scroll_cost"]["26-10000"] = 1
+        with self.assertRaises(ValueError) as caught:
+            self.load_payload(payload)
+        self.assertIn("do not exist", str(caught.exception))
+
+    def test_a_missing_breakthrough_section_raises(self) -> None:
+        payload = self.valid_payload()
+        del payload["breakthrough_scroll_cost"]
+        with self.assertRaises(ValueError) as caught:
+            self.load_payload(payload)
+        self.assertIn("missing the 'breakthrough_scroll_cost' section", str(caught.exception))
 
     def test_negative_price_raises(self) -> None:
         payload = self.valid_payload()
@@ -234,10 +312,12 @@ class ReloadPropagationTest(ReloadingTestCase):
             "star_scroll_cost": {
                 str(star): 777 for star in static_data.STAR_SCROLL_STARS
             },
+            "breakthrough_scroll_cost": breakthrough_costs(888),
             "equipment": [{"name": "測試", "level": 150, "price": 1, "aliases": []}],
         }
         self.load_payload(payload)
         self.assertEqual(rules.star_scroll_cost(15), 777)
+        self.assertEqual(rules.breakthrough_cost(23, 3_000), 888)
 
 
 if __name__ == "__main__":

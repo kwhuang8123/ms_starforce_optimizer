@@ -15,6 +15,11 @@ like an anomaly but is exactly what the official table publishes and is kept
 as-is:
     - level 140, 21 -> 22 (92,474,100) is dearer than 22 -> 23 (65,166,700)
 
+The one exception is BREAKTHROUGH_SCROLLS, which is the list of scrolls sold
+in game rather than a figure from either announcement above. It is fixed data
+all the same - a patch is what changes which scrolls exist - so it belongs
+here, but it has no announcement URL to check it against.
+
 Level 130 is not carried at all. The announcement publishes no level 130 repair
 column, so a destroyed 130 item has no knowable cost, and no equipment in the
 catalogue is that level. Its enhancement table lived here until it was removed
@@ -306,3 +311,45 @@ REPAIR_EQUIPMENT: dict[int, int] = {
 # the same as each other, carry no destruction risk, and no strategy worth
 # measuring starts below 15.
 STAR_SCROLL_STARS: tuple[int, ...] = tuple(range(15, 21))
+
+# Breakthrough scroll: one attempt at a single extra star. Success adds a star,
+# failure leaves the item exactly where it was - there is no destruction, so
+# nothing here touches the repair tables.
+#
+# Each scroll is identified by two things: the star it will not take an item
+# past, and its success rate. A scroll may be used from any star as long as the
+# extra star would not exceed its cap, so the 21 star scroll is spent at 20 and
+# nowhere higher.
+#
+# Rates are in basis points, the same unit ENHANCE_RATES uses. That is also why
+# the id below is built from basis points rather than from a percentage: a
+# future scroll priced at a fraction of a percent would otherwise collide with
+# an existing one. 21 and 22 stars only exist at 100%; 26 stars has no 100%
+# version. Prices live in starforce.volatile_data.
+#
+#                            (cap star, success rate)
+BREAKTHROUGH_SCROLLS: tuple[tuple[int, int], ...] = (
+    (21, 10_000),
+    (22, 10_000),
+    (23, 3_000),
+    (23, 5_000),
+    (23, 10_000),
+    (24, 3_000),
+    (24, 5_000),
+    (24, 10_000),
+    (25, 3_000),
+    (25, 5_000),
+    (25, 10_000),
+    (26, 3_000),
+    (26, 5_000),
+)
+
+
+def breakthrough_id(cap_star: int, success: int) -> str:
+    """Key for one breakthrough scroll, e.g. ``"23-3000"`` for 突破23星30%.
+
+    Two numbers identify a scroll, and both JSON objects and DOM attributes
+    need a single string. This is that string, defined once so the price file,
+    the generated site data and the front end cannot drift apart.
+    """
+    return f"{cap_star}-{success}"

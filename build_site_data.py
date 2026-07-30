@@ -77,6 +77,9 @@ def build_static() -> dict[str, Any]:
         "rate_basis": data.RATE_BASIS,
         "supported_levels": list(data.SUPPORTED_LEVELS),
         "star_scroll_stars": list(data.STAR_SCROLL_STARS),
+        # [cap star, success rate] pairs. A list rather than an object because
+        # the pair is the identity; the id string is only for pricing.
+        "breakthrough_scrolls": [list(scroll) for scroll in data.BREAKTHROUGH_SCROLLS],
         "min_start_star": rules.MIN_START_STAR,
         "max_start_star": rules.MAX_START_STAR,
         "destroy_start_star": rules.DESTROY_START_STAR,
@@ -116,6 +119,7 @@ def build_prices() -> dict[str, Any]:
             str(star): volatile_data.STAR_SCROLL_COST[star]
             for star in data.STAR_SCROLL_STARS
         },
+        "breakthrough_scroll_cost": _breakthrough_prices(),
         "equipment": [
             {
                 "name": item.name,
@@ -125,6 +129,17 @@ def build_prices() -> dict[str, Any]:
             }
             for item in volatile_data.CATALOG.values()
         ],
+    }
+
+
+def _breakthrough_prices(multiplier: int = 1) -> dict[str, int]:
+    """Breakthrough scroll prices in table order, optionally scaled."""
+    return {
+        data.breakthrough_id(cap, success): (
+            volatile_data.BREAKTHROUGH_SCROLL_COST[data.breakthrough_id(cap, success)]
+            * multiplier
+        )
+        for cap, success in data.BREAKTHROUGH_SCROLLS
     }
 
 
@@ -232,6 +247,7 @@ def _session_state(session: Session) -> dict[str, Any]:
             "equipment_used": totals.equipment_used,
             "equipment_cost": totals.equipment_cost,
             "scrolls_used": totals.scrolls_used,
+            "breakthroughs_used": totals.breakthroughs_used,
             "attempts": totals.attempts,
             "destroys": totals.destroys,
             "total_cost": totals.total_cost,
@@ -322,6 +338,8 @@ def _manual_case(
             session.enhance()
         elif verb == "scroll":
             session.use_scroll(action[1])
+        elif verb == "breakthrough":
+            session.use_breakthrough(action[1], action[2])
         elif verb == "repair":
             session.repair(RepairPolicy(action[1]))
         else:
@@ -409,6 +427,21 @@ def build_parity() -> dict[str, Any]:
             # 1000 falls in the 25 star destroy band, 9999 maintains at 20.
             rolls=[1000, 9999],
         ),
+        _manual_case(
+            "breakthrough scroll, one hit then one miss",
+            level=200,
+            start_star=22,
+            equipment_price=20_000_000_000,
+            actions=[
+                ["breakthrough", 24, 3_000],
+                ["breakthrough", 24, 3_000],
+                ["enhance"],
+            ],
+            # 0 lands inside the 3,000 basis point rate and 9999 misses it; the
+            # miss must leave the item at 23 with nothing to repair. 9999 then
+            # maintains the 23 star attempt.
+            rolls=[0, 9999, 9999],
+        ),
     ]
 
     return {
@@ -418,6 +451,7 @@ def build_parity() -> dict[str, Any]:
             str(star): volatile_data.STAR_SCROLL_COST[star]
             for star in data.STAR_SCROLL_STARS
         },
+        "breakthrough_scroll_cost": _breakthrough_prices(),
         "cases": cases,
         "reprice": build_reprice_cases(),
     }
@@ -444,6 +478,9 @@ def _price_payload(scroll_multiplier: int, equipment_multiplier: int) -> dict[st
             str(star): volatile_data.STAR_SCROLL_COST[star] * scroll_multiplier
             for star in data.STAR_SCROLL_STARS
         },
+        # No simulated strategy buys a breakthrough scroll, so this scales along
+        # only because the price file will not load without the section.
+        "breakthrough_scroll_cost": _breakthrough_prices(scroll_multiplier),
         "equipment": [
             {
                 "name": item.name,

@@ -172,6 +172,9 @@ class RunResult:
     rebuild_cost: int = 0
     #: Star scrolls consumed, including the one that starts a SCROLL run.
     scrolls_used: int = 0
+    #: Breakthrough scrolls consumed, win or lose. Only a hand-driven session
+    #: ever moves this: no simulated strategy buys one.
+    breakthroughs_used: int = 0
     attempts: int = 0
     destroys: int = 0
     #: Attempts made from each star, keyed by the star attempted from.

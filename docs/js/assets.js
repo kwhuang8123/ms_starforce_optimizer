@@ -12,7 +12,7 @@
  * references inside docs/ leaves the Python data model clean.
  */
 
-let manifest = { equipment: {}, scroll: null };
+let manifest = { equipment: {}, scroll: null, breakthrough: null };
 
 export async function loadManifest(path = "assets/manifest.json") {
   try {
@@ -24,6 +24,7 @@ export async function loadManifest(path = "assets/manifest.json") {
     manifest = {
       equipment: payload.equipment || {},
       scroll: payload.scroll || null,
+      breakthrough: payload.breakthrough || null,
     };
   } catch (error) {
     // A missing or malformed manifest is not worth breaking the page over -
@@ -43,6 +44,10 @@ export function equipmentIcon(name) {
 
 export function scrollIcon() {
   return manifest.scroll;
+}
+
+export function breakthroughIcon() {
+  return manifest.breakthrough;
 }
 
 /**
