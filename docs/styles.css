@@ -25,6 +25,12 @@
 
 * { box-sizing: border-box; }
 
+/* The browser's own [hidden] rule is a bare attribute selector, so any class
+   that sets display - .play-columns being a grid, for one - outranks it and the
+   element stays on screen. Tab switching relies on `hidden`, so it gets the
+   last word here. */
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   background: var(--bg);
@@ -142,14 +148,50 @@ hr { border: none; border-top: 1px solid var(--line); margin: 14px 0; }
 
 .starforce { max-width: 520px; }
 
+/* The manual tab is two columns wide enough to hold them: the panel on the
+   left, everything that reads as output on the right. Below that it stacks.
+   The goal is that a visitor can see and use the panel without scrolling. */
+.play-columns {
+  display: grid;
+  /* Wide enough that the eleven star scrolls wrap into two rows rather than
+     three - that one strip was the tallest thing in the panel. */
+  grid-template-columns: minmax(0, 620px) minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+}
+
+.play-side { min-width: 0; }
+
+.starforce { max-width: none; }
+
+/* Inside the panel, the item sits beside its state for the same reason. */
+.sf-top {
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.sf-item { text-align: center; }
+.sf-state { min-width: 0; }
+
+.sf-owned { justify-content: center; margin: 8px 0 2px; font-size: 12px; }
+
+.sf-spent { margin-top: 10px; margin-bottom: 0; }
+
+@media (max-width: 1100px) {
+  .play-columns { grid-template-columns: minmax(0, 1fr); }
+}
+
+
 /* The item slot. Its dark interior is also what contains the supplied artwork:
    the icons available today are screen captures with their own background baked
    in, so a frame around them reads better than a bare image on the panel. */
 .sf-slot {
-  width: 104px;
-  height: 104px;
-  margin: 0 auto 14px;
-  padding: 6px;
+  width: 84px;
+  height: 84px;
+  margin: 0 auto 10px;
+  padding: 5px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--panel-inner);
@@ -167,8 +209,8 @@ hr { border: none; border-top: 1px solid var(--line); margin: 14px 0; }
 }
 
 .sf-icon-img {
-  max-width: 76px;
-  max-height: 76px;
+  max-width: 62px;
+  max-height: 62px;
   filter: drop-shadow(0 0 5px rgba(255, 210, 74, 0.35));
 }
 
@@ -184,17 +226,17 @@ hr { border: none; border-top: 1px solid var(--line); margin: 14px 0; }
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
-  margin-top: 14px;
+  gap: 5px;
+  margin-top: 10px;
 }
 
 .sf-scroll {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 6px 8px;
-  min-width: 68px;
+  gap: 1px;
+  padding: 4px 5px;
+  min-width: 54px;
 }
 
 .sf-scroll-art {
@@ -202,11 +244,11 @@ hr { border: none; border-top: 1px solid var(--line); margin: 14px 0; }
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 34px;
-  min-height: 34px;
+  min-width: 28px;
+  min-height: 28px;
 }
 
-.sf-scroll-img { width: 34px; height: 34px; }
+.sf-scroll-img { width: 28px; height: 28px; }
 
 .sf-scroll-star {
   position: absolute;
@@ -273,23 +315,24 @@ label.inline {
   color: var(--ink);
 }
 
-.sf-name {
-  margin: 0 auto 16px;
-  padding: 8px 20px;
-  max-width: 24em;
-  border: 1px solid var(--line);
+/* The name is the equipment picker now: one control instead of a label plus a
+   separate setup card. */
+select.sf-name {
+  width: 100%;
+  padding: 6px 8px;
   border-radius: 999px;
   background: var(--panel-inner);
   text-align: center;
   font-weight: 600;
+  font-size: 13px;
 }
 
 .sf-stars {
   display: grid;
   grid-template-columns: repeat(3, max-content);
-  gap: 4px 18px;
+  gap: 2px 18px;
   justify-content: center;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .sf-cluster { display: flex; gap: 3px; }
@@ -310,19 +353,19 @@ label.inline {
   align-items: center;
   justify-content: center;
   gap: 14px;
-  margin-bottom: 16px;
-  padding: 8px;
+  margin-bottom: 10px;
+  padding: 4px;
   border-radius: 6px;
   background: var(--panel-inner);
-  font-size: 18px;
+  font-size: 16px;
 }
 
-.sf-step b { color: var(--gold); font-size: 22px; }
+.sf-step b { color: var(--gold); font-size: 20px; }
 .sf-arrow { color: var(--accent); letter-spacing: 2px; }
 
 .sf-block {
-  margin-bottom: 12px;
-  padding: 10px 12px;
+  margin-bottom: 10px;
+  padding: 8px 12px;
   border: 1px solid var(--line);
   border-radius: 6px;
   background: var(--panel-inner);
@@ -346,15 +389,16 @@ label.inline {
 .sf-row .num { font-variant-numeric: tabular-nums; }
 .sf-row .gold { color: var(--gold); font-weight: 600; }
 
-.sf-actions { margin-top: 16px; text-align: center; }
+.sf-actions { margin: 0 0 10px; text-align: center; }
 
 button.big {
-  min-width: 200px;
-  padding: 11px 24px;
+  min-width: 180px;
+  padding: 9px 24px;
   font-size: 16px;
 }
 
-.sf-actions .row { justify-content: center; margin-top: 12px; }
+.sf-actions .row { justify-content: center; margin: 8px 0 0; }
+.sf-actions .muted { margin: 4px 0 0; font-size: 11px; }
 
 .flag {
   margin: 12px 0 0;
@@ -401,6 +445,39 @@ footer {
 }
 
 a { color: var(--accent); }
+
+/* Narrow screens: the panel is what has to survive the fold, so the item block
+   turns sideways, the scroll buttons shrink, and the chrome gives up its
+   padding. Measured against 375x812, where the panel is otherwise ~170px too
+   tall to fit under the header.
+
+   This block sits at the end of the file on purpose: it overrides declarations
+   made above it, and CSS resolves equal specificity by source order. */
+@media (max-width: 620px) {
+  main { padding: 12px 12px 24px; }
+  header { padding: 12px 12px 0; }
+  h1 { margin-bottom: 8px; font-size: 18px; }
+  .tab { padding: 6px 10px; }
+
+  .sf-top { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+
+  .sf-item {
+    display: grid;
+    grid-template-columns: 84px minmax(0, 1fr);
+    gap: 6px 12px;
+    align-items: center;
+    text-align: left;
+  }
+  .sf-item .sf-slot { grid-row: 1 / 4; align-self: start; margin: 0; }
+  .sf-item .sf-spent { grid-column: 1 / -1; }
+  .sf-owned { justify-content: flex-start; margin: 0; }
+
+  .sf-scroll { min-width: 42px; padding: 3px 4px; }
+  .sf-scroll-art { min-width: 22px; min-height: 22px; }
+  .sf-scroll-img { width: 22px; height: 22px; }
+  .sf-scroll-price { font-size: 10px; }
+  .sf-scrolls { gap: 4px; }
+}
 
 /* selftest.html */
 body.selftest main { padding: 20px 24px; max-width: 1000px; }

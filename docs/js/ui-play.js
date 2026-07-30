@@ -12,7 +12,7 @@ import * as store from "./prices-store.js";
 import { Session, RepairPolicy } from "./session.js";
 import { runWithinBudget, runToStar, autoPolicy, StopReason } from "./autorun.js";
 import { equipmentIcon, iconOrText, iconTag, scrollIcon } from "./assets.js";
-import { formatMeso, parseMeso, parseStar, toYi } from "./format.js";
+import { formatMeso, formatYi, parseMeso, parseStar, toYi } from "./format.js";
 
 const ACTION_LABEL = {
   enhance: "強化",
@@ -69,11 +69,11 @@ const el = {};
 
 function bind() {
   for (const id of [
-    "play-equipment", "play-level", "play-level-field", "play-start-star",
-    "play-new", "play-name", "play-icon", "play-star", "play-star-grid",
+    "play-equipment", "play-owned",
+    "play-new", "play-icon", "play-star", "play-star-grid",
     "play-next-star", "play-arrow", "play-rates", "play-cost", "play-total",
     "play-subtotal", "play-flag",
-    "play-enhance", "play-scrolls", "play-scroll-note", "play-repair-full",
+    "play-enhance", "play-scrolls", "play-repair-full",
     "play-repair-12", "play-error", "play-copy", "play-summary",
     "play-animate", "play-skip",
     "auto-repair", "auto-scroll", "auto-budget", "auto-budget-target",
@@ -94,28 +94,23 @@ function fillSetup() {
   const first = el["play-equipment"].options.length === 0;
   const chosen = el["play-equipment"].value;
 
-  el["play-equipment"].innerHTML =
-    prices.equipment
-      .map(
-        (item) =>
-          `<option value="${item.name}">${item.name}（Lv${item.level}・${formatMeso(item.price)}）</option>`
-      )
-      .join("") + `<option value="">不指定（修復裝備計 0）</option>`;
+  el["play-equipment"].innerHTML = prices.equipment
+    .map(
+      (item) =>
+        `<option value="${item.name}">${item.name}（Lv${item.level}・${formatMeso(item.price)}）</option>`
+    )
+    .join("");
 
   if (first) {
     const known = prices.equipment.some((item) => item.name === DEFAULT_EQUIPMENT);
-    el["play-equipment"].value = known ? DEFAULT_EQUIPMENT : "";
+    el["play-equipment"].value = known
+      ? DEFAULT_EQUIPMENT
+      : prices.equipment[0].name;
   } else {
     // Assigning a value no option carries leaves the select empty, which is
     // exactly the right answer when the chosen equipment has just been deleted.
     el["play-equipment"].value = chosen;
   }
-
-  el["play-level"].innerHTML = rules
-    .supportedLevels()
-    .map((level) => `<option value="${level}">${level}</option>`)
-    .join("");
-  el["play-level"].value = String(rules.supportedLevels()[2]);
 
   el["auto-scroll"].innerHTML =
     `<option value="">不使用</option>` +
@@ -124,20 +119,37 @@ function fillSetup() {
       .map((star) => `<option value="${star}">${star} 星星捲</option>`)
       .join("");
 
-  syncLevelField();
+  syncOwned();
 }
 
-function syncLevelField() {
-  const usingCatalogue = el["play-equipment"].value !== "";
-  el["play-level-field"].hidden = usingCatalogue;
+/**
+ * Where a fresh item starts: nothing, or the star an owned one is worth
+ * modelling from.
+ *
+ * 22 is not a magic number here - it is the star the engine prices a rebuild
+ * against, so it comes from the same table rather than being written twice. No
+ * scroll reaches it, which is exactly why the option has to exist: without it
+ * the "I already hold a 22 star item" case cannot be simulated at all.
+ */
+function startStar() {
+  if (!el["play-owned"].checked) {
+    return 0;
+  }
+  return rules.rebuildStar();
 }
 
-function chosenLevel() {
+/** Hide the option on any level that cannot reach the rebuild star. */
+function syncOwned() {
   const name = el["play-equipment"].value;
   if (name === "") {
-    return Number(el["play-level"].value);
+    return;
   }
-  return store.lookup(name).level;
+  const cap = rules.maxTargetStar(store.lookup(name).level);
+  const reachable = rules.rebuildStar() <= cap;
+  el["play-owned"].disabled = !reachable;
+  if (!reachable) {
+    el["play-owned"].checked = false;
+  }
 }
 
 function showError(message) {
@@ -150,13 +162,12 @@ function newSession() {
   showError(null);
   el["auto-result"].hidden = true;
   try {
-    const name = el["play-equipment"].value;
-    const item = name === "" ? null : store.lookup(name);
+    const item = store.lookup(el["play-equipment"].value);
     session = new Session({
-      level: item === null ? Number(el["play-level"].value) : item.level,
-      startStar: Number(el["play-start-star"].value),
-      equipmentName: item === null ? null : item.name,
-      equipmentPrice: item === null ? 0 : item.price,
+      level: item.level,
+      startStar: startStar(),
+      equipmentName: item.name,
+      equipmentPrice: item.price,
     });
   } catch (error) {
     session = null;
@@ -561,9 +572,11 @@ function renderNextAttempt(state) {
     panelRow("破壞", percent(destroy), "bad-text");
 
   const fee = rules.enhanceCost(session.level, state.star);
-  cost.innerHTML =
-    panelRow("本次強化", formatMeso(fee), "gold") +
-    panelRow("", `${fee.toLocaleString("en-US")} 楓幣`, "muted");
+  cost.innerHTML = panelRow(
+    "費用",
+    `${formatMeso(fee)}<span class="muted">　${fee.toLocaleString("en-US")} 楓幣</span>`,
+    "gold"
+  );
 }
 
 /**
@@ -579,10 +592,8 @@ function renderScrolls(state) {
   const stars = state === null || !state.live ? [] : session.availableScrolls();
   if (stars.length === 0) {
     el["play-scrolls"].innerHTML = "";
-    el["play-scroll-note"].hidden = true;
     return;
   }
-  el["play-scroll-note"].hidden = false;
   const icon = scrollIcon();
   el["play-scrolls"].innerHTML = stars
     .map((star) => {
@@ -593,10 +604,13 @@ function renderScrolls(state) {
         ? `<span class="sf-scroll-art">${iconTag(icon, "星捲", "sf-scroll-img")}` +
           `<span class="sf-scroll-star">${star}</span></span>`
         : `<span class="sf-scroll-star plain">${star} 星</span>`;
+      // The compact form keeps the chip narrow enough that eleven of them wrap
+      // into two rows on a phone rather than three; the full figure is one
+      // hover away, and the log records it exactly either way.
       return `<button class="sf-scroll" data-star="${star}"
         title="${star} 星星捲，點下去直接花費 ${formatMeso(price)}">
         ${art}
-        <span class="sf-scroll-price">${formatMeso(price)}</span>
+        <span class="sf-scroll-price">${formatYi(price)}</span>
       </button>`;
     })
     .join("");
@@ -623,9 +637,7 @@ function render() {
   const has = state !== null;
   const playing = replay !== null;
 
-  el["play-name"].textContent = has
-    ? session.equipmentName || `未指定裝備（${session.level} 等）`
-    : "—";
+  // The name is the select itself now, so there is nothing to write here.
   renderIcon();
   el["play-star"].textContent = has ? state.star : "-";
 
@@ -691,13 +703,14 @@ export function initPlay(loadedDatasets) {
   bind();
   fillSetup();
 
+  // Equipment and the starting star are the only settings left, and neither can
+  // be applied to an item already under way, so changing either starts a new one.
   el["play-equipment"].addEventListener("change", () => {
-    syncLevelField();
+    syncOwned();
     applyBudgetSuggestion();
+    newSession();
   });
-  el["play-level"].addEventListener("change", () => {
-    el["play-start-star"].max = String(rules.maxTargetStar(chosenLevel()));
-  });
+  el["play-owned"].addEventListener("change", newSession);
   el["play-new"].addEventListener("click", newSession);
   el["play-enhance"].addEventListener("click", () => act(() => session.enhance()));
   // Delegated: the buttons are rebuilt on every render.
