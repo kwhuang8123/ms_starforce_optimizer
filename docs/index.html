@@ -21,55 +21,57 @@
   <p id="boot-error" class="banner bad" hidden></p>
 
   <!-- ------------------------------------------------------------------ -->
-  <section id="tab-play" class="panel">
+  <section id="tab-play" class="panel play-columns">
     <div class="card starforce">
-      <div class="sf-slot"><div class="sf-slot-inner" id="play-icon"></div></div>
-      <div class="sf-name" id="play-name">—</div>
-
-      <div class="sf-stars" id="play-star-grid"></div>
-
-      <div class="sf-step">
-        <span>★ <b id="play-star">0</b></span>
-        <span class="sf-arrow" id="play-arrow">▶▶▶</span>
-        <span>★ <b id="play-next-star">1</b></span>
-      </div>
-
-      <div class="sf-block">
-        <div class="sf-label">成功機率</div>
-        <div id="play-rates"></div>
-        <p class="muted" style="margin-top:6px">官方公布之基礎機率，不含活動加成。</p>
-      </div>
-
-      <div class="sf-block">
-        <div class="sf-label">使用費用</div>
-        <div id="play-cost"></div>
-      </div>
-
-      <div class="sf-block">
-        <div class="sf-label">累計花費</div>
-        <div class="sf-row">
-          <span>總計</span>
-          <span class="num gold" id="play-total">0.00億</span>
+      <div class="sf-top">
+        <div class="sf-item">
+          <div class="sf-slot"><div class="sf-slot-inner" id="play-icon"></div></div>
+          <select id="play-equipment" class="sf-name"></select>
+          <label class="inline sf-owned">
+            <input type="checkbox" id="play-owned">
+            從 22 星開始
+          </label>
+          <button id="play-new" class="link">重新開始</button>
+          <div class="sf-block sf-spent">
+            <div class="sf-row">
+              <span>累計花費</span>
+              <span class="num gold" id="play-total">0.00億</span>
+            </div>
+            <div class="sf-row muted" id="play-subtotal"></div>
+          </div>
         </div>
-        <div class="sf-row">
-          <span class="muted" id="play-subtotal"></span>
+
+        <div class="sf-state">
+          <div class="sf-stars" id="play-star-grid"></div>
+          <div class="sf-step">
+            <span>★ <b id="play-star">0</b></span>
+            <span class="sf-arrow" id="play-arrow">▶▶▶</span>
+            <span>★ <b id="play-next-star">1</b></span>
+          </div>
+
+          <div class="sf-actions">
+            <button id="play-enhance" class="primary big">強化</button>
+            <div class="sf-scrolls" id="play-scrolls"
+                 title="星捲點下去直接使用，沒有二次確認"></div>
+            <div class="row">
+              <button id="play-repair-full">完整修復</button>
+              <button id="play-repair-12">修復至 12 星</button>
+            </div>
+          </div>
+
+          <div class="sf-block" title="機率為官方公布之基礎值，不含活動加成">
+            <div class="sf-label">本次強化</div>
+            <div id="play-rates"></div>
+            <div id="play-cost"></div>
+          </div>
         </div>
       </div>
 
       <p id="play-flag" class="flag" hidden></p>
-
-      <div class="sf-actions">
-        <button id="play-enhance" class="primary big">強化</button>
-        <div class="sf-scrolls" id="play-scrolls"></div>
-        <p class="muted" id="play-scroll-note">星捲點下去直接使用，沒有二次確認。</p>
-        <div class="row">
-          <button id="play-repair-full">完整修復</button>
-          <button id="play-repair-12">修復至 12 星</button>
-        </div>
-      </div>
       <p id="play-error" class="banner bad" hidden></p>
     </div>
 
+    <div class="play-side">
     <div class="card">
       <h2>自動模擬</h2>
       <div class="row">
@@ -115,23 +117,6 @@
     </div>
 
     <div class="card">
-      <h2>建立裝備</h2>
-      <div class="row">
-        <label>裝備
-          <select id="play-equipment"></select>
-        </label>
-        <label id="play-level-field" hidden>等級
-          <select id="play-level"></select>
-        </label>
-        <label>起始星數
-          <input id="play-start-star" type="number" min="0" value="0" inputmode="numeric">
-        </label>
-        <button id="play-new" class="primary">重新開始</button>
-      </div>
-      <p class="muted">起始星數不收費用；破壞後修復消耗的同款裝備才會計價。</p>
-    </div>
-
-    <div class="card">
       <h2>操作紀錄 <button id="play-copy" class="link">複製</button></h2>
       <div class="table-scroll">
         <table id="play-log">
@@ -145,6 +130,7 @@
         </table>
       </div>
       <p id="play-summary" class="muted">尚未有任何操作。</p>
+    </div>
     </div>
   </section>
 
