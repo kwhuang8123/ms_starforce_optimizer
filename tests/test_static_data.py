@@ -43,26 +43,22 @@ class EnhanceCostTest(unittest.TestCase):
     def test_covers_every_supported_level(self) -> None:
         self.assertEqual(tuple(data.ENHANCE_COST), data.SUPPORTED_LEVELS)
 
-    def test_level_130_stops_at_20_stars(self) -> None:
-        self.assertEqual(sorted(data.ENHANCE_COST[130]), list(range(20)))
-
-    def test_levels_140_and_up_reach_30_stars(self) -> None:
-        for level in data.SUPPORTED_LEVELS[1:]:
+    def test_every_level_reaches_30_stars(self) -> None:
+        for level in data.SUPPORTED_LEVELS:
             with self.subTest(level=level):
                 self.assertEqual(sorted(data.ENHANCE_COST[level]), list(range(30)))
 
     def test_spot_checks_against_the_announcement(self) -> None:
-        self.assertEqual(data.ENHANCE_COST[130][0], 62_000)
+        self.assertEqual(data.ENHANCE_COST[140][0], 77_200)
         self.assertEqual(data.ENHANCE_COST[140][9], 763_200)
         self.assertEqual(data.ENHANCE_COST[150][14], 47_243_900)
         self.assertEqual(data.ENHANCE_COST[160][19], 444_652_400)
         self.assertEqual(data.ENHANCE_COST[200][24], 237_957_700)
         self.assertEqual(data.ENHANCE_COST[250][29], 1_013_810_000)
 
-    def test_published_anomalies_are_preserved(self) -> None:
-        # Both of these read like typos but are exactly what the official table
-        # publishes; the engine must not silently "fix" them.
-        self.assertLess(data.ENHANCE_COST[130][15], data.ENHANCE_COST[130][14])
+    def test_published_anomaly_is_preserved(self) -> None:
+        # This reads like a typo but is exactly what the official table
+        # publishes; the engine must not silently "fix" it.
         self.assertGreater(data.ENHANCE_COST[140][21], data.ENHANCE_COST[140][22])
 
     def test_first_ten_attempts_match_the_derived_formula(self) -> None:
@@ -77,11 +73,13 @@ class EnhanceCostTest(unittest.TestCase):
 
 
 class RepairTest(unittest.TestCase):
-    def test_no_level_130_column(self) -> None:
-        self.assertNotIn(130, data.REPAIR_MESO)
+    def test_every_supported_level_has_a_column(self) -> None:
+        # A level without one could not be simulated into the destruction range,
+        # which is exactly why level 130 is not supported.
+        self.assertEqual(tuple(data.REPAIR_MESO), data.SUPPORTED_LEVELS)
 
-    def test_every_other_level_covers_15_to_22_stars(self) -> None:
-        for level in data.SUPPORTED_LEVELS[1:]:
+    def test_every_level_covers_15_to_22_stars(self) -> None:
+        for level in data.SUPPORTED_LEVELS:
             with self.subTest(level=level):
                 self.assertEqual(sorted(data.REPAIR_MESO[level]), list(range(15, 23)))
 
@@ -98,8 +96,10 @@ class RepairTest(unittest.TestCase):
 
 
 class StarScrollTest(unittest.TestCase):
-    def test_scrolls_cover_10_to_20_stars(self) -> None:
-        self.assertEqual(data.STAR_SCROLL_STARS, tuple(range(10, 21)))
+    def test_scrolls_cover_15_to_20_stars(self) -> None:
+        # 10 to 14 were dropped: same price as each other, no destruction risk,
+        # and no strategy worth measuring starts below 15.
+        self.assertEqual(data.STAR_SCROLL_STARS, tuple(range(15, 21)))
 
     def test_prices_are_not_fixed_data(self) -> None:
         # Which scrolls exist is a rule; what they cost moves with the market

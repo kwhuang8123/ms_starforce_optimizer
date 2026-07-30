@@ -57,6 +57,18 @@
               <button id="play-repair-full">完整修復</button>
               <button id="play-repair-12">修復至 12 星</button>
             </div>
+
+            <div class="sf-auto">
+              <div class="sf-label">自動模擬（參數在右側）</div>
+              <div class="row">
+                <button id="auto-budget-run" class="primary">依預算模擬</button>
+                <button id="auto-budget-reset-run" class="link">重設後模擬</button>
+              </div>
+              <div class="row">
+                <button id="auto-star-run" class="primary">跑到目標星力</button>
+                <button id="auto-star-reset-run" class="link">重設後模擬</button>
+              </div>
+            </div>
           </div>
 
           <div class="sf-block" title="機率為官方公布之基礎值，不含活動加成">
@@ -91,26 +103,23 @@
         <button id="play-skip" hidden>跳過</button>
       </div>
       <hr>
+      <p class="muted">執行按鈕在左側面板的強化按鈕下方。</p>
       <div class="row">
-        <label>預算
+        <label>依預算模擬・預算
           <input id="auto-budget" value="100e" size="8">
         </label>
         <label>目標星力
           <input id="auto-budget-target" value="22c" size="6">
         </label>
-        <button id="auto-budget-run" class="primary">依預算模擬</button>
-        <button id="auto-budget-reset-run" class="link">重設後模擬</button>
         <span class="muted">花完預算或達標就停，不會超支。</span>
       </div>
       <div class="row">
-        <label>目標星力
+        <label>跑到目標星力・目標
           <input id="auto-star-target" value="22c" size="6">
         </label>
         <label>保險絲預算
           <input id="auto-star-budget" size="10">
         </label>
-        <button id="auto-star-run" class="primary">跑到目標星力</button>
-        <button id="auto-star-reset-run" class="link">重設後模擬</button>
       </div>
       <p class="muted" id="auto-star-hint"></p>
       <p id="auto-result" class="banner" hidden></p>

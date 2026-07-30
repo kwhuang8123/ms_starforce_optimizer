@@ -34,18 +34,15 @@ class SessionConfigTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             Session(level=150, start_star=31)
 
-    def test_level_130_is_capped_below_the_destruction_range(self) -> None:
-        self.assertEqual(Session(level=130).max_star, 15)
-        with self.assertRaises(ValueError):
-            Session(level=130, start_star=16)
-
     def test_negative_start_star_raises(self) -> None:
         with self.assertRaises(ValueError):
             Session(level=150, start_star=-1)
 
     def test_unsupported_level_raises(self) -> None:
-        with self.assertRaises(ValueError):
-            Session(level=152)
+        for level in (130, 152):
+            with self.subTest(level=level):
+                with self.assertRaises(ValueError):
+                    Session(level=level)
 
     def test_negative_equipment_price_raises(self) -> None:
         with self.assertRaises(ValueError):
@@ -142,22 +139,17 @@ class ScrollTest(unittest.TestCase):
 
     def test_a_scroll_at_or_below_the_current_star_raises(self) -> None:
         session = Session(level=140, start_star=17)
-        for star in (10, 17):
+        for star in (16, 17):
             with self.subTest(star=star):
                 with self.assertRaises(ValueError):
                     session.use_scroll(star)
 
     def test_a_star_no_scroll_exists_for_raises(self) -> None:
         session = Session(level=140)
-        for star in (9, 21):
+        for star in (9, 14, 21):
             with self.subTest(star=star):
                 with self.assertRaises(ValueError):
                     session.use_scroll(star)
-
-    def test_a_scroll_past_the_level_cap_raises(self) -> None:
-        session = Session(level=130)
-        with self.assertRaises(ValueError):
-            session.use_scroll(16)
 
     def test_a_destroyed_item_cannot_be_scrolled(self) -> None:
         session = scripted(Session(level=140, start_star=15), [3100])

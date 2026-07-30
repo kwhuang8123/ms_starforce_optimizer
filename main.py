@@ -28,12 +28,12 @@ from starforce.units import format_meso, to_yi
 EQUIPMENT: str | None = "頂培"
 
 #: Item level, used only when EQUIPMENT is None.
-#: Only 130, 140, 150, 160, 200 and 250 are published.
+#: Only 140, 150, 160, 200 and 250 are supported.
 LEVEL = 150
 
 #: (start_star, target_star) pairs to simulate.
-#: start_star must be 10-20; target_star must exceed it and stay within the
-#: level cap (30 stars, or 15 for level 130).
+#: start_star must be 15-20; target_star must exceed it and stay within the
+#: level cap of 30 stars.
 RUNS: tuple[tuple[int, int], ...] = (
     (15, 22),
     (17, 22),

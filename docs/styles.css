@@ -222,12 +222,16 @@ hr { border: none; border-top: 1px solid var(--line); margin: 14px 0; }
 }
 
 /* Star scrolls. A click spends immediately, so every button wears its price. */
+/* One row. With the 10 to 14 star scrolls gone there are only six of them, so
+   they fit across even a phone; overflow scrolls rather than wraps if a future
+   scroll is added. */
 .sf-scrolls {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
   gap: 5px;
   margin-top: 10px;
+  overflow-x: auto;
 }
 
 .sf-scroll {
@@ -400,6 +404,17 @@ button.big {
 .sf-actions .row { justify-content: center; margin: 8px 0 0; }
 .sf-actions .muted { margin: 4px 0 0; font-size: 11px; }
 
+/* The automatic runs are triggered from here but configured on the right, so
+   they get their own labelled group rather than sitting loose among the manual
+   buttons. */
+.sf-auto {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.sf-auto .row { margin: 4px 0 0; }
+
 .flag {
   margin: 12px 0 0;
   padding: 8px 12px;
@@ -477,6 +492,38 @@ a { color: var(--accent); }
   .sf-scroll-img { width: 22px; height: 22px; }
   .sf-scroll-price { font-size: 10px; }
   .sf-scrolls { gap: 4px; }
+
+  /* Each run keeps its own button paired with its reset variant; the pairs sit
+     side by side when they fit and stack when they do not. The margins go,
+     because on a phone this block is the difference between the panel fitting
+     under the header and not. */
+  .sf-auto {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 5px 8px;
+    margin-top: 8px;
+    padding-top: 6px;
+  }
+  .sf-auto .sf-label { flex-basis: 100%; margin: 0; }
+  .sf-auto .row {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+  }
+
+  .sf-star { font-size: 15px; }
+  .sf-step { padding: 2px; margin-bottom: 8px; font-size: 15px; }
+  .sf-step b { font-size: 18px; }
+  .sf-row { padding: 1px 0; font-size: 13px; }
+  /* Direct children only: the automatic-run rows are nested one level deeper
+     and manage their own spacing through the flex gap above. */
+  .sf-actions > .row { margin-top: 6px; }
+  button.big { padding: 7px 20px; }
+  .sf-block { margin-bottom: 8px; padding: 6px 10px; }
 }
 
 /* selftest.html */
