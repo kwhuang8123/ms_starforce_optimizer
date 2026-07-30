@@ -6,7 +6,7 @@ import json
 import random
 import unittest
 
-from starforce import rules, static_data as data
+from starforce import rules, static_data as data, volatile_data
 from starforce.engine import RepairPolicy, RunConfig, StartMode, simulate_once
 from starforce.volatile_data import known_names
 from starforce.stats import simulate
@@ -85,7 +85,12 @@ class ForEquipmentTest(unittest.TestCase):
         config = RunConfig.for_equipment("控制核心", 15, 22)
         self.assertEqual(config.level, 200)
         self.assertEqual(config.equipment_name, "控制核心")
-        self.assertEqual(config.equipment_price, 20_000_000_000)
+        # The price is volatile, so this checks that the catalogue's figure is
+        # the one that lands on the config rather than pinning the figure here.
+        self.assertEqual(
+            config.equipment_price, volatile_data.lookup("控制核心").price
+        )
+        self.assertGreater(config.equipment_price, 0)
 
     def test_an_alias_form_resolves_to_the_canonical_name(self) -> None:
         config = RunConfig.for_equipment("永恆上4", 15, 22)
@@ -303,7 +308,7 @@ class ScriptedRunTest(unittest.TestCase):
         self.assertEqual(result.equipment_used, 0)
         self.assertEqual(
             result.total_meso,
-            40_000_000
+            rules.star_scroll_cost(15)
             + rules.enhance_cost(140, 15)
             + rules.enhance_cost(140, 16)
             + rules.enhance_cost(140, 17),
@@ -317,7 +322,8 @@ class ScriptedRunTest(unittest.TestCase):
         self.assertEqual(result.attempts, 3)
         self.assertEqual(result.attempts_by_star, {15: 3})
         self.assertEqual(
-            result.total_meso, 40_000_000 + rules.enhance_cost(140, 15) * 3
+            result.total_meso,
+            rules.star_scroll_cost(15) + rules.enhance_cost(140, 15) * 3,
         )
 
     def test_full_repair_returns_to_the_trace_star(self) -> None:
@@ -332,7 +338,7 @@ class ScriptedRunTest(unittest.TestCase):
         self.assertEqual(result.attempts, 2)
         self.assertEqual(
             result.total_meso,
-            40_000_000 + 39_138_900 + 149_000_000 + 39_138_900,
+            rules.star_scroll_cost(15) + 39_138_900 + 149_000_000 + 39_138_900,
         )
 
     def test_cheap_repair_scrolls_back_to_the_starting_star(self) -> None:
@@ -346,7 +352,9 @@ class ScriptedRunTest(unittest.TestCase):
         self.assertEqual(result.scrolls_used, 2)
         self.assertEqual(result.attempts, 2)
         self.assertEqual(result.attempts_by_star, {15: 2})
-        self.assertEqual(result.total_meso, 40_000_000 * 2 + 39_138_900 * 2)
+        self.assertEqual(
+            result.total_meso, rules.star_scroll_cost(15) * 2 + 39_138_900 * 2
+        )
 
     def test_destruction_above_22_stars_leaves_a_22_star_trace(self) -> None:
         config = RunConfig(level=140, start_star=20, target_star=26)
@@ -441,13 +449,16 @@ class UnitsTest(unittest.TestCase):
         self.assertEqual(format_meso(1_234_500_000_000), "12,345.00億")
 
     def test_scroll_prices_round_trip_to_the_quoted_yi_figures(self) -> None:
+        # The 億 figures the prices were quoted in. These move with the market,
+        # so they are pinned here only to prove the conversion is exact - the
+        # authority on what the shipped prices are is test_volatile_data.
         quoted = {
-            15: 0.4,
-            16: 2.8,
-            17: 15.8,
-            18: 25.0,
-            19: 64.0,
-            20: 330.0,
+            15: 0.2,
+            16: 1.0,
+            17: 9.6,
+            18: 16.3,
+            19: 47.0,
+            20: 216.0,
         }
         for star, yi in quoted.items():
             with self.subTest(star=star):

@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import unittest
 
-from starforce import rules
+from starforce import rules, volatile_data
 from starforce.engine import RepairPolicy
 from starforce.session import Session
 from starforce.units import YI
@@ -52,7 +52,12 @@ class SessionConfigTest(unittest.TestCase):
         session = Session.for_equipment("控制核心", start_star=22)
         self.assertEqual(session.level, 200)
         self.assertEqual(session.equipment_name, "控制核心")
-        self.assertEqual(session.equipment_price, 20_000_000_000)
+        # Volatile, so this checks the catalogue's figure is what lands on the
+        # session rather than pinning the figure in a second place.
+        self.assertEqual(
+            session.equipment_price, volatile_data.lookup("控制核心").price
+        )
+        self.assertGreater(session.equipment_price, 0)
         self.assertEqual(session.star, 22)
 
     def test_for_equipment_resolves_an_alias(self) -> None:

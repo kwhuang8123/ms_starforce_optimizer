@@ -185,16 +185,24 @@ class RepriceTest(unittest.TestCase):
     TOLERANCE = 1.0
 
     def rows(self):
+        """Yield ``(dataset name, row, that dataset's own scroll prices)``.
+
+        The split in each row was measured against the prices the sweep ran on,
+        which are recorded in the dataset's meta. Reconciling it against today's
+        prices instead would fail the moment data/volatile.json is edited - and
+        that failure would say nothing about whether the split is correct.
+        """
         for name in ("simulations.json", "marginal.json"):
             path = DATA_DIR / name
             if not path.is_file():
                 continue
-            for row in json.loads(path.read_text(encoding="utf-8"))["results"]:
-                yield name, row
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            snapshot = payload["meta"]["prices"]["star_scroll_cost"]
+            for row in payload["results"]:
+                yield name, row, snapshot
 
     def test_the_static_part_plus_the_scrolls_rebuilds_the_meso_mean(self) -> None:
-        prices = build_site_data.build_prices()["star_scroll_cost"]
-        for name, row in self.rows():
+        for name, row, prices in self.rows():
             with self.subTest(dataset=name, row=row["equipment"], target=row["target_star"]):
                 scroll_price = (
                     0 if row["scroll_star"] is None else prices[str(row["scroll_star"])]
@@ -203,8 +211,7 @@ class RepriceTest(unittest.TestCase):
                 self.assertAlmostEqual(rebuilt, row["meso_mean"], delta=self.TOLERANCE)
 
     def test_the_four_parts_rebuild_the_total(self) -> None:
-        prices = build_site_data.build_prices()["star_scroll_cost"]
-        for name, row in self.rows():
+        for name, row, prices in self.rows():
             with self.subTest(dataset=name, row=row["equipment"], target=row["target_star"]):
                 scroll_price = (
                     0 if row["scroll_star"] is None else prices[str(row["scroll_star"])]
@@ -220,7 +227,7 @@ class RepriceTest(unittest.TestCase):
                 )
 
     def test_only_a_scrolled_run_carries_a_scroll_star(self) -> None:
-        for name, row in self.rows():
+        for name, row, _ in self.rows():
             with self.subTest(dataset=name, mode=row["start_mode"]):
                 if row["start_mode"] == "scroll":
                     self.assertEqual(row["scroll_star"], row["start_star"])
@@ -230,7 +237,7 @@ class RepriceTest(unittest.TestCase):
                     self.assertEqual(row["scrolls_mean"], 0.0)
 
     def test_a_rebuild_count_appears_only_where_a_rebuild_is_priced(self) -> None:
-        for name, row in self.rows():
+        for name, row, _ in self.rows():
             with self.subTest(dataset=name, policy=row["repair_policy"]):
                 if row["rebuild_cost"] == 0:
                     self.assertEqual(row["rebuild_count_mean"], 0.0)
