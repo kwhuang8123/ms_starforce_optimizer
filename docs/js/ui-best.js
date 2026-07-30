@@ -45,6 +45,9 @@ const NEAR_TIE = 0.01;
  */
 const MIN_P95_GAIN = 0.01;
 
+/** What the query card opens on, matching the manual tab's default item. */
+const DEFAULT_EQUIPMENT = "頂培";
+
 let datasets = null;
 const el = {};
 
@@ -54,6 +57,10 @@ function bind() {
     "best-reprice-note",
     "best-policy-note",
     "best-start",
+    "ask-equipment",
+    "ask-mode",
+    "ask-target",
+    "ask-answer",
   ]) {
     el[id] = document.getElementById(id);
   }
@@ -192,6 +199,189 @@ function nearTieCell(ordered) {
     `<span class="bad-text">${text}</span>` +
     `<br><span class="muted">誤差內，等同 ${routeLabel(ordered[1])}</span>`
   );
+}
+
+// ---------------------------------------------------------------------------
+// The query card: one equipment, one situation, one answer
+// ---------------------------------------------------------------------------
+
+/**
+ * The situations the datasets can actually answer for.
+ *
+ * A from-scratch run buys its way in with a star scroll; an owned run starts
+ * from an item that is already there. They live in different datasets with
+ * different target ranges, so the situation picks the dataset as well as the
+ * starting point - and only situations with rows behind them are offered.
+ */
+function situations() {
+  const out = [];
+  if (datasets.simulations) {
+    out.push({ value: "scratch", label: "從零開始（買星捲起手）" });
+  }
+  if (datasets.marginal) {
+    const stars = [
+      ...new Set(datasets.marginal.results.map((row) => row.start_star)),
+    ].sort((a, b) => a - b);
+    for (const star of stars) {
+      out.push({ value: `owned-${star}`, label: `已持有 ${star} 星` });
+    }
+  }
+  return out;
+}
+
+/** The dataset and start-star filter a situation means. */
+function situationOf(value) {
+  if (value === "scratch") {
+    return { dataset: datasets.simulations, startStar: null };
+  }
+  return {
+    dataset: datasets.marginal,
+    startStar: Number(value.slice("owned-".length)),
+  };
+}
+
+function fillAsk() {
+  const modes = situations();
+  el["ask-mode"].innerHTML = modes
+    .map((mode) => `<option value="${mode.value}">${mode.label}</option>`)
+    .join("");
+
+  // Equipment comes from the datasets rather than the price table: an item with
+  // no rows behind it is a question this card cannot answer, and offering it
+  // would only lead somewhere empty.
+  const names = [];
+  for (const dataset of [datasets.simulations, datasets.marginal]) {
+    if (!dataset) continue;
+    for (const row of dataset.results) {
+      if (!names.includes(row.equipment)) {
+        names.push(row.equipment);
+      }
+    }
+  }
+  el["ask-equipment"].innerHTML = names
+    .map((name) => `<option value="${name}">${name}</option>`)
+    .join("");
+  el["ask-equipment"].value = names.includes(DEFAULT_EQUIPMENT)
+    ? DEFAULT_EQUIPMENT
+    : names[0];
+
+  fillAskTargets();
+}
+
+/** Targets depend on the situation, so this runs again whenever it changes. */
+function fillAskTargets() {
+  const { dataset, startStar } = situationOf(el["ask-mode"].value);
+  const chosen = el["ask-target"].value;
+  const stars = dataset
+    ? [
+        ...new Set(
+          dataset.results
+            .filter((row) => startStar === null || row.start_star === startStar)
+            .map((row) => row.target_star)
+        ),
+      ].sort((a, b) => a - b)
+    : [];
+
+  el["ask-target"].innerHTML = stars
+    .map((star) => `<option value="${star}">${star} 星</option>`)
+    .join("");
+  // Keep the target across a situation change when it still exists, so moving
+  // from "已持有 22 星" to "已持有 23 星" does not silently retarget.
+  el["ask-target"].value = stars.map(String).includes(chosen)
+    ? chosen
+    : String(stars[0]);
+}
+
+function answerLine(label, value) {
+  return `<div class="ask-line"><span>${label}</span><span>${value}</span></div>`;
+}
+
+function renderAsk(prices) {
+  const box = el["ask-answer"];
+  const equipment = el["ask-equipment"].value;
+  const target = Number(el["ask-target"].value);
+  const mode = el["ask-mode"].value;
+  const { dataset, startStar } = situationOf(mode);
+
+  if (!dataset || equipment === "" || Number.isNaN(target)) {
+    box.innerHTML = `<p class="muted">資料集尚未產生，沒有可以回答的內容。</p>`;
+    return;
+  }
+
+  const candidates = priced(dataset.results, prices).filter(
+    (row) =>
+      row.equipment === equipment &&
+      row.target_star === target &&
+      (startStar === null || row.start_star === startStar)
+  );
+
+  if (candidates.length === 0) {
+    // Either the sweep never covered this, or the equipment has been renamed or
+    // deleted on the price page and its rows can no longer be re-priced.
+    box.innerHTML =
+      `<p class="banner warn">算不出這一組的現價成本。可能是資料集沒有「${equipment}」到 ` +
+      `${target} 星的結果，或這件裝備已經從物價表移除。</p>`;
+    return;
+  }
+
+  const ordered = rank(candidates);
+  const best = ordered[0];
+  const stable = stableAlternative(candidates, best);
+  const explored = new Set(dataset.meta.breakthrough_targets || []);
+
+  const parts = [
+    `<div class="ask-head">
+       <span class="ask-cost">${formatYi(best.repriced)}</span>
+       <span class="muted">平均總成本・現價</span>
+     </div>`,
+    `<div class="ask-route">${routeLabel(best)}</div>`,
+    answerLine(
+      "p50 / p95<small>快照價</small>",
+      `${formatYi(percentile(best, "50"))} / ${formatYi(percentile(best, "95"))}`
+    ),
+    answerLine("與次佳差距", nearTieCell(ordered)),
+  ];
+
+  if (stable !== null) {
+    parts.push(
+      answerLine(
+        "穩定解<small>快照價</small>",
+        `${routeLabel(stable.row)}<br>` +
+          `<span class="muted">平均多付 ${(stable.meanCost * 100).toFixed(1)}%、` +
+          `p95 省 ${(stable.tailGain * 100).toFixed(1)}%</span>`
+      )
+    );
+  }
+
+  if (!explored.has(target)) {
+    parts.push(
+      `<p class="muted">這個目標尚未納入突破星捲，上面的走法只比較了強化與修復方式。</p>`
+    );
+  } else if (mode === "scratch") {
+    const startStars = [
+      ...new Set(dataset.results.map((row) => row.start_star)),
+    ].sort((a, b) => a - b);
+    const live = liveOptimum(equipment, target, startStars, prices);
+    if (
+      live !== null &&
+      live.total < best.repriced * (1 - POLICY_DRIFT) &&
+      !(
+        live.startStar === best.start_star &&
+        live.repairPolicy === best.repair_policy &&
+        sameEntries(live.policy.entries, best.breakthrough_entries || [])
+      )
+    ) {
+      parts.push(
+        `<p class="banner warn">目前物價下有更便宜的走法：` +
+          `${live.startStar} 星起手・${POLICY_LABEL[live.repairPolicy]}` +
+          `（${describe(live.policy)}），平均約 ${formatYi(live.total)}，` +
+          `再省 ${((1 - live.total / best.repriced) * 100).toFixed(1)}%。` +
+          `這是用現價即時解出來的精確平均，沒有對應的 p50／p95 —— 要讓資料集跟上請重跑 sweep。</p>`
+      );
+    }
+  }
+
+  box.innerHTML = parts.join("");
 }
 
 function renderScratch(prices) {
@@ -371,6 +561,7 @@ function renderNotes() {
 function render() {
   const prices = store.currentPrices();
   renderNotes();
+  renderAsk(prices);
   renderScratch(prices);
   renderMarginal(prices);
 }
@@ -379,7 +570,17 @@ export function initBest(loadedDatasets) {
   datasets = loadedDatasets;
   bind();
   fillStartFilter();
+  fillAsk();
+
   el["best-start"].addEventListener("change", render);
+  el["ask-mode"].addEventListener("change", () => {
+    fillAskTargets();
+    render();
+  });
+  for (const id of ["ask-equipment", "ask-target"]) {
+    el[id].addEventListener("change", render);
+  }
+
   store.onChange(render);
   render();
 }

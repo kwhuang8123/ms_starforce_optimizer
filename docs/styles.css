@@ -450,6 +450,46 @@ button.big {
   font-size: 13px;
 }
 
+/* The cheat sheet's query card: one equipment, one situation, one answer. The
+   figure leads because it is what the question was about; everything else is a
+   qualifier on it. */
+#ask-answer { margin-top: 12px; }
+
+.ask-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ask-cost {
+  color: var(--gold);
+  font-size: 30px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.ask-route {
+  margin: 6px 0 10px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.ask-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 5px 0;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+}
+
+.ask-line > span:first-child { color: var(--muted); }
+.ask-line > span:last-child { text-align: right; }
+.ask-line small { display: block; font-size: 10px; opacity: 0.75; }
+
+#ask-answer .banner { margin-top: 10px; }
+
 /* --- tables -------------------------------------------------------------- */
 
 .table-scroll { overflow-x: auto; }
