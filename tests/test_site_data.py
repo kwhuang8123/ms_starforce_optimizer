@@ -43,11 +43,21 @@ class StaticDataTest(unittest.TestCase):
         self.assertEqual(len(payload["repair_meso"]), len(data.REPAIR_MESO))
         self.assertEqual(payload["repair_equipment"]["22"], data.REPAIR_EQUIPMENT[22])
 
-    def test_the_level_130_cap_is_precomputed_not_left_to_the_port(self) -> None:
+    def test_the_caps_are_precomputed_not_left_to_the_port(self) -> None:
         payload = read("static.json")
-        self.assertEqual(payload["max_star"]["130"], 20)
-        self.assertEqual(payload["max_target_star"]["130"], rules.max_target_star(130))
-        self.assertEqual(payload["max_target_star"]["150"], 30)
+        for level in data.SUPPORTED_LEVELS:
+            with self.subTest(level=level):
+                self.assertEqual(payload["max_star"][str(level)], rules.max_star(level))
+                self.assertEqual(
+                    payload["max_target_star"][str(level)],
+                    rules.max_target_star(level),
+                )
+
+    def test_unsupported_levels_are_not_shipped(self) -> None:
+        payload = read("static.json")
+        self.assertNotIn(130, payload["supported_levels"])
+        self.assertNotIn("130", payload["enhance_cost"])
+        self.assertNotIn("130", payload["max_star"])
 
 
 class PricesTest(unittest.TestCase):

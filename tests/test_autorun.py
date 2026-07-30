@@ -37,8 +37,6 @@ class ValidationTest(unittest.TestCase):
     def test_a_target_past_the_level_cap_raises(self) -> None:
         with self.assertRaises(ValueError):
             run_within_budget(Session(level=150), 31, HUGE_BUDGET)
-        with self.assertRaises(ValueError):
-            run_within_budget(Session(level=130), 16, HUGE_BUDGET)
 
     def test_an_already_finished_session_stops_immediately(self) -> None:
         session = Session(level=150, start_star=22)

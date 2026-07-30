@@ -10,11 +10,15 @@ Sources (V272, effective 2025-07-30):
     Equipment trace repair costs
         https://maplestory-event.beanfun.com/eventad/eventad?eventadid=17655
 
-All values are transcribed verbatim from the announcements. Two figures look
-like anomalies but are exactly what the official table publishes and are kept
+All values are transcribed verbatim from the announcements. One figure looks
+like an anomaly but is exactly what the official table publishes and is kept
 as-is:
-    - level 130, 15 -> 16 (19,586,000) is cheaper than 14 -> 15 (30,754,400)
     - level 140, 21 -> 22 (92,474,100) is dearer than 22 -> 23 (65,166,700)
+
+Level 130 is not carried at all. The announcement publishes no level 130 repair
+column, so a destroyed 130 item has no knowable cost, and no equipment in the
+catalogue is that level. Its enhancement table lived here until it was removed
+as an unused path; git history has it if it is ever needed.
 """
 
 from __future__ import annotations
@@ -59,35 +63,14 @@ ENHANCE_RATES: dict[int, tuple[int, int, int]] = {
 
 RATE_BASIS = 10_000
 
-# Levels published by the announcement. Levels 0-120 are not covered by the
-# announcement ("please refer to the client") and are therefore unsupported.
-SUPPORTED_LEVELS: tuple[int, ...] = (130, 140, 150, 160, 200, 250)
+# Levels this project simulates. Levels 0-120 are not covered by the
+# announcement ("please refer to the client"), and level 130 is excluded because
+# the repair table has no column for it - see the module docstring.
+SUPPORTED_LEVELS: tuple[int, ...] = (140, 150, 160, 200, 250)
 
 # Meso cost of a single enhancement attempt, keyed by item level then by the
-# *current* star. Level 130 stops at 19 -> 20 because 130 gear caps at 20 stars.
+# *current* star.
 ENHANCE_COST: dict[int, dict[int, int]] = {
-    130: {
-        0: 62_000,
-        1: 123_100,
-        2: 184_100,
-        3: 245_100,
-        4: 306_100,
-        5: 367_200,
-        6: 428_200,
-        7: 489_200,
-        8: 550_300,
-        9: 611_300,
-        10: 2_495_300,
-        11: 5_738_100,
-        12: 10_449_700,
-        13: 17_398_100,
-        14: 30_754_400,
-        15: 19_586_000,
-        16: 23_069_100,
-        17: 26_918_600,
-        18: 31_149_300,
-        19: 35_776_100,
-    },
     140: {
         0: 77_200,
         1: 153_400,
@@ -250,9 +233,8 @@ ENHANCE_COST: dict[int, dict[int, int]] = {
     },
 }
 
-# Full repair: meso cost keyed by item level then by the trace's star. The
-# announcement publishes no level 130 column, which is why level 130 runs are
-# capped below the destruction range (see rules.max_target_star).
+# Full repair: meso cost keyed by item level then by the trace's star. Every
+# supported level has a column here; that is precisely why 130 is not supported.
 REPAIR_MESO: dict[int, dict[int, int]] = {
     140: {
         15: 149_000_000,
@@ -320,5 +302,7 @@ REPAIR_EQUIPMENT: dict[int, int] = {
 
 # Star scroll: sets an item's star force directly to the scroll's star. Which
 # scrolls exist is a fixed rule; what they cost is not, and lives in
-# starforce.volatile_data.
-STAR_SCROLL_STARS: tuple[int, ...] = tuple(range(10, 21))
+# starforce.volatile_data. The 10 to 14 star scrolls were dropped: they all cost
+# the same as each other, carry no destruction risk, and no strategy worth
+# measuring starts below 15.
+STAR_SCROLL_STARS: tuple[int, ...] = tuple(range(15, 21))

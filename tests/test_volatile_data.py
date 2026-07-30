@@ -41,11 +41,6 @@ class ShippedDataTest(unittest.TestCase):
         self.assertEqual(
             volatile_data.STAR_SCROLL_COST,
             {
-                10: 20_000_000,
-                11: 20_000_000,
-                12: 20_000_000,
-                13: 20_000_000,
-                14: 20_000_000,
                 15: 40_000_000,
                 16: 280_000_000,
                 17: 1_580_000_000,

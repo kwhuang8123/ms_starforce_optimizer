@@ -99,7 +99,7 @@ def build_static() -> dict[str, Any]:
             str(star): pieces for star, pieces in sorted(data.REPAIR_EQUIPMENT.items())
         },
         # Precomputed rather than ported: one fewer rule for the port to get
-        # wrong, and the level 130 exception stays in one place.
+        # wrong, and the repair-column guard stays in one place.
         "max_star": {
             str(level): rules.max_star(level) for level in data.SUPPORTED_LEVELS
         },

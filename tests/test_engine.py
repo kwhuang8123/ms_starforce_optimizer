@@ -8,6 +8,7 @@ import unittest
 
 from starforce import rules, static_data as data
 from starforce.engine import RepairPolicy, RunConfig, StartMode, simulate_once
+from starforce.volatile_data import known_names
 from starforce.stats import simulate
 from starforce.units import YI, format_meso, to_yi
 
@@ -27,7 +28,7 @@ class ScriptedRandom(random.Random):
 
 class RunConfigTest(unittest.TestCase):
     def test_start_star_below_the_scroll_range_raises(self) -> None:
-        for star in (0, 9):
+        for star in (0, 9, 14):
             with self.subTest(star=star):
                 with self.assertRaises(ValueError):
                     RunConfig(level=140, start_star=star, target_star=25)
@@ -37,7 +38,7 @@ class RunConfigTest(unittest.TestCase):
             RunConfig(level=140, start_star=21, target_star=25)
 
     def test_start_star_boundaries_are_accepted(self) -> None:
-        RunConfig(level=140, start_star=10, target_star=11)
+        RunConfig(level=140, start_star=15, target_star=16)
         RunConfig(level=140, start_star=20, target_star=21)
 
     def test_target_must_exceed_start(self) -> None:
@@ -48,14 +49,11 @@ class RunConfigTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             RunConfig(level=140, start_star=15, target_star=31)
 
-    def test_level_130_cannot_enter_the_destruction_range(self) -> None:
-        RunConfig(level=130, start_star=10, target_star=15)
-        with self.assertRaises(ValueError):
-            RunConfig(level=130, start_star=10, target_star=16)
-
     def test_unsupported_level_raises(self) -> None:
-        with self.assertRaises(ValueError):
-            RunConfig(level=152, start_star=15, target_star=20)
+        for level in (130, 152):
+            with self.subTest(level=level):
+                with self.assertRaises(ValueError):
+                    RunConfig(level=level, start_star=15, target_star=20)
 
     def test_to_dict(self) -> None:
         config = RunConfig(
@@ -104,10 +102,12 @@ class ForEquipmentTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             RunConfig.for_equipment("不存在的裝備", 15, 22)
 
-    def test_a_level_130_equipment_would_still_hit_the_target_cap(self) -> None:
-        # No catalogue entry is level 130 today, but the cap must still apply.
-        config = RunConfig(level=130, start_star=10, target_star=15)
-        self.assertEqual(config.target_star, 15)
+    def test_every_catalogue_level_is_supported(self) -> None:
+        # An entry the engine cannot price would fail at simulation time rather
+        # than here, so the catalogue and the published levels have to agree.
+        for name in known_names():
+            with self.subTest(name=name):
+                RunConfig.for_equipment(name, 15, 22)
 
 
 class OwnedStartTest(unittest.TestCase):
@@ -235,8 +235,9 @@ class EquipmentCostTest(unittest.TestCase):
     PRICE = 1_000_000_000  # 10e
 
     def test_no_destruction_means_no_equipment_cost(self) -> None:
+        # 15 -> 18 with three successes never reaches a destruction.
         config = RunConfig(
-            level=140, start_star=10, target_star=13, equipment_price=self.PRICE
+            level=140, start_star=15, target_star=18, equipment_price=self.PRICE
         )
         result = simulate_once(config, ScriptedRandom([0, 0, 0]))
         self.assertEqual(result.equipment_used, 0)
@@ -286,7 +287,7 @@ class EquipmentCostTest(unittest.TestCase):
         # A run that never gets destroyed pays nothing for the item it started
         # from: the base piece is a constant across every strategy.
         config = RunConfig(
-            level=140, start_star=10, target_star=11, equipment_price=self.PRICE
+            level=140, start_star=15, target_star=16, equipment_price=self.PRICE
         )
         result = simulate_once(config, ScriptedRandom([0]))
         self.assertEqual(result.equipment_cost, 0)
@@ -294,7 +295,7 @@ class EquipmentCostTest(unittest.TestCase):
 
 class ScriptedRunTest(unittest.TestCase):
     def test_run_starts_by_consuming_one_scroll(self) -> None:
-        config = RunConfig(level=140, start_star=10, target_star=13)
+        config = RunConfig(level=140, start_star=15, target_star=18)
         result = simulate_once(config, ScriptedRandom([0, 0, 0]))
         self.assertEqual(result.scrolls_used, 1)
         self.assertEqual(result.attempts, 3)
@@ -302,21 +303,21 @@ class ScriptedRunTest(unittest.TestCase):
         self.assertEqual(result.equipment_used, 0)
         self.assertEqual(
             result.total_meso,
-            20_000_000
-            + rules.enhance_cost(140, 10)
-            + rules.enhance_cost(140, 11)
-            + rules.enhance_cost(140, 12),
+            40_000_000
+            + rules.enhance_cost(140, 15)
+            + rules.enhance_cost(140, 16)
+            + rules.enhance_cost(140, 17),
         )
-        self.assertEqual(result.attempts_by_star, {10: 1, 11: 1, 12: 1})
+        self.assertEqual(result.attempts_by_star, {15: 1, 16: 1, 17: 1})
 
     def test_maintain_repeats_the_same_star(self) -> None:
-        config = RunConfig(level=140, start_star=10, target_star=11)
-        # 10 -> 11 succeeds on 0-4999; 9999 maintains.
+        config = RunConfig(level=140, start_star=15, target_star=16)
+        # 15 -> 16 is (3000, 210, 6790): 9999 maintains, 0 succeeds.
         result = simulate_once(config, ScriptedRandom([9999, 9999, 0]))
         self.assertEqual(result.attempts, 3)
-        self.assertEqual(result.attempts_by_star, {10: 3})
+        self.assertEqual(result.attempts_by_star, {15: 3})
         self.assertEqual(
-            result.total_meso, 20_000_000 + rules.enhance_cost(140, 10) * 3
+            result.total_meso, 40_000_000 + rules.enhance_cost(140, 15) * 3
         )
 
     def test_full_repair_returns_to_the_trace_star(self) -> None:
@@ -347,21 +348,6 @@ class ScriptedRunTest(unittest.TestCase):
         self.assertEqual(result.attempts_by_star, {15: 2})
         self.assertEqual(result.total_meso, 40_000_000 * 2 + 39_138_900 * 2)
 
-    def test_cheap_repair_below_12_stars_needs_no_second_scroll(self) -> None:
-        config = RunConfig(
-            level=140, start_star=10, target_star=16, repair_policy=RepairPolicy.TO_12
-        )
-        # Climb 10 -> 15, get destroyed, land on 12, climb back to 16.
-        rolls = [0, 0, 0, 0, 0, 3100, 0, 0, 0, 0]
-        result = simulate_once(config, ScriptedRandom(rolls))
-        self.assertEqual(result.destroys, 1)
-        self.assertEqual(result.equipment_used, 1)
-        self.assertEqual(result.scrolls_used, 1)
-        self.assertEqual(result.attempts, 10)
-        self.assertEqual(
-            result.attempts_by_star, {10: 1, 11: 1, 12: 2, 13: 2, 14: 2, 15: 2}
-        )
-
     def test_destruction_above_22_stars_leaves_a_22_star_trace(self) -> None:
         config = RunConfig(level=140, start_star=20, target_star=26)
         # Climb 20 -> 25, then 1000 lands in the (800, 1800, 7400) destroy band.
@@ -377,12 +363,15 @@ class ScriptedRunTest(unittest.TestCase):
 
     def test_a_destroy_band_roll_cannot_destroy_below_15_stars(self) -> None:
         # 3100 destroys at 15 stars. Below 15 the destroy band is empty, so the
-        # same roll can only succeed or maintain.
-        config = RunConfig(level=140, start_star=10, target_star=15)
+        # same roll can only succeed or maintain. No scroll reaches below 15, so
+        # the only way to sit there is to already own the item.
+        config = RunConfig(
+            level=140, start_star=10, target_star=15, start_mode=StartMode.OWNED
+        )
         result = simulate_once(config, ScriptedRandom([3100] * 5 + [0]))
         self.assertEqual(result.destroys, 0)
         self.assertEqual(result.equipment_used, 0)
-        self.assertEqual(result.scrolls_used, 1)
+        self.assertEqual(result.scrolls_used, 0)
         self.assertEqual(result.attempts, 6)
         # 3100 succeeds at 10-13 but only maintains at 14 (success band 3000).
         self.assertEqual(result.attempts_by_star, {10: 1, 11: 1, 12: 1, 13: 1, 14: 2})
@@ -390,16 +379,28 @@ class ScriptedRunTest(unittest.TestCase):
 
 class AnalyticAnchorTest(unittest.TestCase):
     """10 -> 15 has no destruction, so each attempt is an independent geometric
-    trial and the exact expectations are known in closed form."""
+    trial and the exact expectations are known in closed form.
+
+    It runs from an owned item because no scroll reaches below 15 stars, which
+    also means there is no scroll cost in the closed form.
+    """
 
     LEVEL = 140
     START = 10
     TARGET = 15
     TRIALS = 20_000
 
+    def config(self) -> RunConfig:
+        return RunConfig(
+            level=self.LEVEL,
+            start_star=self.START,
+            target_star=self.TARGET,
+            start_mode=StartMode.OWNED,
+        )
+
     def _expectations(self) -> tuple[float, float]:
         attempts = 0.0
-        meso = float(rules.star_scroll_cost(self.START))
+        meso = 0.0
         for star in range(self.START, self.TARGET):
             success = data.ENHANCE_RATES[star][0] / data.RATE_BASIS
             attempts += 1 / success
@@ -408,25 +409,17 @@ class AnalyticAnchorTest(unittest.TestCase):
 
     def test_monte_carlo_matches_the_closed_form(self) -> None:
         expected_attempts, expected_meso = self._expectations()
-        summary = simulate(
-            RunConfig(level=self.LEVEL, start_star=self.START, target_star=self.TARGET),
-            trials=self.TRIALS,
-            seed=20260725,
-        )
+        summary = simulate(self.config(), trials=self.TRIALS, seed=20260725)
         self.assertAlmostEqual(
             summary.attempts.mean / expected_attempts, 1.0, delta=0.02
         )
         self.assertAlmostEqual(summary.meso.mean / expected_meso, 1.0, delta=0.02)
         self.assertEqual(summary.destroys.mean, 0.0)
         self.assertEqual(summary.equipment.mean, 0.0)
-        self.assertEqual(summary.scrolls.mean, 1.0)
+        self.assertEqual(summary.scrolls.mean, 0.0)
 
     def test_mean_attempts_per_star_matches_one_over_p(self) -> None:
-        summary = simulate(
-            RunConfig(level=self.LEVEL, start_star=self.START, target_star=self.TARGET),
-            trials=self.TRIALS,
-            seed=20260725,
-        )
+        summary = simulate(self.config(), trials=self.TRIALS, seed=20260725)
         for star in range(self.START, self.TARGET):
             success = data.ENHANCE_RATES[star][0] / data.RATE_BASIS
             with self.subTest(star=star):
@@ -449,7 +442,6 @@ class UnitsTest(unittest.TestCase):
 
     def test_scroll_prices_round_trip_to_the_quoted_yi_figures(self) -> None:
         quoted = {
-            10: 0.2,
             15: 0.4,
             16: 2.8,
             17: 15.8,

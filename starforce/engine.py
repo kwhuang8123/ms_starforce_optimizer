@@ -238,7 +238,9 @@ def _repair(
 
     star = rules.CHEAP_REPAIR_STAR
     # A 12 star repair lands below where the run started, so another start_star
-    # scroll goes back on. A run started at 10 or 11 stars is already past 12.
+    # scroll goes back on - the same scroll the run opened with. The lowest
+    # scroll is 15 stars, so this is always true in SCROLL mode; the check is
+    # what would keep it correct if scrolls below 12 ever existed again.
     if config.start_star > star:
         result.total_meso += scroll_cost
         result.scrolls_used += 1

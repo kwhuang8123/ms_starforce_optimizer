@@ -12,9 +12,8 @@ from __future__ import annotations
 from . import static_data as data
 from . import volatile_data
 
-# Star force caps by item level. 130 gear stops at 20 stars, 140+ at 30.
+# Star force caps by item level. 140+ gear stops at 30 stars.
 MAX_STAR: dict[int, int] = {
-    130: 20,
     140: 30,
     150: 30,
     160: 30,
@@ -62,9 +61,11 @@ def max_star(level: int) -> int:
 def max_target_star(level: int) -> int:
     """Highest target this engine will simulate for ``level``.
 
-    Level 130 is capped at :data:`DESTROY_START_STAR` because the official
-    repair table publishes no level 130 column, which makes the cost of a
-    destroyed 130 item unknowable. Every other level uses its real cap.
+    A level with no repair column cannot be taken into the destruction range,
+    because the cost of a destroyed item would be unknowable. No supported level
+    is in that position today - which is why level 130 is not supported - so the
+    guard below never fires. It stays as the thing that stops a future level
+    from being simulated against costs nobody published.
     """
     cap = max_star(level)
     if level not in data.REPAIR_MESO:
