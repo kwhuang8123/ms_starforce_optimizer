@@ -52,9 +52,28 @@ function readSaved() {
   return null;
 }
 
+/**
+ * Fill in sections a saved copy predates.
+ *
+ * Breakthrough scrolls arrived after people had already saved prices, so an
+ * older browser has no section for them at all. Falling back to the shipped
+ * figures per scroll keeps that browser working; throwing the first time one is
+ * used would be a broken page rather than a stale price.
+ */
+function withShippedDefaults(prices) {
+  return {
+    ...prices,
+    breakthrough_scroll_cost: {
+      ...shipped.breakthrough_scroll_cost,
+      ...(prices.breakthrough_scroll_cost || {}),
+    },
+  };
+}
+
 export function init(shippedPrices) {
   shipped = shippedPrices;
-  current = readSaved() || clone(shipped);
+  const saved = readSaved();
+  current = saved === null ? clone(shipped) : withShippedDefaults(saved);
   return current;
 }
 

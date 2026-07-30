@@ -1,13 +1,28 @@
 {
- "generated_at": "2026-07-30T11:41:44+00:00",
+ "generated_at": "2026-07-30T20:00:00+00:00",
  "rate_basis": 10000,
  "star_scroll_cost": {
-  "15": 40000000,
-  "16": 280000000,
-  "17": 1580000000,
-  "18": 2500000000,
-  "19": 6400000000,
-  "20": 33000000000
+  "15": 20000000,
+  "16": 100000000,
+  "17": 960000000,
+  "18": 1630000000,
+  "19": 4700000000,
+  "20": 21600000000
+ },
+ "breakthrough_scroll_cost": {
+  "21-10000": 17800000000,
+  "22-10000": 36200000000,
+  "23-3000": 13000000000,
+  "23-5000": 17000000000,
+  "23-10000": 42300000000,
+  "24-3000": 22800000000,
+  "24-5000": 38000000000,
+  "24-10000": 80000000000,
+  "25-3000": 100000000000,
+  "25-5000": 160000000000,
+  "25-10000": 380000000000,
+  "26-3000": 310000000000,
+  "26-5000": 460000000000
  },
  "cases": [
   {
@@ -52,13 +67,14 @@
     "star": 19,
     "destroyed": false,
     "totals": {
-     "total_meso": 6228489500,
+     "total_meso": 6208489500,
      "equipment_used": 2,
      "equipment_cost": 300000000,
      "scrolls_used": 1,
+     "breakthroughs_used": 0,
      "attempts": 22,
      "destroys": 2,
-     "total_cost": 6528489500,
+     "total_cost": 6508489500,
      "attempts_by_star": {
       "15": 1,
       "16": 3,
@@ -73,10 +89,10 @@
       "star_before": 0,
       "star_after": 15,
       "outcome": null,
-      "meso": 40000000,
+      "meso": 20000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 40000000
+      "total_cost_after": 20000000
      },
      {
       "index": 2,
@@ -87,7 +103,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 88139000
+      "total_cost_after": 68139000
      },
      {
       "index": 3,
@@ -98,7 +114,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 147201500
+      "total_cost_after": 127201500
      },
      {
       "index": 4,
@@ -109,7 +125,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 206264000
+      "total_cost_after": 186264000
      },
      {
       "index": 5,
@@ -120,7 +136,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 265326500
+      "total_cost_after": 245326500
      },
      {
       "index": 6,
@@ -131,7 +147,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 340510000
+      "total_cost_after": 320510000
      },
      {
       "index": 7,
@@ -142,7 +158,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 415693500
+      "total_cost_after": 395693500
      },
      {
       "index": 8,
@@ -153,7 +169,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 490877000
+      "total_cost_after": 470877000
      },
      {
       "index": 9,
@@ -164,7 +180,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 566060500
+      "total_cost_after": 546060500
      },
      {
       "index": 10,
@@ -175,7 +191,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 641244000
+      "total_cost_after": 621244000
      },
      {
       "index": 11,
@@ -186,7 +202,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 716427500
+      "total_cost_after": 696427500
      },
      {
       "index": 12,
@@ -197,7 +213,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 791611000
+      "total_cost_after": 771611000
      },
      {
       "index": 13,
@@ -208,7 +224,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 866794500
+      "total_cost_after": 846794500
      },
      {
       "index": 14,
@@ -219,7 +235,7 @@
       "meso": 1110000000,
       "equipment_used": 1,
       "equipment_cost": 150000000,
-      "total_cost_after": 2126794500
+      "total_cost_after": 2106794500
      },
      {
       "index": 15,
@@ -230,7 +246,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2201978000
+      "total_cost_after": 2181978000
      },
      {
       "index": 16,
@@ -241,7 +257,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2277161500
+      "total_cost_after": 2257161500
      },
      {
       "index": 17,
@@ -252,7 +268,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2489827500
+      "total_cost_after": 2469827500
      },
      {
       "index": 18,
@@ -263,7 +279,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2702493500
+      "total_cost_after": 2682493500
      },
      {
       "index": 19,
@@ -274,7 +290,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2915159500
+      "total_cost_after": 2895159500
      },
      {
       "index": 20,
@@ -285,7 +301,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3127825500
+      "total_cost_after": 3107825500
      },
      {
       "index": 21,
@@ -296,7 +312,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3340491500
+      "total_cost_after": 3320491500
      },
      {
       "index": 22,
@@ -307,7 +323,7 @@
       "meso": 2400000000,
       "equipment_used": 1,
       "equipment_cost": 150000000,
-      "total_cost_after": 5890491500
+      "total_cost_after": 5870491500
      },
      {
       "index": 23,
@@ -318,7 +334,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6103157500
+      "total_cost_after": 6083157500
      },
      {
       "index": 24,
@@ -329,7 +345,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6315823500
+      "total_cost_after": 6295823500
      },
      {
       "index": 25,
@@ -340,11 +356,11 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6528489500
+      "total_cost_after": 6508489500
      }
     ],
     "stop_reason": "reached_target",
-    "spent": 6528489500
+    "spent": 6508489500
    }
   },
   {
@@ -489,13 +505,14 @@
     "star": 19,
     "destroyed": false,
     "totals": {
-     "total_meso": 11628074500,
+     "total_meso": 11408074500,
      "equipment_used": 10,
      "equipment_cost": 1500000000,
      "scrolls_used": 11,
+     "breakthroughs_used": 0,
      "attempts": 122,
      "destroys": 10,
-     "total_cost": 13128074500,
+     "total_cost": 12908074500,
      "attempts_by_star": {
       "15": 23,
       "16": 24,
@@ -510,10 +527,10 @@
       "star_before": 0,
       "star_after": 15,
       "outcome": null,
-      "meso": 40000000,
+      "meso": 20000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 40000000
+      "total_cost_after": 20000000
      },
      {
       "index": 2,
@@ -524,7 +541,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 88139000
+      "total_cost_after": 68139000
      },
      {
       "index": 3,
@@ -535,7 +552,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 147201500
+      "total_cost_after": 127201500
      },
      {
       "index": 4,
@@ -546,7 +563,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 206264000
+      "total_cost_after": 186264000
      },
      {
       "index": 5,
@@ -557,7 +574,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 265326500
+      "total_cost_after": 245326500
      },
      {
       "index": 6,
@@ -568,7 +585,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 340510000
+      "total_cost_after": 320510000
      },
      {
       "index": 7,
@@ -579,7 +596,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 415693500
+      "total_cost_after": 395693500
      },
      {
       "index": 8,
@@ -590,7 +607,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 490877000
+      "total_cost_after": 470877000
      },
      {
       "index": 9,
@@ -601,7 +618,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 566060500
+      "total_cost_after": 546060500
      },
      {
       "index": 10,
@@ -612,7 +629,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 641244000
+      "total_cost_after": 621244000
      },
      {
       "index": 11,
@@ -623,7 +640,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 716427500
+      "total_cost_after": 696427500
      },
      {
       "index": 12,
@@ -634,7 +651,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 791611000
+      "total_cost_after": 771611000
      },
      {
       "index": 13,
@@ -645,7 +662,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 866794500
+      "total_cost_after": 846794500
      },
      {
       "index": 14,
@@ -656,7 +673,7 @@
       "meso": 0,
       "equipment_used": 1,
       "equipment_cost": 150000000,
-      "total_cost_after": 1016794500
+      "total_cost_after": 996794500
      },
      {
       "index": 15,
@@ -664,10 +681,10 @@
       "star_before": 12,
       "star_after": 15,
       "outcome": null,
-      "meso": 40000000,
+      "meso": 20000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1056794500
+      "total_cost_after": 1016794500
      },
      {
       "index": 16,
@@ -678,7 +695,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1104933500
+      "total_cost_after": 1064933500
      },
      {
       "index": 17,
@@ -689,7 +706,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1153072500
+      "total_cost_after": 1113072500
      },
      {
       "index": 18,
@@ -700,7 +717,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1212135000
+      "total_cost_after": 1172135000
      },
      {
       "index": 19,
@@ -711,7 +728,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1287318500
+      "total_cost_after": 1247318500
      },
      {
       "index": 20,
@@ -722,7 +739,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1362502000
+      "total_cost_after": 1322502000
      },
      {
       "index": 21,
@@ -733,7 +750,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1437685500
+      "total_cost_after": 1397685500
      },
      {
       "index": 22,
@@ -744,7 +761,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1512869000
+      "total_cost_after": 1472869000
      },
      {
       "index": 23,
@@ -755,7 +772,7 @@
       "meso": 0,
       "equipment_used": 1,
       "equipment_cost": 150000000,
-      "total_cost_after": 1662869000
+      "total_cost_after": 1622869000
      },
      {
       "index": 24,
@@ -763,10 +780,10 @@
       "star_before": 12,
       "star_after": 15,
       "outcome": null,
-      "meso": 40000000,
+      "meso": 20000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1702869000
+      "total_cost_after": 1642869000
      },
      {
       "index": 25,
@@ -777,7 +794,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1751008000
+      "total_cost_after": 1691008000
      },
      {
       "index": 26,
@@ -788,7 +805,7 @@
       "meso": 0,
       "equipment_used": 1,
       "equipment_cost": 150000000,
-      "total_cost_after": 1901008000
+      "total_cost_after": 1841008000
      },
      {
       "index": 27,
@@ -796,10 +813,10 @@
       "star_before": 12,
       "star_after": 15,
       "outcome": null,
-      "meso": 40000000,
+      "meso": 20000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1941008000
+      "total_cost_after": 1861008000
      },
      {
       "index": 28,
@@ -810,7 +827,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1989147000
+      "total_cost_after": 1909147000
      },
      {
       "index": 29,
@@ -821,7 +838,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2037286000
+      "total_cost_after": 1957286000
      },
      {
       "index": 30,
@@ -832,7 +849,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2096348500
+      "total_cost_after": 2016348500
      },
      {
       "index": 31,
@@ -843,7 +860,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2155411000
+      "total_cost_after": 2075411000
      },
      {
       "index": 32,
@@ -854,7 +871,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2230594500
+      "total_cost_after": 2150594500
      },
      {
       "index": 33,
@@ -865,7 +882,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2305778000
+      "total_cost_after": 2225778000
      },
      {
       "index": 34,
@@ -876,7 +893,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2380961500
+      "total_cost_after": 2300961500
      },
      {
       "index": 35,
@@ -887,7 +904,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2456145000
+      "total_cost_after": 2376145000
      },
      {
       "index": 36,
@@ -898,7 +915,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2531328500
+      "total_cost_after": 2451328500
      },
      {
       "index": 37,
@@ -909,7 +926,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2743994500
+      "total_cost_after": 2663994500
      },
      {
       "index": 38,
@@ -920,7 +937,7 @@
       "meso": 0,
       "equipment_used": 1,
       "equipment_cost": 150000000,
-      "total_cost_after": 2893994500
+      "total_cost_after": 2813994500
      },
      {
       "index": 39,
@@ -928,10 +945,10 @@
       "star_before": 12,
       "star_after": 15,
       "outcome": null,
-      "meso": 40000000,
+      "meso": 20000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2933994500
+      "total_cost_after": 2833994500
      },
      {
       "index": 40,
@@ -942,7 +959,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2982133500
+      "total_cost_after": 2882133500
      },
      {
       "index": 41,
@@ -953,7 +970,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3041196000
+      "total_cost_after": 2941196000
      },
      {
       "index": 42,
@@ -964,7 +981,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3100258500
+      "total_cost_after": 3000258500
      },
      {
       "index": 43,
@@ -975,7 +992,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3159321000
+      "total_cost_after": 3059321000
      },
      {
       "index": 44,
@@ -986,7 +1003,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3234504500
+      "total_cost_after": 3134504500
      },
      {
       "index": 45,
@@ -997,7 +1014,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3309688000
+      "total_cost_after": 3209688000
      },
      {
       "index": 46,
@@ -1008,7 +1025,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3384871500
+      "total_cost_after": 3284871500
      },
      {
       "index": 47,
@@ -1019,7 +1036,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3460055000
+      "total_cost_after": 3360055000
      },
      {
       "index": 48,
@@ -1030,7 +1047,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3535238500
+      "total_cost_after": 3435238500
      },
      {
       "index": 49,
@@ -1041,7 +1058,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3610422000
+      "total_cost_after": 3510422000
      },
      {
       "index": 50,
@@ -1052,7 +1069,7 @@
       "meso": 0,
       "equipment_used": 1,
       "equipment_cost": 150000000,
-      "total_cost_after": 3760422000
+      "total_cost_after": 3660422000
      },
      {
       "index": 51,
@@ -1060,10 +1077,10 @@
       "star_before": 12,
       "star_after": 15,
       "outcome": null,
-      "meso": 40000000,
+      "meso": 20000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3800422000
+      "total_cost_after": 3680422000
      },
      {
       "index": 52,
@@ -1074,7 +1091,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3848561000
+      "total_cost_after": 3728561000
      },
      {
       "index": 53,
@@ -1085,7 +1102,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3896700000
+      "total_cost_after": 3776700000
      },
      {
       "index": 54,
@@ -1096,7 +1113,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3944839000
+      "total_cost_after": 3824839000
      },
      {
       "index": 55,
@@ -1107,7 +1124,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3992978000
+      "total_cost_after": 3872978000
      },
      {
       "index": 56,
@@ -1118,7 +1135,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 4041117000
+      "total_cost_after": 3921117000
      },
      {
       "index": 57,
@@ -1129,7 +1146,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 4100179500
+      "total_cost_after": 3980179500
      },
      {
       "index": 58,
@@ -1140,7 +1157,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 4159242000
+      "total_cost_after": 4039242000
      },
      {
       "index": 59,
@@ -1151,7 +1168,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 4218304500
+      "total_cost_after": 4098304500
      },
      {
       "index": 60,
@@ -1162,7 +1179,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 4293488000
+      "total_cost_after": 4173488000
      },
      {
       "index": 61,
@@ -1173,7 +1190,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 4368671500
+      "total_cost_after": 4248671500
      },
      {
       "index": 62,
@@ -1184,7 +1201,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 4443855000
+      "total_cost_after": 4323855000
      },
      {
       "index": 63,
@@ -1195,7 +1212,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 4519038500
+      "total_cost_after": 4399038500
      },
      {
       "index": 64,
@@ -1206,7 +1223,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 4594222000
+      "total_cost_after": 4474222000
      },
      {
       "index": 65,
@@ -1217,7 +1234,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 4669405500
+      "total_cost_after": 4549405500
      },
      {
       "index": 66,
@@ -1228,7 +1245,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 4744589000
+      "total_cost_after": 4624589000
      },
      {
       "index": 67,
@@ -1239,7 +1256,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 4819772500
+      "total_cost_after": 4699772500
      },
      {
       "index": 68,
@@ -1250,7 +1267,7 @@
       "meso": 0,
       "equipment_used": 1,
       "equipment_cost": 150000000,
-      "total_cost_after": 4969772500
+      "total_cost_after": 4849772500
      },
      {
       "index": 69,
@@ -1258,10 +1275,10 @@
       "star_before": 12,
       "star_after": 15,
       "outcome": null,
-      "meso": 40000000,
+      "meso": 20000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5009772500
+      "total_cost_after": 4869772500
      },
      {
       "index": 70,
@@ -1272,7 +1289,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5057911500
+      "total_cost_after": 4917911500
      },
      {
       "index": 71,
@@ -1283,7 +1300,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5116974000
+      "total_cost_after": 4976974000
      },
      {
       "index": 72,
@@ -1294,7 +1311,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5176036500
+      "total_cost_after": 5036036500
      },
      {
       "index": 73,
@@ -1305,7 +1322,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5235099000
+      "total_cost_after": 5095099000
      },
      {
       "index": 74,
@@ -1316,7 +1333,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5294161500
+      "total_cost_after": 5154161500
      },
      {
       "index": 75,
@@ -1327,7 +1344,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5353224000
+      "total_cost_after": 5213224000
      },
      {
       "index": 76,
@@ -1338,7 +1355,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5412286500
+      "total_cost_after": 5272286500
      },
      {
       "index": 77,
@@ -1349,7 +1366,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5471349000
+      "total_cost_after": 5331349000
      },
      {
       "index": 78,
@@ -1360,7 +1377,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5530411500
+      "total_cost_after": 5390411500
      },
      {
       "index": 79,
@@ -1371,7 +1388,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5605595000
+      "total_cost_after": 5465595000
      },
      {
       "index": 80,
@@ -1382,7 +1399,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5680778500
+      "total_cost_after": 5540778500
      },
      {
       "index": 81,
@@ -1393,7 +1410,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5755962000
+      "total_cost_after": 5615962000
      },
      {
       "index": 82,
@@ -1404,7 +1421,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5831145500
+      "total_cost_after": 5691145500
      },
      {
       "index": 83,
@@ -1415,7 +1432,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5906329000
+      "total_cost_after": 5766329000
      },
      {
       "index": 84,
@@ -1426,7 +1443,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5981512500
+      "total_cost_after": 5841512500
      },
      {
       "index": 85,
@@ -1437,7 +1454,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6056696000
+      "total_cost_after": 5916696000
      },
      {
       "index": 86,
@@ -1448,7 +1465,7 @@
       "meso": 0,
       "equipment_used": 1,
       "equipment_cost": 150000000,
-      "total_cost_after": 6206696000
+      "total_cost_after": 6066696000
      },
      {
       "index": 87,
@@ -1456,10 +1473,10 @@
       "star_before": 12,
       "star_after": 15,
       "outcome": null,
-      "meso": 40000000,
+      "meso": 20000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6246696000
+      "total_cost_after": 6086696000
      },
      {
       "index": 88,
@@ -1470,7 +1487,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6294835000
+      "total_cost_after": 6134835000
      },
      {
       "index": 89,
@@ -1481,7 +1498,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6342974000
+      "total_cost_after": 6182974000
      },
      {
       "index": 90,
@@ -1492,7 +1509,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6391113000
+      "total_cost_after": 6231113000
      },
      {
       "index": 91,
@@ -1503,7 +1520,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6439252000
+      "total_cost_after": 6279252000
      },
      {
       "index": 92,
@@ -1514,7 +1531,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6487391000
+      "total_cost_after": 6327391000
      },
      {
       "index": 93,
@@ -1525,7 +1542,7 @@
       "meso": 0,
       "equipment_used": 1,
       "equipment_cost": 150000000,
-      "total_cost_after": 6637391000
+      "total_cost_after": 6477391000
      },
      {
       "index": 94,
@@ -1533,10 +1550,10 @@
       "star_before": 12,
       "star_after": 15,
       "outcome": null,
-      "meso": 40000000,
+      "meso": 20000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6677391000
+      "total_cost_after": 6497391000
      },
      {
       "index": 95,
@@ -1547,7 +1564,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6725530000
+      "total_cost_after": 6545530000
      },
      {
       "index": 96,
@@ -1558,7 +1575,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6784592500
+      "total_cost_after": 6604592500
      },
      {
       "index": 97,
@@ -1569,7 +1586,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6843655000
+      "total_cost_after": 6663655000
      },
      {
       "index": 98,
@@ -1580,7 +1597,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6918838500
+      "total_cost_after": 6738838500
      },
      {
       "index": 99,
@@ -1591,7 +1608,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6994022000
+      "total_cost_after": 6814022000
      },
      {
       "index": 100,
@@ -1602,7 +1619,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 7069205500
+      "total_cost_after": 6889205500
      },
      {
       "index": 101,
@@ -1613,7 +1630,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 7144389000
+      "total_cost_after": 6964389000
      },
      {
       "index": 102,
@@ -1624,7 +1641,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 7357055000
+      "total_cost_after": 7177055000
      },
      {
       "index": 103,
@@ -1635,7 +1652,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 7569721000
+      "total_cost_after": 7389721000
      },
      {
       "index": 104,
@@ -1646,7 +1663,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 7782387000
+      "total_cost_after": 7602387000
      },
      {
       "index": 105,
@@ -1657,7 +1674,7 @@
       "meso": 0,
       "equipment_used": 1,
       "equipment_cost": 150000000,
-      "total_cost_after": 7932387000
+      "total_cost_after": 7752387000
      },
      {
       "index": 106,
@@ -1665,10 +1682,10 @@
       "star_before": 12,
       "star_after": 15,
       "outcome": null,
-      "meso": 40000000,
+      "meso": 20000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 7972387000
+      "total_cost_after": 7772387000
      },
      {
       "index": 107,
@@ -1679,7 +1696,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8020526000
+      "total_cost_after": 7820526000
      },
      {
       "index": 108,
@@ -1690,7 +1707,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8068665000
+      "total_cost_after": 7868665000
      },
      {
       "index": 109,
@@ -1701,7 +1718,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8127727500
+      "total_cost_after": 7927727500
      },
      {
       "index": 110,
@@ -1712,7 +1729,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8202911000
+      "total_cost_after": 8002911000
      },
      {
       "index": 111,
@@ -1723,7 +1740,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8278094500
+      "total_cost_after": 8078094500
      },
      {
       "index": 112,
@@ -1734,7 +1751,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8353278000
+      "total_cost_after": 8153278000
      },
      {
       "index": 113,
@@ -1745,7 +1762,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8428461500
+      "total_cost_after": 8228461500
      },
      {
       "index": 114,
@@ -1756,7 +1773,7 @@
       "meso": 0,
       "equipment_used": 1,
       "equipment_cost": 150000000,
-      "total_cost_after": 8578461500
+      "total_cost_after": 8378461500
      },
      {
       "index": 115,
@@ -1764,10 +1781,10 @@
       "star_before": 12,
       "star_after": 15,
       "outcome": null,
-      "meso": 40000000,
+      "meso": 20000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8618461500
+      "total_cost_after": 8398461500
      },
      {
       "index": 116,
@@ -1778,7 +1795,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8666600500
+      "total_cost_after": 8446600500
      },
      {
       "index": 117,
@@ -1789,7 +1806,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8714739500
+      "total_cost_after": 8494739500
      },
      {
       "index": 118,
@@ -1800,7 +1817,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8773802000
+      "total_cost_after": 8553802000
      },
      {
       "index": 119,
@@ -1811,7 +1828,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8848985500
+      "total_cost_after": 8628985500
      },
      {
       "index": 120,
@@ -1822,7 +1839,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8924169000
+      "total_cost_after": 8704169000
      },
      {
       "index": 121,
@@ -1833,7 +1850,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8999352500
+      "total_cost_after": 8779352500
      },
      {
       "index": 122,
@@ -1844,7 +1861,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 9074536000
+      "total_cost_after": 8854536000
      },
      {
       "index": 123,
@@ -1855,7 +1872,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 9149719500
+      "total_cost_after": 8929719500
      },
      {
       "index": 124,
@@ -1866,7 +1883,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 9224903000
+      "total_cost_after": 9004903000
      },
      {
       "index": 125,
@@ -1877,7 +1894,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 9300086500
+      "total_cost_after": 9080086500
      },
      {
       "index": 126,
@@ -1888,7 +1905,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 9512752500
+      "total_cost_after": 9292752500
      },
      {
       "index": 127,
@@ -1899,7 +1916,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 9725418500
+      "total_cost_after": 9505418500
      },
      {
       "index": 128,
@@ -1910,7 +1927,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 9938084500
+      "total_cost_after": 9718084500
      },
      {
       "index": 129,
@@ -1921,7 +1938,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 10150750500
+      "total_cost_after": 9930750500
      },
      {
       "index": 130,
@@ -1932,7 +1949,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 10363416500
+      "total_cost_after": 10143416500
      },
      {
       "index": 131,
@@ -1943,7 +1960,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 10576082500
+      "total_cost_after": 10356082500
      },
      {
       "index": 132,
@@ -1954,7 +1971,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 10788748500
+      "total_cost_after": 10568748500
      },
      {
       "index": 133,
@@ -1965,7 +1982,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 11001414500
+      "total_cost_after": 10781414500
      },
      {
       "index": 134,
@@ -1976,7 +1993,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 11214080500
+      "total_cost_after": 10994080500
      },
      {
       "index": 135,
@@ -1987,7 +2004,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 11426746500
+      "total_cost_after": 11206746500
      },
      {
       "index": 136,
@@ -1998,7 +2015,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 11639412500
+      "total_cost_after": 11419412500
      },
      {
       "index": 137,
@@ -2009,7 +2026,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 11852078500
+      "total_cost_after": 11632078500
      },
      {
       "index": 138,
@@ -2020,7 +2037,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 12064744500
+      "total_cost_after": 11844744500
      },
      {
       "index": 139,
@@ -2031,7 +2048,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 12277410500
+      "total_cost_after": 12057410500
      },
      {
       "index": 140,
@@ -2042,7 +2059,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 12490076500
+      "total_cost_after": 12270076500
      },
      {
       "index": 141,
@@ -2053,7 +2070,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 12702742500
+      "total_cost_after": 12482742500
      },
      {
       "index": 142,
@@ -2064,7 +2081,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 12915408500
+      "total_cost_after": 12695408500
      },
      {
       "index": 143,
@@ -2075,11 +2092,11 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 13128074500
+      "total_cost_after": 12908074500
      }
     ],
     "stop_reason": "reached_target",
-    "spent": 13128074500
+    "spent": 12908074500
    }
   },
   {
@@ -2164,6 +2181,7 @@
      "equipment_used": 48,
      "equipment_cost": 960000000000,
      "scrolls_used": 0,
+     "breakthroughs_used": 0,
      "attempts": 58,
      "destroys": 12,
      "total_cost": 1463250692800,
@@ -2983,6 +3001,7 @@
      "equipment_used": 1,
      "equipment_cost": 300000000,
      "scrolls_used": 0,
+     "breakthroughs_used": 0,
      "attempts": 11,
      "destroys": 1,
      "total_cost": 19359677000,
@@ -3164,13 +3183,14 @@
     "star": 16,
     "destroyed": false,
     "totals": {
-     "total_meso": 267277800,
+     "total_meso": 247277800,
      "equipment_used": 1,
      "equipment_cost": 1000000000,
      "scrolls_used": 1,
+     "breakthroughs_used": 0,
      "attempts": 2,
      "destroys": 1,
-     "total_cost": 1267277800,
+     "total_cost": 1247277800,
      "attempts_by_star": {
       "15": 2
      }
@@ -3182,10 +3202,10 @@
       "star_before": 0,
       "star_after": 15,
       "outcome": null,
-      "meso": 40000000,
+      "meso": 20000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 40000000
+      "total_cost_after": 20000000
      },
      {
       "index": 2,
@@ -3196,7 +3216,7 @@
       "meso": 39138900,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 79138900
+      "total_cost_after": 59138900
      },
      {
       "index": 3,
@@ -3207,7 +3227,7 @@
       "meso": 149000000,
       "equipment_used": 1,
       "equipment_cost": 1000000000,
-      "total_cost_after": 1228138900
+      "total_cost_after": 1208138900
      },
      {
       "index": 4,
@@ -3218,7 +3238,7 @@
       "meso": 39138900,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1267277800
+      "total_cost_after": 1247277800
      }
     ]
    }
@@ -3255,13 +3275,14 @@
     "star": 20,
     "destroyed": false,
     "totals": {
-     "total_meso": 33211534400,
+     "total_meso": 21811534400,
      "equipment_used": 1,
      "equipment_cost": 2000000000,
      "scrolls_used": 1,
+     "breakthroughs_used": 0,
      "attempts": 2,
      "destroys": 1,
-     "total_cost": 35211534400,
+     "total_cost": 23811534400,
      "attempts_by_star": {
       "20": 1,
       "25": 1
@@ -3296,10 +3317,10 @@
       "star_before": 12,
       "star_after": 20,
       "outcome": null,
-      "meso": 33000000000,
+      "meso": 21600000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 35135444400
+      "total_cost_after": 23735444400
      },
      {
       "index": 4,
@@ -3310,9 +3331,587 @@
       "meso": 76090000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 35211534400
+      "total_cost_after": 23811534400
      }
     ]
+   }
+  },
+  {
+   "name": "breakthrough scroll, one hit then one miss",
+   "kind": "manual",
+   "session": {
+    "level": 200,
+    "start_star": 22,
+    "equipment_price": 20000000000
+   },
+   "actions": [
+    [
+     "breakthrough",
+     24,
+     3000
+    ],
+    [
+     "breakthrough",
+     24,
+     3000
+    ],
+    [
+     "enhance"
+    ]
+   ],
+   "rolls": [
+    0,
+    9999,
+    9999
+   ],
+   "expected": {
+    "star": 23,
+    "destroyed": false,
+    "totals": {
+     "total_meso": 45813124000,
+     "equipment_used": 0,
+     "equipment_cost": 0,
+     "scrolls_used": 0,
+     "breakthroughs_used": 2,
+     "attempts": 1,
+     "destroys": 0,
+     "total_cost": 45813124000,
+     "attempts_by_star": {
+      "23": 1
+     }
+    },
+    "log": [
+     {
+      "index": 1,
+      "action": "breakthrough",
+      "star_before": 22,
+      "star_after": 23,
+      "outcome": "success",
+      "meso": 22800000000,
+      "equipment_used": 0,
+      "equipment_cost": 0,
+      "total_cost_after": 22800000000
+     },
+     {
+      "index": 2,
+      "action": "breakthrough",
+      "star_before": 23,
+      "star_after": 23,
+      "outcome": "maintain",
+      "meso": 22800000000,
+      "equipment_used": 0,
+      "equipment_cost": 0,
+      "total_cost_after": 45600000000
+     },
+     {
+      "index": 3,
+      "action": "enhance",
+      "star_before": 23,
+      "star_after": 23,
+      "outcome": "maintain",
+      "meso": 213124000,
+      "equipment_used": 0,
+      "equipment_cost": 0,
+      "total_cost_after": 45813124000
+     }
+    ]
+   }
+  }
+ ],
+ "policy": [
+  {
+   "name": "頂培 15->22 full",
+   "level": 150,
+   "equipment": "頂培",
+   "equipment_price": 150000000,
+   "start_star": 15,
+   "target_star": 22,
+   "repair_policy": "full",
+   "expected": {
+    "optimal": {
+     "entries": [],
+     "expected_total": 24897265333
+    },
+    "safe": {
+     "entries": [],
+     "expected_total": 24897265333
+    }
+   }
+  },
+  {
+   "name": "頂培 15->22 to_12",
+   "level": 150,
+   "equipment": "頂培",
+   "equipment_price": 150000000,
+   "start_star": 15,
+   "target_star": 22,
+   "repair_policy": "to_12",
+   "expected": {
+    "optimal": {
+     "entries": [],
+     "expected_total": 24672467705
+    },
+    "safe": {
+     "entries": [],
+     "expected_total": 24672467705
+    }
+   }
+  },
+  {
+   "name": "神秘 15->22 full",
+   "level": 200,
+   "equipment": "神秘",
+   "equipment_price": 50000000,
+   "start_star": 15,
+   "target_star": 22,
+   "repair_policy": "full",
+   "expected": {
+    "optimal": {
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ]
+     ],
+     "expected_total": 56291299667
+    },
+    "safe": {
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ]
+     ],
+     "expected_total": 56291299667
+    }
+   }
+  },
+  {
+   "name": "神秘 15->22 to_12",
+   "level": 200,
+   "equipment": "神秘",
+   "equipment_price": 50000000,
+   "start_star": 15,
+   "target_star": 22,
+   "repair_policy": "to_12",
+   "expected": {
+    "optimal": {
+     "entries": [],
+     "expected_total": 55020579689
+    },
+    "safe": {
+     "entries": [],
+     "expected_total": 55020579689
+    }
+   }
+  },
+  {
+   "name": "控制核心 15->22 full",
+   "level": 200,
+   "equipment": "控制核心",
+   "equipment_price": 22000000000,
+   "start_star": 15,
+   "target_star": 22,
+   "repair_policy": "full",
+   "expected": {
+    "optimal": {
+     "entries": [
+      [
+       18,
+       21,
+       10000
+      ],
+      [
+       19,
+       21,
+       10000
+      ],
+      [
+       20,
+       21,
+       10000
+      ],
+      [
+       21,
+       23,
+       5000
+      ]
+     ],
+     "expected_total": 103825867667
+    },
+    "safe": {
+     "entries": [
+      [
+       18,
+       21,
+       10000
+      ],
+      [
+       19,
+       21,
+       10000
+      ],
+      [
+       20,
+       21,
+       10000
+      ],
+      [
+       21,
+       22,
+       10000
+      ]
+     ],
+     "expected_total": 106025867667
+    }
+   }
+  },
+  {
+   "name": "控制核心 15->22 to_12",
+   "level": 200,
+   "equipment": "控制核心",
+   "equipment_price": 22000000000,
+   "start_star": 15,
+   "target_star": 22,
+   "repair_policy": "to_12",
+   "expected": {
+    "optimal": {
+     "entries": [
+      [
+       18,
+       21,
+       10000
+      ],
+      [
+       19,
+       21,
+       10000
+      ],
+      [
+       20,
+       21,
+       10000
+      ],
+      [
+       21,
+       23,
+       5000
+      ]
+     ],
+     "expected_total": 104497313438
+    },
+    "safe": {
+     "entries": [
+      [
+       18,
+       21,
+       10000
+      ],
+      [
+       19,
+       21,
+       10000
+      ],
+      [
+       20,
+       21,
+       10000
+      ],
+      [
+       21,
+       22,
+       10000
+      ]
+     ],
+     "expected_total": 106697313438
+    }
+   }
+  },
+  {
+   "name": "控制核心 19->22 full",
+   "level": 200,
+   "equipment": "控制核心",
+   "equipment_price": 22000000000,
+   "start_star": 19,
+   "target_star": 22,
+   "repair_policy": "full",
+   "expected": {
+    "optimal": {
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ],
+      [
+       20,
+       21,
+       10000
+      ],
+      [
+       21,
+       23,
+       5000
+      ]
+     ],
+     "expected_total": 74300000000
+    },
+    "safe": {
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ],
+      [
+       20,
+       21,
+       10000
+      ],
+      [
+       21,
+       22,
+       10000
+      ]
+     ],
+     "expected_total": 76500000000
+    }
+   }
+  },
+  {
+   "name": "控制核心 19->22 to_12",
+   "level": 200,
+   "equipment": "控制核心",
+   "equipment_price": 22000000000,
+   "start_star": 19,
+   "target_star": 22,
+   "repair_policy": "to_12",
+   "expected": {
+    "optimal": {
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ],
+      [
+       21,
+       23,
+       5000
+      ]
+     ],
+     "expected_total": 72570374667
+    },
+    "safe": {
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ]
+     ],
+     "expected_total": 74746349100
+    }
+   }
+  },
+  {
+   "name": "控制核心 20->22 full",
+   "level": 200,
+   "equipment": "控制核心",
+   "equipment_price": 22000000000,
+   "start_star": 20,
+   "target_star": 22,
+   "repair_policy": "full",
+   "expected": {
+    "optimal": {
+     "entries": [
+      [
+       20,
+       21,
+       10000
+      ],
+      [
+       21,
+       23,
+       5000
+      ]
+     ],
+     "expected_total": 73400000000
+    },
+    "safe": {
+     "entries": [
+      [
+       20,
+       21,
+       10000
+      ],
+      [
+       21,
+       22,
+       10000
+      ]
+     ],
+     "expected_total": 75600000000
+    }
+   }
+  },
+  {
+   "name": "控制核心 20->22 to_12",
+   "level": 200,
+   "equipment": "控制核心",
+   "equipment_price": 22000000000,
+   "start_star": 20,
+   "target_star": 22,
+   "repair_policy": "to_12",
+   "expected": {
+    "optimal": {
+     "entries": [
+      [
+       21,
+       23,
+       5000
+      ]
+     ],
+     "expected_total": 71355374667
+    },
+    "safe": {
+     "entries": [],
+     "expected_total": 72832724100
+    }
+   }
+  },
+  {
+   "name": "永恆下三 18->22 full",
+   "level": 250,
+   "equipment": "永恆下三",
+   "equipment_price": 1100000000,
+   "start_star": 18,
+   "target_star": 22,
+   "repair_policy": "full",
+   "expected": {
+    "optimal": {
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ],
+      [
+       20,
+       21,
+       10000
+      ],
+      [
+       21,
+       23,
+       5000
+      ]
+     ],
+     "expected_total": 87771342500
+    },
+    "safe": {
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ],
+      [
+       20,
+       21,
+       10000
+      ],
+      [
+       21,
+       22,
+       10000
+      ]
+     ],
+     "expected_total": 89971342500
+    }
+   }
+  },
+  {
+   "name": "永恆下三 18->22 to_12",
+   "level": 250,
+   "equipment": "永恆下三",
+   "equipment_price": 1100000000,
+   "start_star": 18,
+   "target_star": 22,
+   "repair_policy": "to_12",
+   "expected": {
+    "optimal": {
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ]
+     ],
+     "expected_total": 68189447316
+    },
+    "safe": {
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ]
+     ],
+     "expected_total": 68189447316
+    }
+   }
+  },
+  {
+   "name": "巨大 19->22 full",
+   "level": 200,
+   "equipment": "巨大",
+   "equipment_price": 3500000000,
+   "start_star": 19,
+   "target_star": 22,
+   "repair_policy": "full",
+   "expected": {
+    "optimal": {
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ]
+     ],
+     "expected_total": 57845883667
+    },
+    "safe": {
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ]
+     ],
+     "expected_total": 57845883667
+    }
+   }
+  },
+  {
+   "name": "巨大 19->22 to_12",
+   "level": 200,
+   "equipment": "巨大",
+   "equipment_price": 3500000000,
+   "start_star": 19,
+   "target_star": 22,
+   "repair_policy": "to_12",
+   "expected": {
+    "optimal": {
+     "entries": [],
+     "expected_total": 50220846860
+    },
+    "safe": {
+     "entries": [],
+     "expected_total": 50220846860
+    }
    }
   }
  ],
@@ -3327,24 +3926,27 @@
     "target_star": 22,
     "start_mode": "scroll",
     "repair_policy": "full",
+    "breakthrough_policy": "none",
+    "breakthrough_entries": [],
     "scroll_star": 15,
     "rebuild_cost": 0,
     "trials": 3000,
-    "total_cost_mean": 24945892078,
+    "total_cost_mean": 24925892078,
     "total_cost_percentiles": {
-     "50": 20623431150,
-     "75": 33828834200,
-     "90": 49656370060,
-     "95": 60584864665,
-     "99": 83903633351
+     "50": 20603431150,
+     "75": 33808834200,
+     "90": 49636370060,
+     "95": 60564864665,
+     "99": 83883633351
     },
-    "meso_mean": 24120942078,
+    "meso_mean": 24100942078,
     "static_meso_mean": 24080942078.0,
     "equipment_cost_mean": 824950000,
     "rebuild_cost_mean": 0,
     "rebuild_count_mean": 0.0,
     "equipment_mean": 5.499666666666666,
     "scrolls_mean": 1.0,
+    "breakthrough_counts_mean": {},
     "attempts_mean": 40.17,
     "destroys_mean": 3.088,
     "attempts_by_star": {
@@ -3359,12 +3961,27 @@
    },
    "prices": {
     "star_scroll_cost": {
-     "15": 120000000,
-     "16": 840000000,
-     "17": 4740000000,
-     "18": 7500000000,
-     "19": 19200000000,
-     "20": 99000000000
+     "15": 60000000,
+     "16": 300000000,
+     "17": 2880000000,
+     "18": 4890000000,
+     "19": 14100000000,
+     "20": 64800000000
+    },
+    "breakthrough_scroll_cost": {
+     "21-10000": 53400000000,
+     "22-10000": 108600000000,
+     "23-3000": 39000000000,
+     "23-5000": 51000000000,
+     "23-10000": 126900000000,
+     "24-3000": 68400000000,
+     "24-5000": 114000000000,
+     "24-10000": 240000000000,
+     "25-3000": 300000000000,
+     "25-5000": 480000000000,
+     "25-10000": 1140000000000,
+     "26-3000": 930000000000,
+     "26-5000": 1380000000000
     },
     "equipment": [
      {
@@ -3382,49 +3999,49 @@
      {
       "name": "永恆上四",
       "level": 250,
-      "price": 1500000000,
+      "price": 250000000,
       "aliases": []
      },
      {
       "name": "永恆下三",
       "level": 250,
-      "price": 4000000000,
+      "price": 5500000000,
       "aliases": []
      },
      {
       "name": "口紅",
       "level": 160,
-      "price": 2500000000,
+      "price": 7000000000,
       "aliases": []
      },
      {
       "name": "眼罩",
       "level": 160,
-      "price": 5000000000,
+      "price": 15000000000,
       "aliases": []
      },
      {
       "name": "苦痛",
       "level": 160,
-      "price": 10000000000,
+      "price": 22500000000,
       "aliases": []
      },
      {
       "name": "巨大",
       "level": 200,
-      "price": 10000000000,
+      "price": 17500000000,
       "aliases": []
      },
      {
       "name": "控制核心",
       "level": 200,
-      "price": 100000000000,
+      "price": 110000000000,
       "aliases": []
      }
     ]
    },
    "rebuild_cost": 0,
-   "expected_total_cost_mean": 28325692078
+   "expected_total_cost_mean": 28265692078
   },
   {
    "name": "scrolled climb, cheap repair",
@@ -3436,24 +4053,27 @@
     "target_star": 22,
     "start_mode": "scroll",
     "repair_policy": "to_12",
+    "breakthrough_policy": "none",
+    "breakthrough_entries": [],
     "scroll_star": 15,
     "rebuild_cost": 0,
     "trials": 3000,
-    "total_cost_mean": 24862167677,
+    "total_cost_mean": 24636207677,
     "total_cost_percentiles": {
-     "50": 18209673250,
-     "75": 33088347600,
-     "90": 53212774910,
-     "95": 69946506615,
-     "99": 104484985420
+     "50": 18055499700,
+     "75": 32816677275,
+     "90": 52706671950,
+     "95": 69166506615,
+     "99": 103586185420
     },
-    "meso_mean": 23317467677,
+    "meso_mean": 23091507677,
     "static_meso_mean": 22865547677.0,
     "equipment_cost_mean": 1544700000,
     "rebuild_cost_mean": 0,
     "rebuild_count_mean": 0.0,
     "equipment_mean": 10.298,
     "scrolls_mean": 11.298,
+    "breakthrough_counts_mean": {},
     "attempts_mean": 178.41,
     "destroys_mean": 10.298,
     "attempts_by_star": {
@@ -3468,12 +4088,27 @@
    },
    "prices": {
     "star_scroll_cost": {
-     "15": 120000000,
-     "16": 840000000,
-     "17": 4740000000,
-     "18": 7500000000,
-     "19": 19200000000,
-     "20": 99000000000
+     "15": 60000000,
+     "16": 300000000,
+     "17": 2880000000,
+     "18": 4890000000,
+     "19": 14100000000,
+     "20": 64800000000
+    },
+    "breakthrough_scroll_cost": {
+     "21-10000": 53400000000,
+     "22-10000": 108600000000,
+     "23-3000": 39000000000,
+     "23-5000": 51000000000,
+     "23-10000": 126900000000,
+     "24-3000": 68400000000,
+     "24-5000": 114000000000,
+     "24-10000": 240000000000,
+     "25-3000": 300000000000,
+     "25-5000": 480000000000,
+     "25-10000": 1140000000000,
+     "26-3000": 930000000000,
+     "26-5000": 1380000000000
     },
     "equipment": [
      {
@@ -3491,78 +4126,81 @@
      {
       "name": "永恆上四",
       "level": 250,
-      "price": 1500000000,
+      "price": 250000000,
       "aliases": []
      },
      {
       "name": "永恆下三",
       "level": 250,
-      "price": 4000000000,
+      "price": 5500000000,
       "aliases": []
      },
      {
       "name": "口紅",
       "level": 160,
-      "price": 2500000000,
+      "price": 7000000000,
       "aliases": []
      },
      {
       "name": "眼罩",
       "level": 160,
-      "price": 5000000000,
+      "price": 15000000000,
       "aliases": []
      },
      {
       "name": "苦痛",
       "level": 160,
-      "price": 10000000000,
+      "price": 22500000000,
       "aliases": []
      },
      {
       "name": "巨大",
       "level": 200,
-      "price": 10000000000,
+      "price": 17500000000,
       "aliases": []
      },
      {
       "name": "控制核心",
       "level": 200,
-      "price": 100000000000,
+      "price": 110000000000,
       "aliases": []
      }
     ]
    },
    "rebuild_cost": 0,
-   "expected_total_cost_mean": 31944807677
+   "expected_total_cost_mean": 31266927677
   },
   {
    "name": "dearer scroll, dearer equipment",
    "row": {
     "equipment": "控制核心",
     "level": 200,
-    "equipment_price": 20000000000,
+    "equipment_price": 22000000000,
     "start_star": 19,
     "target_star": 23,
     "start_mode": "scroll",
     "repair_policy": "to_12",
+    "breakthrough_policy": "none",
+    "breakthrough_entries": [],
     "scroll_star": 19,
     "rebuild_cost": 0,
     "trials": 3000,
-    "total_cost_mean": 194266833946,
+    "total_cost_mean": 194296433946,
     "total_cost_percentiles": {
-     "50": 134359864600,
-     "75": 263902658950,
-     "90": 447594504760,
-     "95": 585193515390,
-     "99": 891696617714
+     "50": 133859864600,
+     "75": 264602658950,
+     "90": 449798979960,
+     "95": 589193515390,
+     "99": 898693617714
     },
-    "meso_mean": 78960167279,
-    "static_meso_mean": 35662033945.666664,
-    "equipment_cost_mean": 115306666667,
+    "meso_mean": 67459100613,
+    "static_meso_mean": 35662033946.33333,
+    "equipment_cost_mean": 126837333333,
     "rebuild_cost_mean": 0,
     "rebuild_count_mean": 0.0,
     "equipment_mean": 5.765333333333333,
     "scrolls_mean": 6.765333333333333,
+    "breakthrough_counts_mean": {},
     "attempts_mean": 58.66,
     "destroys_mean": 5.765,
     "attempts_by_star": {
@@ -3574,12 +4212,27 @@
    },
    "prices": {
     "star_scroll_cost": {
-     "15": 120000000,
-     "16": 840000000,
-     "17": 4740000000,
-     "18": 7500000000,
-     "19": 19200000000,
-     "20": 99000000000
+     "15": 60000000,
+     "16": 300000000,
+     "17": 2880000000,
+     "18": 4890000000,
+     "19": 14100000000,
+     "20": 64800000000
+    },
+    "breakthrough_scroll_cost": {
+     "21-10000": 53400000000,
+     "22-10000": 108600000000,
+     "23-3000": 39000000000,
+     "23-5000": 51000000000,
+     "23-10000": 126900000000,
+     "24-3000": 68400000000,
+     "24-5000": 114000000000,
+     "24-10000": 240000000000,
+     "25-3000": 300000000000,
+     "25-5000": 480000000000,
+     "25-10000": 1140000000000,
+     "26-3000": 930000000000,
+     "26-5000": 1380000000000
     },
     "equipment": [
      {
@@ -3597,78 +4250,81 @@
      {
       "name": "永恆上四",
       "level": 250,
-      "price": 1500000000,
+      "price": 250000000,
       "aliases": []
      },
      {
       "name": "永恆下三",
       "level": 250,
-      "price": 4000000000,
+      "price": 5500000000,
       "aliases": []
      },
      {
       "name": "口紅",
       "level": 160,
-      "price": 2500000000,
+      "price": 7000000000,
       "aliases": []
      },
      {
       "name": "眼罩",
       "level": 160,
-      "price": 5000000000,
+      "price": 15000000000,
       "aliases": []
      },
      {
       "name": "苦痛",
       "level": 160,
-      "price": 10000000000,
+      "price": 22500000000,
       "aliases": []
      },
      {
       "name": "巨大",
       "level": 200,
-      "price": 10000000000,
+      "price": 17500000000,
       "aliases": []
      },
      {
       "name": "控制核心",
       "level": 200,
-      "price": 100000000000,
+      "price": 110000000000,
       "aliases": []
      }
     ]
    },
    "rebuild_cost": 0,
-   "expected_total_cost_mean": 742089767279
+   "expected_total_cost_mean": 765239900613
   },
   {
    "name": "owned item, no scroll at all",
    "row": {
     "equipment": "眼罩",
     "level": 160,
-    "equipment_price": 1000000000,
+    "equipment_price": 3000000000,
     "start_star": 22,
     "target_star": 23,
     "start_mode": "owned",
     "repair_policy": "full",
+    "breakthrough_policy": "none",
+    "breakthrough_entries": [],
     "scroll_star": null,
     "rebuild_cost": 0,
     "trials": 3000,
-    "total_cost_mean": 18075444394,
+    "total_cost_mean": 23680777727,
     "total_cost_percentiles": {
      "50": 583647600,
-     "75": 25680922200,
-     "90": 51167295200,
-     "95": 76264569800,
-     "99": 126653668200
+     "75": 33680922200,
+     "90": 67167295200,
+     "95": 100264569800,
+     "99": 166653668200
     },
     "meso_mean": 15272777727,
     "static_meso_mean": 15272777727.0,
-    "equipment_cost_mean": 2802666667,
+    "equipment_cost_mean": 8408000000,
     "rebuild_cost_mean": 0,
     "rebuild_count_mean": 0.0,
     "equipment_mean": 2.8026666666666666,
     "scrolls_mean": 0.0,
+    "breakthrough_counts_mean": {},
     "attempts_mean": 5.74,
     "destroys_mean": 0.701,
     "attempts_by_star": {
@@ -3677,12 +4333,27 @@
    },
    "prices": {
     "star_scroll_cost": {
-     "15": 120000000,
-     "16": 840000000,
-     "17": 4740000000,
-     "18": 7500000000,
-     "19": 19200000000,
-     "20": 99000000000
+     "15": 60000000,
+     "16": 300000000,
+     "17": 2880000000,
+     "18": 4890000000,
+     "19": 14100000000,
+     "20": 64800000000
+    },
+    "breakthrough_scroll_cost": {
+     "21-10000": 53400000000,
+     "22-10000": 108600000000,
+     "23-3000": 39000000000,
+     "23-5000": 51000000000,
+     "23-10000": 126900000000,
+     "24-3000": 68400000000,
+     "24-5000": 114000000000,
+     "24-10000": 240000000000,
+     "25-3000": 300000000000,
+     "25-5000": 480000000000,
+     "25-10000": 1140000000000,
+     "26-3000": 930000000000,
+     "26-5000": 1380000000000
     },
     "equipment": [
      {
@@ -3700,49 +4371,49 @@
      {
       "name": "永恆上四",
       "level": 250,
-      "price": 1500000000,
+      "price": 250000000,
       "aliases": []
      },
      {
       "name": "永恆下三",
       "level": 250,
-      "price": 4000000000,
+      "price": 5500000000,
       "aliases": []
      },
      {
       "name": "口紅",
       "level": 160,
-      "price": 2500000000,
+      "price": 7000000000,
       "aliases": []
      },
      {
       "name": "眼罩",
       "level": 160,
-      "price": 5000000000,
+      "price": 15000000000,
       "aliases": []
      },
      {
       "name": "苦痛",
       "level": 160,
-      "price": 10000000000,
+      "price": 22500000000,
       "aliases": []
      },
      {
       "name": "巨大",
       "level": 200,
-      "price": 10000000000,
+      "price": 17500000000,
       "aliases": []
      },
      {
       "name": "控制核心",
       "level": 200,
-      "price": 100000000000,
+      "price": 110000000000,
       "aliases": []
      }
     ]
    },
    "rebuild_cost": 0,
-   "expected_total_cost_mean": 29286111061
+   "expected_total_cost_mean": 57312777727
   },
   {
    "name": "owned item rebuilding to 22 stars",
@@ -3754,24 +4425,27 @@
     "target_star": 24,
     "start_mode": "owned",
     "repair_policy": "to_12",
+    "breakthrough_policy": "none",
+    "breakthrough_entries": [],
     "scroll_star": null,
-    "rebuild_cost": 24843877116,
+    "rebuild_cost": 23497991198,
     "trials": 3000,
-    "total_cost_mean": 111534410850,
+    "total_cost_mean": 105664553733,
     "total_cost_percentiles": {
-     "50": 76597242198,
-     "75": 153937959996,
-     "90": 278121249156,
-     "95": 356651190619,
-     "99": 534255717753
+     "50": 72559584444,
+     "75": 145862644488,
+     "90": 263316504058,
+     "95": 337808787767,
+     "99": 505992113475
     },
     "meso_mean": 2527781455,
     "static_meso_mean": 2527781455.0,
     "equipment_cost_mean": 654200000,
-    "rebuild_cost_mean": 108352429395,
+    "rebuild_cost_mean": 102482572278,
     "rebuild_count_mean": 4.3613333333333335,
     "equipment_mean": 4.3613333333333335,
     "scrolls_mean": 0.0,
+    "breakthrough_counts_mean": {},
     "attempts_mean": 30.09,
     "destroys_mean": 4.361,
     "attempts_by_star": {
@@ -3781,12 +4455,27 @@
    },
    "prices": {
     "star_scroll_cost": {
-     "15": 120000000,
-     "16": 840000000,
-     "17": 4740000000,
-     "18": 7500000000,
-     "19": 19200000000,
-     "20": 99000000000
+     "15": 60000000,
+     "16": 300000000,
+     "17": 2880000000,
+     "18": 4890000000,
+     "19": 14100000000,
+     "20": 64800000000
+    },
+    "breakthrough_scroll_cost": {
+     "21-10000": 53400000000,
+     "22-10000": 108600000000,
+     "23-3000": 39000000000,
+     "23-5000": 51000000000,
+     "23-10000": 126900000000,
+     "24-3000": 68400000000,
+     "24-5000": 114000000000,
+     "24-10000": 240000000000,
+     "25-3000": 300000000000,
+     "25-5000": 480000000000,
+     "25-10000": 1140000000000,
+     "26-3000": 930000000000,
+     "26-5000": 1380000000000
     },
     "equipment": [
      {
@@ -3804,49 +4493,49 @@
      {
       "name": "永恆上四",
       "level": 250,
-      "price": 1500000000,
+      "price": 250000000,
       "aliases": []
      },
      {
       "name": "永恆下三",
       "level": 250,
-      "price": 4000000000,
+      "price": 5500000000,
       "aliases": []
      },
      {
       "name": "口紅",
       "level": 160,
-      "price": 2500000000,
+      "price": 7000000000,
       "aliases": []
      },
      {
       "name": "眼罩",
       "level": 160,
-      "price": 5000000000,
+      "price": 15000000000,
       "aliases": []
      },
      {
       "name": "苦痛",
       "level": 160,
-      "price": 10000000000,
+      "price": 22500000000,
       "aliases": []
      },
      {
       "name": "巨大",
       "level": 200,
-      "price": 10000000000,
+      "price": 17500000000,
       "aliases": []
      },
      {
       "name": "控制核心",
       "level": 200,
-      "price": 100000000000,
+      "price": 110000000000,
       "aliases": []
      }
     ]
    },
-   "rebuild_cost": 74531631348,
-   "expected_total_cost_mean": 330856069640
+   "rebuild_cost": 70493973594,
+   "expected_total_cost_mean": 313246498289
   }
  ]
 }

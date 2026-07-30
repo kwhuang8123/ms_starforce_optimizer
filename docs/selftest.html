@@ -32,6 +32,7 @@ import * as rules from "./js/rules.js";
 import { Session, scriptedRng, RepairPolicy } from "./js/session.js";
 import { runWithinBudget, autoPolicy } from "./js/autorun.js";
 import { repricedMean } from "./js/reprice.js";
+import { optimalPolicy, expectedTotal, sameEntries, describe } from "./js/policy.js";
 
 /** Deep compare, returning the path of the first difference or null. */
 function diff(expected, actual, path = "") {
@@ -65,6 +66,7 @@ function stateOf(session) {
       equipment_used: session.totals.equipment_used,
       equipment_cost: session.totals.equipment_cost,
       scrolls_used: session.totals.scrolls_used,
+      breakthroughs_used: session.totals.breakthroughs_used,
       attempts: session.totals.attempts,
       destroys: session.totals.destroys,
       total_cost: session.totalCost,
@@ -99,6 +101,7 @@ function replay(testCase) {
   for (const action of testCase.actions) {
     if (action[0] === "enhance") session.enhance();
     else if (action[0] === "scroll") session.useScroll(action[1]);
+    else if (action[0] === "breakthrough") session.useBreakthrough(action[1], action[2]);
     else if (action[0] === "repair") session.repair(action[1] === "full" ? RepairPolicy.FULL : RepairPolicy.TO_12);
     else throw new Error(`未知的動作 ${action[0]}`);
   }
@@ -112,7 +115,10 @@ async function run() {
   ]);
   // The cases carry the scroll prices they were built against, so this page
   // never depends on data/prices.json or on anything saved in the browser.
-  rules.configure(staticData, { star_scroll_cost: parity.star_scroll_cost });
+  rules.configure(staticData, {
+    star_scroll_cost: parity.star_scroll_cost,
+    breakthrough_scroll_cost: parity.breakthrough_scroll_cost,
+  });
 
   const body = document.querySelector("#results tbody");
   let passed = 0;
@@ -138,6 +144,48 @@ async function run() {
       <td class="num">${testCase.expected.log.length}</td>
       <td>${verdict}</td>`;
     body.appendChild(row);
+  }
+
+  // The decision layer: the port must pick the same scrolls as the Python
+  // solver and price them the same. This one never simulates - both sides solve
+  // the same recursion - so any difference is a porting error, not variance.
+  for (const testCase of parity.policy) {
+    for (const label of ["optimal", "safe"]) {
+      const row = document.createElement("tr");
+      const expected = testCase.expected[label];
+      let verdict;
+      try {
+        const options = {
+          level: testCase.level,
+          startStar: testCase.start_star,
+          targetStar: testCase.target_star,
+          equipmentPrice: testCase.equipment_price,
+          repairPolicy: testCase.repair_policy,
+        };
+        const chosen = optimalPolicy(options, label === "safe");
+        const total = Math.round(expectedTotal(chosen, options));
+        if (!sameEntries(chosen.entries, expected.entries)) {
+          verdict =
+            `<span class="bad">不符</span> 期待 ` +
+            `${describe({ entries: expected.entries })}，得到 ${describe(chosen)}`;
+        } else if (Math.abs(total - expected.expected_total) > 1) {
+          verdict =
+            `<span class="bad">不符</span> 期待 ${expected.expected_total}，得到 ${total}`;
+        } else {
+          verdict = "<span class=\"ok\">通過</span>";
+          passed += 1;
+        }
+      } catch (error) {
+        verdict = `<span class="bad">例外</span> ${error.message}`;
+      }
+      row.innerHTML = `
+        <td>${testCase.name}</td>
+        <td>policy ${label}</td>
+        <td class="num">-</td>
+        <td class="num">${expected.entries.length}</td>
+        <td>${verdict}</td>`;
+      body.appendChild(row);
+    }
   }
 
   // Re-pricing: each case holds a row measured at one set of prices and the
@@ -170,7 +218,8 @@ async function run() {
   }
 
   const summary = document.getElementById("summary");
-  const total = parity.cases.length + parity.reprice.length;
+  const total =
+    parity.cases.length + parity.policy.length * 2 + parity.reprice.length;
   summary.textContent = `${passed} / ${total} 案例通過（測資產生於 ${parity.generated_at}）`;
   summary.className = passed === total ? "summary ok" : "summary bad";
 }

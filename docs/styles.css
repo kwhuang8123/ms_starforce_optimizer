@@ -275,6 +275,31 @@ hr { border: none; border-top: 1px solid var(--line); margin: 14px 0; }
 
 .sf-scroll-price { color: var(--muted); font-size: 11px; }
 
+/* Breakthrough scrolls. Up to eleven apply at once, so they are a picker on one
+   line rather than another row of chips - the panel has no room for a second
+   strip without pushing the tab off a phone screen. */
+.sf-break {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.sf-break-art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sf-break-img { width: 24px; height: 24px; }
+
+.sf-break-pick {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 240px;
+}
+
 /* Motion. Every animation lives behind this query, so a system that asks for
    reduced motion simply never sees one - the JS check covers playback, this
    covers the rest without needing a second switch. */
@@ -491,7 +516,25 @@ a { color: var(--accent); }
   .sf-scroll-art { min-width: 22px; min-height: 22px; }
   .sf-scroll-img { width: 22px; height: 22px; }
   .sf-scroll-price { font-size: 10px; }
-  .sf-scrolls { gap: 4px; }
+  .sf-scrolls { gap: 4px; margin-top: 6px; }
+
+  /* The breakthrough picker is a whole extra row, and the panel had about twenty
+     spare pixels before it arrived. It pays for itself by shrinking the controls
+     on this row and on the repair row - the two places on the panel where a
+     smaller button costs nothing but a slightly smaller tap target - and by
+     taking a couple of pixels off each gap above it. */
+  .sf-break { gap: 4px; margin-top: 4px; }
+  .sf-break-img { width: 20px; height: 20px; }
+  .sf-break-pick { font-size: 12px; }
+  .sf-break select,
+  .sf-break button,
+  .sf-actions > .row button {
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+
+  .sf-actions { margin-bottom: 6px; }
+  .sf-stars { margin-bottom: 6px; }
 
   /* Each run keeps its own button paired with its reset variant; the pairs sit
      side by side when they fit and stack when they do not. The margins go,
@@ -503,7 +546,7 @@ a { color: var(--accent); }
     justify-content: center;
     align-items: center;
     gap: 5px 8px;
-    margin-top: 8px;
+    margin-top: 6px;
     padding-top: 6px;
   }
   .sf-auto .sf-label { flex-basis: 100%; margin: 0; }
@@ -516,12 +559,12 @@ a { color: var(--accent); }
   }
 
   .sf-star { font-size: 15px; }
-  .sf-step { padding: 2px; margin-bottom: 8px; font-size: 15px; }
+  .sf-step { padding: 2px; margin-bottom: 6px; font-size: 15px; }
   .sf-step b { font-size: 18px; }
   .sf-row { padding: 1px 0; font-size: 13px; }
   /* Direct children only: the automatic-run rows are nested one level deeper
      and manage their own spacing through the flex gap above. */
-  .sf-actions > .row { margin-top: 6px; }
+  .sf-actions > .row { margin-top: 4px; }
   button.big { padding: 7px 20px; }
   .sf-block { margin-bottom: 8px; padding: 6px 10px; }
 }

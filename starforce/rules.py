@@ -134,3 +134,38 @@ def star_scroll_cost(star: int) -> int:
     """
     check_start_star(star)
     return volatile_data.STAR_SCROLL_COST[star]
+
+
+def check_breakthrough(cap_star: int, success: int) -> None:
+    """Raise unless a breakthrough scroll exists with this cap and rate."""
+    if (cap_star, success) not in data.BREAKTHROUGH_SCROLLS:
+        raise ValueError(
+            f"no breakthrough scroll caps at {cap_star} stars with a {success} "
+            f"basis point rate; the scrolls are {list(data.BREAKTHROUGH_SCROLLS)}"
+        )
+
+
+def breakthrough_cost(cap_star: int, success: int) -> int:
+    """Meso cost of one breakthrough scroll, as currently priced."""
+    check_breakthrough(cap_star, success)
+    return volatile_data.BREAKTHROUGH_SCROLL_COST[
+        data.breakthrough_id(cap_star, success)
+    ]
+
+
+def available_breakthroughs(star: int, level: int) -> list[tuple[int, int]]:
+    """The breakthrough scrolls that could be used on an item at ``star``.
+
+    A scroll caps where it will leave the item, not where it may be used from,
+    so every scroll capping above the current star qualifies - which is why a
+    barely enhanced item still lists all of them. The level's own cap applies
+    on top: a star nothing can be enhanced to is not one a scroll may buy.
+    """
+    cap = max_target_star(level)
+    if star + 1 > cap:
+        return []
+    return [
+        scroll
+        for scroll in data.BREAKTHROUGH_SCROLLS
+        if star + 1 <= scroll[0]
+    ]

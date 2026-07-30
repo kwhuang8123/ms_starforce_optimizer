@@ -1,6 +1,7 @@
 """Volatile data: prices that move with the market.
 
-Star scroll prices and equipment prices live in ``data/volatile.json`` rather
+Scroll prices - star and breakthrough - and equipment prices live in
+``data/volatile.json`` rather
 than in Python, so they can be edited without touching code - and so the
 planned GitHub Pages editor has a single file to read and write. Anything the
 official balance patch fixes lives in :mod:`starforce.static_data`.
@@ -16,7 +17,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .static_data import STAR_SCROLL_STARS, SUPPORTED_LEVELS
+from .static_data import (
+    BREAKTHROUGH_SCROLLS,
+    STAR_SCROLL_STARS,
+    SUPPORTED_LEVELS,
+    breakthrough_id,
+)
 
 #: Shipped location of the editable price file.
 DEFAULT_PATH = Path(__file__).resolve().parents[1] / "data" / "volatile.json"
@@ -50,6 +56,9 @@ def normalize(name: str) -> str:
 
 #: Star -> meso. Populated by :func:`load`.
 STAR_SCROLL_COST: dict[int, int] = {}
+
+#: Breakthrough scroll id -> meso. Populated by :func:`load`.
+BREAKTHROUGH_SCROLL_COST: dict[str, int] = {}
 
 #: Canonical name -> Equipment. Populated by :func:`load`.
 CATALOG: dict[str, Equipment] = {}
@@ -88,6 +97,33 @@ def _parse_scroll_costs(raw: Any) -> dict[int, int]:
         raise ValueError(
             f"'star_scroll_cost' has stars {extra} that no scroll exists for; "
             f"scrolls cover {STAR_SCROLL_STARS[0]} to {STAR_SCROLL_STARS[-1]}"
+        )
+    return costs
+
+
+def _parse_breakthrough_costs(raw: Any) -> dict[str, int]:
+    if not isinstance(raw, dict):
+        raise ValueError(
+            "'breakthrough_scroll_cost' must be an object keyed by scroll id"
+        )
+
+    known = {breakthrough_id(cap, success) for cap, success in BREAKTHROUGH_SCROLLS}
+    costs: dict[str, int] = {}
+    for key, value in raw.items():
+        costs[str(key)] = _require_positive_int(
+            value, f"breakthrough_scroll_cost[{key}]"
+        )
+
+    missing = [key for key in known if key not in costs]
+    if missing:
+        raise ValueError(
+            f"'breakthrough_scroll_cost' is missing scrolls {sorted(missing)}"
+        )
+    extra = sorted(set(costs) - known)
+    if extra:
+        raise ValueError(
+            f"'breakthrough_scroll_cost' has scrolls {extra} that do not exist; "
+            f"the ids are {sorted(known)}"
         )
     return costs
 
@@ -145,7 +181,7 @@ def _parse_equipment(raw: Any) -> tuple[dict[str, Equipment], dict[str, Equipmen
 
 def load(path: Path | str | None = None) -> None:
     """Read the price file and replace this module's tables with its contents."""
-    global STAR_SCROLL_COST, CATALOG, _INDEX, SOURCE_PATH
+    global STAR_SCROLL_COST, BREAKTHROUGH_SCROLL_COST, CATALOG, _INDEX, SOURCE_PATH
 
     source = Path(path) if path is not None else DEFAULT_PATH
     if not source.is_file():
@@ -158,14 +194,16 @@ def load(path: Path | str | None = None) -> None:
 
     if not isinstance(payload, dict):
         raise ValueError(f"{source} must contain a JSON object at the top level")
-    for key in ("star_scroll_cost", "equipment"):
+    for key in ("star_scroll_cost", "breakthrough_scroll_cost", "equipment"):
         if key not in payload:
             raise ValueError(f"{source} is missing the {key!r} section")
 
     scroll_costs = _parse_scroll_costs(payload["star_scroll_cost"])
+    breakthrough_costs = _parse_breakthrough_costs(payload["breakthrough_scroll_cost"])
     catalog, index = _parse_equipment(payload["equipment"])
 
     STAR_SCROLL_COST = scroll_costs
+    BREAKTHROUGH_SCROLL_COST = breakthrough_costs
     CATALOG = catalog
     _INDEX = index
     SOURCE_PATH = source

@@ -18,6 +18,10 @@ const COMMENT =
   "浮動資料：會隨市場變動的價格。單位為楓幣，1e = 100000000。" +
   "固定資料（強化機率、強化費用、修復楓幣、修復裝備數量）在 starforce/static_data.py。";
 
+const BREAKTHROUGH_COMMENT =
+  "突破星捲價格。key 為「上限星數-成功率萬分點」，例如 23-3000 就是突破23星30%。" +
+  "哪些捲存在寫在 starforce/static_data.py 的 BREAKTHROUGH_SCROLLS。";
+
 let draft = null;
 const el = {};
 
@@ -29,6 +33,7 @@ function bind() {
     el[id] = document.getElementById(id);
   }
   el.scrolls = document.querySelector("#prices-scrolls tbody");
+  el.breakthrough = document.querySelector("#prices-breakthrough tbody");
   el.equipment = document.querySelector("#prices-equipment tbody");
 }
 
@@ -57,6 +62,32 @@ function renderScrolls() {
   el.scrolls.querySelectorAll("input[data-star]").forEach((input) => {
     input.addEventListener("input", () => {
       draft.star_scroll_cost[input.dataset.star] = Math.round(
+        Number(input.value) * YI
+      );
+      markDirty();
+    });
+  });
+}
+
+/** One row per breakthrough scroll. Which ones exist is fixed, only prices move. */
+function renderBreakthrough() {
+  el.breakthrough.innerHTML = rules
+    .breakthroughScrolls()
+    .map(([capStar, success]) => {
+      const id = rules.breakthroughId(capStar, success);
+      return `<tr>
+        <td>${rules.breakthroughLabel(capStar, success)}</td>
+        <td class="num">
+          <input type="number" step="any" min="0" data-breakthrough="${id}"
+                 value="${toYiInput(draft.breakthrough_scroll_cost[id])}">
+        </td>
+      </tr>`;
+    })
+    .join("");
+
+  el.breakthrough.querySelectorAll("input[data-breakthrough]").forEach((input) => {
+    input.addEventListener("input", () => {
+      draft.breakthrough_scroll_cost[input.dataset.breakthrough] = Math.round(
         Number(input.value) * YI
       );
       markDirty();
@@ -126,6 +157,13 @@ function validate() {
     }
   }
 
+  for (const [capStar, success] of rules.breakthroughScrolls()) {
+    const price = draft.breakthrough_scroll_cost[rules.breakthroughId(capStar, success)];
+    if (!Number.isInteger(price) || price < 0) {
+      return `${rules.breakthroughLabel(capStar, success)}的價格不是有效數字`;
+    }
+  }
+
   if (draft.equipment.length === 0) {
     return "至少要留一件裝備";
   }
@@ -166,6 +204,7 @@ function reset() {
   store.reset();
   loadDraft();
   renderScrolls();
+  renderBreakthrough();
   renderEquipment();
   el["prices-status"].textContent = "已還原成內建價格";
   el["prices-status"].className = "muted ok-text";
@@ -181,6 +220,8 @@ function exportJson() {
   const payload = {
     _comment: COMMENT,
     star_scroll_cost: draft.star_scroll_cost,
+    _breakthrough_comment: BREAKTHROUGH_COMMENT,
+    breakthrough_scroll_cost: draft.breakthrough_scroll_cost,
     equipment: draft.equipment.map((item) => ({
       name: item.name,
       level: item.level,
@@ -197,6 +238,7 @@ export function initPrices() {
   bind();
   loadDraft();
   renderScrolls();
+  renderBreakthrough();
   renderEquipment();
 
   el["prices-save"].addEventListener("click", save);

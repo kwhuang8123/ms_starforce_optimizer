@@ -34,7 +34,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Sequence
 
-from starforce import load_rebuild_basis, rules, simulate, volatile_data
+from starforce import load_rebuild_basis, policy, rules, simulate, volatile_data
 from starforce import static_data as data
 from starforce.autorun import AutoPolicy, run_within_budget
 from starforce.engine import RepairPolicy, RunConfig, StartMode
@@ -77,6 +77,9 @@ def build_static() -> dict[str, Any]:
         "rate_basis": data.RATE_BASIS,
         "supported_levels": list(data.SUPPORTED_LEVELS),
         "star_scroll_stars": list(data.STAR_SCROLL_STARS),
+        # [cap star, success rate] pairs. A list rather than an object because
+        # the pair is the identity; the id string is only for pricing.
+        "breakthrough_scrolls": [list(scroll) for scroll in data.BREAKTHROUGH_SCROLLS],
         "min_start_star": rules.MIN_START_STAR,
         "max_start_star": rules.MAX_START_STAR,
         "destroy_start_star": rules.DESTROY_START_STAR,
@@ -116,6 +119,7 @@ def build_prices() -> dict[str, Any]:
             str(star): volatile_data.STAR_SCROLL_COST[star]
             for star in data.STAR_SCROLL_STARS
         },
+        "breakthrough_scroll_cost": _breakthrough_prices(),
         "equipment": [
             {
                 "name": item.name,
@@ -128,25 +132,54 @@ def build_prices() -> dict[str, Any]:
     }
 
 
-def slim_result(entry: dict[str, Any], scroll_costs: dict[str, int]) -> dict[str, Any]:
+def _breakthrough_prices(multiplier: int = 1) -> dict[str, int]:
+    """Breakthrough scroll prices in table order, optionally scaled."""
+    return {
+        data.breakthrough_id(cap, success): (
+            volatile_data.BREAKTHROUGH_SCROLL_COST[data.breakthrough_id(cap, success)]
+            * multiplier
+        )
+        for cap, success in data.BREAKTHROUGH_SCROLLS
+    }
+
+
+def slim_result(
+    entry: dict[str, Any],
+    scroll_costs: dict[str, int],
+    breakthrough_costs: dict[str, int] | None = None,
+) -> dict[str, Any]:
     """One combination, flattened and split into its price-dependent parts.
 
     A run's trajectory does not depend on any price - the engine only ever adds
-    them up - so the mean total cost is exactly linear in them:
+    them up, and a breakthrough policy is fixed before the run starts - so the
+    mean total cost is exactly linear in them:
 
         total = static_meso_mean
-              + scrolls_mean       x star scroll price
-              + equipment_mean     x equipment price
-              + rebuild_count_mean x rebuild cost
+              + scrolls_mean         x star scroll price
+              + breakthrough counts  x each scroll's own price
+              + equipment_mean       x equipment price
+              + rebuild_count_mean   x rebuild cost
 
     Splitting the figures out here is what lets the page re-price a dataset for
-    edited prices without simulating anything. ``scroll_costs`` must be the
+    edited prices without simulating anything. The costs passed in must be the
     snapshot the dataset was generated against, not today's prices.
+
+    Note what stays price-dependent even so: *which* row is cheapest. A policy
+    was chosen against the snapshot prices, so after a big enough edit the best
+    row here may no longer be the best policy. That is why docs/js/policy.js
+    re-derives the optimum live rather than trusting this ranking.
     """
     config = entry["config"]
     scrolled = config["start_mode"] == "scroll"
     scroll_star = config["start_star"] if scrolled else None
     scroll_price = scroll_costs[str(scroll_star)] if scrolled else 0
+
+    breakthrough_costs = breakthrough_costs or {}
+    breakthrough_counts = entry.get("mean_breakthroughs_by_scroll") or {}
+    breakthrough_spend = sum(
+        count * breakthrough_costs[key] for key, count in breakthrough_counts.items()
+    )
+    breakthrough_policy = config.get("breakthrough_policy")
 
     # Meso figures round to whole meso; the counts they get multiplied by do
     # not round at all. The page multiplies these by prices that can reach 1e11,
@@ -168,6 +201,14 @@ def slim_result(entry: dict[str, Any], scroll_costs: dict[str, int]) -> dict[str
         "target_star": config["target_star"],
         "start_mode": config["start_mode"],
         "repair_policy": config["repair_policy"],
+        # The policy's name is what the page groups and labels rows by; the
+        # entries are what it compares against a freshly derived optimum.
+        "breakthrough_policy": (
+            "none" if breakthrough_policy is None else breakthrough_policy["name"]
+        ),
+        "breakthrough_entries": (
+            [] if breakthrough_policy is None else breakthrough_policy["entries"]
+        ),
         # Which star scroll this run buys, or null when it buys none. The page
         # needs the star to look the price up, and start_star is not it for a
         # run that starts from an item it already owns.
@@ -181,12 +222,17 @@ def slim_result(entry: dict[str, Any], scroll_costs: dict[str, int]) -> dict[str
         },
         "meso_mean": meso_mean,
         # Enhancement fees and repair meso: fixed by the level, not the market.
-        "static_meso_mean": round(meso_mean - scrolls_mean * scroll_price, 6),
+        # Both kinds of scroll come out, because both are priced by the market.
+        "static_meso_mean": round(
+            meso_mean - scrolls_mean * scroll_price - breakthrough_spend, 6
+        ),
         "equipment_cost_mean": round(entry["equipment_cost"]["mean"]),
         "rebuild_cost_mean": round(entry["rebuild_cost"]["mean"]),
         "rebuild_count_mean": rebuild_count_mean,
         "equipment_mean": equipment_mean,
         "scrolls_mean": scrolls_mean,
+        # Kept apart rather than totalled: each scroll carries its own price.
+        "breakthrough_counts_mean": dict(sorted(breakthrough_counts.items())),
         "attempts_mean": round(entry["attempts"]["mean"], 2),
         "destroys_mean": round(entry["destroys"]["mean"], 3),
         "attempts_by_star": {
@@ -208,9 +254,15 @@ def slim_dataset(payload: dict[str, Any]) -> dict[str, Any]:
         meta["target_stars"] = list(completed)
 
     scroll_costs = meta["prices"]["star_scroll_cost"]
+    # Datasets swept before breakthrough scrolls existed have no prices for them
+    # and no runs that bought one, so an empty table is the correct snapshot.
+    breakthrough_costs = meta["prices"].get("breakthrough_scroll_cost", {})
     return {
         "meta": meta,
-        "results": [slim_result(entry, scroll_costs) for entry in payload["results"]],
+        "results": [
+            slim_result(entry, scroll_costs, breakthrough_costs)
+            for entry in payload["results"]
+        ],
     }
 
 
@@ -232,6 +284,7 @@ def _session_state(session: Session) -> dict[str, Any]:
             "equipment_used": totals.equipment_used,
             "equipment_cost": totals.equipment_cost,
             "scrolls_used": totals.scrolls_used,
+            "breakthroughs_used": totals.breakthroughs_used,
             "attempts": totals.attempts,
             "destroys": totals.destroys,
             "total_cost": totals.total_cost,
@@ -322,6 +375,8 @@ def _manual_case(
             session.enhance()
         elif verb == "scroll":
             session.use_scroll(action[1])
+        elif verb == "breakthrough":
+            session.use_breakthrough(action[1], action[2])
         elif verb == "repair":
             session.repair(RepairPolicy(action[1]))
         else:
@@ -409,6 +464,21 @@ def build_parity() -> dict[str, Any]:
             # 1000 falls in the 25 star destroy band, 9999 maintains at 20.
             rolls=[1000, 9999],
         ),
+        _manual_case(
+            "breakthrough scroll, one hit then one miss",
+            level=200,
+            start_star=22,
+            equipment_price=20_000_000_000,
+            actions=[
+                ["breakthrough", 24, 3_000],
+                ["breakthrough", 24, 3_000],
+                ["enhance"],
+            ],
+            # 0 lands inside the 3,000 basis point rate and 9999 misses it; the
+            # miss must leave the item at 23 with nothing to repair. 9999 then
+            # maintains the 23 star attempt.
+            rolls=[0, 9999, 9999],
+        ),
     ]
 
     return {
@@ -418,9 +488,71 @@ def build_parity() -> dict[str, Any]:
             str(star): volatile_data.STAR_SCROLL_COST[star]
             for star in data.STAR_SCROLL_STARS
         },
+        "breakthrough_scroll_cost": _breakthrough_prices(),
         "cases": cases,
+        "policy": build_policy_cases(),
         "reprice": build_reprice_cases(),
     }
+
+
+#: Combinations the policy port is judged on. Chosen to cover both repair
+#: policies, an item cheap enough that scrolls never pay and one dear enough
+#: that they always do, and the 20 star start where only two decisions remain.
+POLICY_CASES: tuple[tuple[str, int, int], ...] = (
+    ("頂培", 15, 22),
+    ("神秘", 15, 22),
+    ("控制核心", 15, 22),
+    ("控制核心", 19, 22),
+    ("控制核心", 20, 22),
+    ("永恆下三", 18, 22),
+    ("巨大", 19, 22),
+)
+
+
+def build_policy_cases() -> list[dict[str, Any]]:
+    """Golden cases for the decision layer, solved rather than sampled.
+
+    The port in docs/js/policy.js decides which strategy the cheat sheet calls
+    optimal at whatever prices the visitor has set, so a drift between it and
+    starforce/policy.py would show people the wrong answer with no simulation
+    involved to disagree with it. Both the chosen scrolls and the expected total
+    are compared: an identical policy reached through different arithmetic would
+    still be a bug.
+    """
+    cases = []
+    for name, start_star, target_star in POLICY_CASES:
+        item = volatile_data.lookup(name)
+        for repair in (RepairPolicy.FULL, RepairPolicy.TO_12):
+            entry: dict[str, Any] = {
+                "name": f"{name} {start_star}->{target_star} {repair.value}",
+                "level": item.level,
+                "equipment": item.name,
+                "equipment_price": item.price,
+                "start_star": start_star,
+                "target_star": target_star,
+                "repair_policy": repair.value,
+                "expected": {},
+            }
+            for label, deterministic in (("optimal", False), ("safe", True)):
+                chosen = policy.optimal_policy(
+                    item.level,
+                    start_star,
+                    target_star,
+                    item.price,
+                    repair,
+                    deterministic_only=deterministic,
+                )
+                total = policy.expected_total(
+                    chosen, item.level, start_star, target_star, item.price, repair
+                )
+                entry["expected"][label] = {
+                    "entries": [list(triple) for triple in chosen.entries],
+                    # Rounded to whole meso: the port does the same arithmetic in
+                    # doubles, and the last bit of a float is not a rule.
+                    "expected_total": round(total),
+                }
+            cases.append(entry)
+    return cases
 
 
 # ---------------------------------------------------------------------------
@@ -444,6 +576,9 @@ def _price_payload(scroll_multiplier: int, equipment_multiplier: int) -> dict[st
             str(star): volatile_data.STAR_SCROLL_COST[star] * scroll_multiplier
             for star in data.STAR_SCROLL_STARS
         },
+        # No simulated strategy buys a breakthrough scroll, so this scales along
+        # only because the price file will not load without the section.
+        "breakthrough_scroll_cost": _breakthrough_prices(scroll_multiplier),
         "equipment": [
             {
                 "name": item.name,

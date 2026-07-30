@@ -11,5 +11,6 @@
     "巨大": "assets/big.png",
     "控制核心": "assets/control_core.png"
   },
-  "scroll": "assets/scroll.jpeg"
+  "scroll": "assets/scroll.jpeg",
+  "breakthrough": "assets/break_through.jpg"
 }

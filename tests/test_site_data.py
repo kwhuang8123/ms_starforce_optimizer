@@ -38,6 +38,10 @@ class StaticDataTest(unittest.TestCase):
     def test_it_carries_every_published_table(self) -> None:
         payload = read("static.json")
         self.assertEqual(payload["rate_basis"], data.RATE_BASIS)
+        self.assertEqual(
+            [tuple(scroll) for scroll in payload["breakthrough_scrolls"]],
+            list(data.BREAKTHROUGH_SCROLLS),
+        )
         self.assertEqual(len(payload["enhance_rates"]), len(data.ENHANCE_RATES))
         self.assertEqual(len(payload["enhance_cost"]), len(data.ENHANCE_COST))
         self.assertEqual(len(payload["repair_meso"]), len(data.REPAIR_MESO))
@@ -71,6 +75,16 @@ class PricesTest(unittest.TestCase):
             list(data.STAR_SCROLL_STARS),
         )
 
+    def test_every_breakthrough_scroll_is_priced(self) -> None:
+        payload = read("prices.json")
+        self.assertEqual(
+            sorted(payload["breakthrough_scroll_cost"]),
+            sorted(
+                data.breakthrough_id(cap, success)
+                for cap, success in data.BREAKTHROUGH_SCROLLS
+            ),
+        )
+
 
 class ParityTest(unittest.TestCase):
     """Replaying a stored case through Python must still produce its expected."""
@@ -98,6 +112,17 @@ class ParityTest(unittest.TestCase):
             list(data.STAR_SCROLL_STARS),
         )
 
+    def test_the_breakthrough_prices_ride_along_too(self) -> None:
+        # Same reason as the scroll prices: selftest.html must not have to load
+        # prices.json, or a browser's saved edits could fail a golden case.
+        self.assertEqual(
+            sorted(self.payload["breakthrough_scroll_cost"]),
+            sorted(
+                data.breakthrough_id(cap, success)
+                for cap, success in data.BREAKTHROUGH_SCROLLS
+            ),
+        )
+
     def test_the_cases_cover_the_paths_worth_guarding(self) -> None:
         kinds = {case["kind"] for case in self.payload["cases"]}
         self.assertEqual(kinds, {"auto", "manual"})
@@ -108,7 +133,8 @@ class ParityTest(unittest.TestCase):
             for entry in case["expected"]["log"]
         }
         self.assertEqual(
-            actions, {"enhance", "scroll", "repair_full", "repair_to_12"}
+            actions,
+            {"enhance", "scroll", "breakthrough", "repair_full", "repair_to_12"},
         )
 
         outcomes = {
@@ -128,7 +154,10 @@ class ParityTest(unittest.TestCase):
 
     def test_a_case_consumes_exactly_the_rolls_it_stores(self) -> None:
         # The stored rolls are trimmed to what the run used, so a port that
-        # draws a different number of rolls cannot silently pass.
+        # draws a different number of rolls cannot silently pass. Enhancing and
+        # breakthrough scrolls are the two actions that roll; a star scroll and
+        # a repair are both certain.
+        rolling = {"enhance", "breakthrough"}
         for case in self.payload["cases"]:
             with self.subTest(case=case["name"]):
                 self.assertEqual(
@@ -136,7 +165,7 @@ class ParityTest(unittest.TestCase):
                     sum(
                         1
                         for entry in case["expected"]["log"]
-                        if entry["action"] == "enhance"
+                        if entry["action"] in rolling
                     ),
                 )
 
@@ -156,33 +185,50 @@ class RepriceTest(unittest.TestCase):
     TOLERANCE = 1.0
 
     def rows(self):
+        """Yield ``(dataset name, row, that dataset's own price snapshot)``.
+
+        The split in each row was measured against the prices the sweep ran on,
+        which are recorded in the dataset's meta. Reconciling it against today's
+        prices instead would fail the moment data/volatile.json is edited - and
+        that failure would say nothing about whether the split is correct.
+        """
         for name in ("simulations.json", "marginal.json"):
             path = DATA_DIR / name
             if not path.is_file():
                 continue
-            for row in json.loads(path.read_text(encoding="utf-8"))["results"]:
-                yield name, row
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            snapshot = payload["meta"]["prices"]
+            for row in payload["results"]:
+                yield name, row, snapshot
+
+    @staticmethod
+    def scroll_spend(row, snapshot) -> float:
+        """What this row spent on scrolls of both kinds, at the snapshot prices."""
+        star_price = (
+            0
+            if row["scroll_star"] is None
+            else snapshot["star_scroll_cost"][str(row["scroll_star"])]
+        )
+        # Datasets swept before breakthrough scrolls existed have no prices for
+        # them and no counts either, so the sum is empty rather than missing.
+        breakthrough = snapshot.get("breakthrough_scroll_cost", {})
+        return row["scrolls_mean"] * star_price + sum(
+            count * breakthrough[key]
+            for key, count in row.get("breakthrough_counts_mean", {}).items()
+        )
 
     def test_the_static_part_plus_the_scrolls_rebuilds_the_meso_mean(self) -> None:
-        prices = build_site_data.build_prices()["star_scroll_cost"]
-        for name, row in self.rows():
+        for name, row, snapshot in self.rows():
             with self.subTest(dataset=name, row=row["equipment"], target=row["target_star"]):
-                scroll_price = (
-                    0 if row["scroll_star"] is None else prices[str(row["scroll_star"])]
-                )
-                rebuilt = row["static_meso_mean"] + row["scrolls_mean"] * scroll_price
+                rebuilt = row["static_meso_mean"] + self.scroll_spend(row, snapshot)
                 self.assertAlmostEqual(rebuilt, row["meso_mean"], delta=self.TOLERANCE)
 
-    def test_the_four_parts_rebuild_the_total(self) -> None:
-        prices = build_site_data.build_prices()["star_scroll_cost"]
-        for name, row in self.rows():
+    def test_the_parts_rebuild_the_total(self) -> None:
+        for name, row, snapshot in self.rows():
             with self.subTest(dataset=name, row=row["equipment"], target=row["target_star"]):
-                scroll_price = (
-                    0 if row["scroll_star"] is None else prices[str(row["scroll_star"])]
-                )
                 rebuilt = (
                     row["static_meso_mean"]
-                    + row["scrolls_mean"] * scroll_price
+                    + self.scroll_spend(row, snapshot)
                     + row["equipment_mean"] * row["equipment_price"]
                     + row["rebuild_count_mean"] * row["rebuild_cost"]
                 )
@@ -190,8 +236,17 @@ class RepriceTest(unittest.TestCase):
                     rebuilt, row["total_cost_mean"], delta=self.TOLERANCE
                 )
 
+    def test_a_row_that_bought_no_breakthrough_scroll_says_so(self) -> None:
+        for name, row, _ in self.rows():
+            with self.subTest(dataset=name, policy=row.get("breakthrough_policy")):
+                counts = row.get("breakthrough_counts_mean", {})
+                if row.get("breakthrough_policy", "none") == "none":
+                    self.assertEqual(counts, {})
+                else:
+                    self.assertTrue(counts)
+
     def test_only_a_scrolled_run_carries_a_scroll_star(self) -> None:
-        for name, row in self.rows():
+        for name, row, _ in self.rows():
             with self.subTest(dataset=name, mode=row["start_mode"]):
                 if row["start_mode"] == "scroll":
                     self.assertEqual(row["scroll_star"], row["start_star"])
@@ -201,7 +256,7 @@ class RepriceTest(unittest.TestCase):
                     self.assertEqual(row["scrolls_mean"], 0.0)
 
     def test_a_rebuild_count_appears_only_where_a_rebuild_is_priced(self) -> None:
-        for name, row in self.rows():
+        for name, row, _ in self.rows():
             with self.subTest(dataset=name, policy=row["repair_policy"]):
                 if row["rebuild_cost"] == 0:
                     self.assertEqual(row["rebuild_count_mean"], 0.0)

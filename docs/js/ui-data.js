@@ -9,9 +9,16 @@
 
 import * as store from "./prices-store.js";
 import { rebuildBasis, repricedMean } from "./reprice.js";
+import { describe } from "./policy.js";
 import { formatYi } from "./format.js";
 
 const POLICY_LABEL = { full: "完整修復", to_12: "修復至 12 星" };
+
+const BREAKTHROUGH_LABEL = {
+  none: "不用突破捲",
+  optimal: "最省平均",
+  safe: "只用必中",
+};
 
 let datasets = null;
 let sort = { key: "repriced_mean", direction: 1 };
@@ -21,6 +28,7 @@ const el = {};
 function bind() {
   for (const id of [
     "data-source", "data-equipment", "data-target", "data-start", "data-policy",
+    "data-breakthrough",
     "data-meta", "data-price-warning", "data-reprice-note", "data-count",
   ]) {
     el[id] = document.getElementById(id);
@@ -67,6 +75,15 @@ function priceDrift(dataset) {
   for (const [star, price] of Object.entries(snapshot.star_scroll_cost)) {
     if (current.star_scroll_cost[star] !== price) {
       changed.push(`${star} 星星捲`);
+    }
+  }
+  // Datasets swept before breakthrough scrolls existed carry no prices for
+  // them, and no row here bought one, so there is nothing to have drifted.
+  for (const [id, price] of Object.entries(
+    snapshot.breakthrough_scroll_cost || {}
+  )) {
+    if (current.breakthrough_scroll_cost[id] !== price) {
+      changed.push(`突破星捲 ${id}`);
     }
   }
   for (const item of snapshot.equipment) {
@@ -182,6 +199,7 @@ function render() {
   const target = el["data-target"].value;
   const start = el["data-start"].value;
   const policy = el["data-policy"].value;
+  const breakthrough = el["data-breakthrough"].value;
 
   const modified = store.isModified();
   el.table.querySelectorAll(".repriced").forEach((cell) => {
@@ -200,6 +218,11 @@ function render() {
     .filter((row) => target === "" || String(row.target_star) === target)
     .filter((row) => start === "" || String(row.start_star) === start)
     .filter((row) => policy === "" || row.repair_policy === policy)
+    .filter(
+      (row) =>
+        breakthrough === "" ||
+        (row.breakthrough_policy || "none") === breakthrough
+    )
     .sort((a, b) => {
       const left = sortValue(a, sorting.key);
       const right = sortValue(b, sorting.key);
@@ -217,6 +240,11 @@ function render() {
         <td class="num">${row.start_star}</td>
         <td class="num">${row.target_star}</td>
         <td>${POLICY_LABEL[row.repair_policy]}</td>
+        <td title="${
+          row.breakthrough_entries && row.breakthrough_entries.length
+            ? describe({ entries: row.breakthrough_entries })
+            : "全部強化"
+        }">${BREAKTHROUGH_LABEL[row.breakthrough_policy || "none"]}</td>
         <td class="num strong repriced"${modified ? "" : " hidden"}>${
           row.repriced === null ? "—" : formatYi(row.repriced)
         }</td>
@@ -247,7 +275,13 @@ export function initData(loadedDatasets) {
     fillFilters();
     render();
   });
-  for (const id of ["data-equipment", "data-target", "data-start", "data-policy"]) {
+  for (const id of [
+    "data-equipment",
+    "data-target",
+    "data-start",
+    "data-policy",
+    "data-breakthrough",
+  ]) {
     el[id].addEventListener("change", render);
   }
 

@@ -53,6 +53,11 @@
             <button id="play-enhance" class="primary big">強化</button>
             <div class="sf-scrolls" id="play-scrolls"
                  title="星捲點下去直接使用，沒有二次確認"></div>
+            <div class="sf-break">
+              <span class="sf-break-art" id="play-breakthrough-icon"></span>
+              <select id="play-breakthrough" class="sf-break-pick"></select>
+              <button id="play-breakthrough-use">使用</button>
+            </div>
             <div class="row">
               <button id="play-repair-full">完整修復</button>
               <button id="play-repair-12">修復至 12 星</button>
@@ -148,12 +153,14 @@
     <div class="card">
       <h2>懶人包</h2>
       <p class="muted">
-        每件裝備、每個目標星力，把資料集裡所有起手星與修復方式的組合濃縮成一列。
+        每件裝備、每個目標星力，把資料集裡所有起手星、修復方式與突破星捲用法的組合濃縮成一列。
         「最優解」是平均總成本最低的走法；「穩定解」是尾巴較短、花費比較不會失控的替代走法，
-        只在它真的划算時才會出現。
+        只在它真的划算時才會出現。突破星捲要不要用、在哪幾星用，是解出來的而不是掃出來的：
+        走法太多掃不完，但期望成本有封閉解。
       </p>
       <p class="muted" id="best-meta"></p>
       <p class="banner" id="best-reprice-note" hidden></p>
+      <div class="banner warn" id="best-policy-note" hidden></div>
     </div>
 
     <div class="card">
@@ -234,6 +241,14 @@
             <option value="to_12">修復至 12 星</option>
           </select>
         </label>
+        <label>突破星捲
+          <select id="data-breakthrough">
+            <option value="">全部</option>
+            <option value="none">不用突破捲</option>
+            <option value="optimal">最省平均</option>
+            <option value="safe">只用必中</option>
+          </select>
+        </label>
       </div>
       <p class="muted" id="data-meta"></p>
       <p class="banner warn" id="data-price-warning" hidden></p>
@@ -250,6 +265,7 @@
               <th data-sort="start_star" class="num">起始</th>
               <th data-sort="target_star" class="num">目標</th>
               <th data-sort="repair_policy">修復</th>
+              <th data-sort="breakthrough_policy">突破星捲</th>
               <th data-sort="repriced_mean" class="num repriced" hidden>現價平均</th>
               <th data-sort="repriced_delta" class="num repriced" hidden>差異</th>
               <th data-sort="total_cost_mean" class="num">平均總成本<small>快照價</small></th>
@@ -295,6 +311,17 @@
           <tbody></tbody>
         </table>
       </div>
+    </div>
+
+    <div class="card">
+      <h2>突破星捲價格</h2>
+      <div class="table-scroll">
+        <table id="prices-breakthrough">
+          <thead><tr><th>星捲</th><th class="num">價格（億）</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="muted">哪些捲存在是固定規則，只有價格可以改。</p>
     </div>
 
     <div class="card">
