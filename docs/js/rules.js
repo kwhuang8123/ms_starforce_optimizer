@@ -67,6 +67,12 @@ export function destroyStartStar() {
   return STATIC.destroy_start_star;
 }
 
+/** Highest star a trace can carry: destruction above this still leaves this. */
+export function traceStarCap() {
+  requireConfigured();
+  return STATIC.trace_star_cap;
+}
+
 /** The star a rebuild is priced against after a cheap repair. */
 export function rebuildStar() {
   requireConfigured();

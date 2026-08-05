@@ -13,6 +13,7 @@
     <button class="tab active" data-tab="play">手動模擬</button>
     <button class="tab" data-tab="best">懶人包</button>
     <button class="tab" data-tab="data">數據瀏覽</button>
+    <button class="tab" data-tab="rates">機率表</button>
     <button class="tab" data-tab="prices">物價設定</button>
   </nav>
 </header>
@@ -293,6 +294,48 @@
         </table>
       </div>
       <p class="muted" id="data-count"></p>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------------------ -->
+  <section id="tab-rates" class="panel" hidden>
+    <div class="card">
+      <h2>強化機率與費用</h2>
+      <div class="row">
+        <label>裝備等級 <select id="rates-level"></select></label>
+      </div>
+      <p class="muted">
+        官方 V272 公布的基礎值。遊戲內顯示的是當下生效的機率，含活動加成時會與這裡不同。
+        15 星以下不會被破壞，費用也微不足道，未列出。
+      </p>
+      <div class="table-scroll">
+        <table id="rates-enhance">
+          <thead>
+            <tr>
+              <th class="num">星</th>
+              <th class="num">費用</th>
+              <th class="num">成功</th>
+              <th class="num">維持</th>
+              <th class="num">破壞</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>裝備痕跡恢復費用</h2>
+      <p class="muted">
+        完整修復所需的楓幣與同款裝備件數。23 星以上被破壞仍然只留下 22 星痕跡，
+        所以痕跡星數到 22 為止。
+      </p>
+      <div class="table-scroll">
+        <table id="rates-repair">
+          <thead><tr></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
   </section>
 

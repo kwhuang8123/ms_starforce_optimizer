@@ -30,6 +30,27 @@ export function formatYi(meso, decimals = 1) {
   return `${value}e`;
 }
 
+/** The smallest amount formatFee will show rather than rounding to nothing. */
+export const FEE_FLOOR = 0.01;
+
+/**
+ * A published fee for a reference table: 億 to two places, never zero.
+ *
+ * Enhancement fees span five orders of magnitude - 0.0008億 for the first star
+ * of a 140 item, 10億 for the last of a 250 one - so two decimals would show a
+ * real fee as "0.00e". Anything under the floor is shown as the floor instead.
+ *
+ * That makes this a DISPLAY form and not a figure to compute with: below 0.01億
+ * it reads high, by up to the floor itself. Everything that does arithmetic
+ * works from the raw meso in static.json.
+ */
+export function formatFee(meso) {
+  if (meso > 0 && toYi(meso) < FEE_FLOOR) {
+    return `${FEE_FLOOR.toFixed(2)}e`;
+  }
+  return formatYi(meso, 2);
+}
+
 /** Read "100e", "100億" or a bare "100" as 100億 in raw meso. */
 export function parseMeso(text) {
   const cleaned = String(text).trim().replace(/,/g, "").replace(/[eE億]$/, "");
