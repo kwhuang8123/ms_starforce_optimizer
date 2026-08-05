@@ -147,7 +147,19 @@ def main(
         last = index == len(configs)
         if last or configs[index].target_star != config.target_star:
             print(f"  -- target {config.target_star} done, writing checkpoint")
-            meta = build_meta(summaries, target_stars, trials, seed, percentiles)
+            # No breakthrough policy is explored here: starforce.policy solves
+            # SCROLL runs only, and an OWNED run's rebuild cost is itself a
+            # measured figure. Passing an empty tuple says so, rather than
+            # letting build_meta's default report sweep.py's targets - which
+            # this dataset does not even carry rows for.
+            meta = build_meta(
+                summaries,
+                target_stars,
+                trials,
+                seed,
+                percentiles,
+                breakthrough_targets=(),
+            )
             meta["mode"] = "marginal"
             meta["start_stars"] = list(start_stars)
             meta["rebuild_basis"] = {

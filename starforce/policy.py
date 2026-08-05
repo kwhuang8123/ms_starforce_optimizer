@@ -247,8 +247,42 @@ def _restart_value(problem: _Problem, policy: BreakthroughPolicy) -> float:
     return a / (1.0 - b)
 
 
+#: Highest target whose FULL repair still returns an item where it was.
+#:
+#: The recursion treats a destroyed star as an independent wait, which needs the
+#: repair to put the item back on that same star. A trace never records more
+#: than TRACE_STAR_CAP, so that holds only while the highest attempt - one below
+#: the target - is still at or under the cap.
+MAX_FULL_REPAIR_TARGET = rules.TRACE_STAR_CAP + 1
+
+
+def _check_repair_reachable(target_star: int, repair_policy: RepairPolicy) -> None:
+    """Refuse a FULL repair target the recursion would answer wrongly.
+
+    Past MAX_FULL_REPAIR_TARGET a destruction leaves a 22 star trace rather than
+    the star it happened on, so repairing drops the item below where it was and
+    the stars stop being independent. Solving it needs a different recursion,
+    not a wider bound - so this raises instead of returning a plausible number.
+
+    TO_12 is unaffected: it always lands on 12 stars and re-scrolls to the
+    start, whatever star the destruction happened on.
+    """
+    if repair_policy is RepairPolicy.FULL and target_star > MAX_FULL_REPAIR_TARGET:
+        raise NotImplementedError(
+            f"a FULL repair run to {target_star} stars is not solved here: above "
+            f"{rules.TRACE_STAR_CAP} stars a destroyed item leaves a "
+            f"{rules.TRACE_STAR_CAP} star trace, so repairing it does not return "
+            f"it to the star it was lost on and the per-star recursion no longer "
+            f"holds. sweep_marginal.py measures that range instead"
+        )
+
+
 def _check(
-    level: int, start_star: int, target_star: int, start_mode: StartMode
+    level: int,
+    start_star: int,
+    target_star: int,
+    start_mode: StartMode,
+    repair_policy: RepairPolicy,
 ) -> None:
     rules.check_level(level)
     if start_mode is not StartMode.SCROLL:
@@ -257,6 +291,7 @@ def _check(
             "itself a measured figure, and sweep_marginal.py has not been "
             "brought into this yet"
         )
+    _check_repair_reachable(target_star, repair_policy)
     rules.check_start_star(start_star)
     if target_star <= start_star:
         raise ValueError(
@@ -285,7 +320,7 @@ def expected_total(
     tracks - enhancement fees, repair meso and equipment, and both kinds of
     scroll - and the opening star scroll the run is set up with.
     """
-    _check(level, start_star, target_star, start_mode)
+    _check(level, start_star, target_star, start_mode, repair_policy)
     outside = [star for star in policy.stars if not start_star <= star < target_star]
     if outside:
         raise ValueError(
@@ -323,7 +358,7 @@ def optimal_policy(
     restarting, take the cheaper action at every star given that value, repeat.
     Under FULL repair nothing restarts, so the first pass is already optimal.
     """
-    _check(level, start_star, target_star, start_mode)
+    _check(level, start_star, target_star, start_mode, repair_policy)
     problem = _Problem(
         level=level,
         start_star=start_star,

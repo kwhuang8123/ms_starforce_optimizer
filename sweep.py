@@ -27,37 +27,40 @@ from starforce.units import to_yi
 # SETTINGS - edit these
 # ---------------------------------------------------------------------------
 
-#: Target stars to sweep. Cost climbs steeply past 22: destruction runs at 18%
-#: from 23 stars up, and a 23+ star item only ever leaves a 22 star trace, so
-#: every destruction there costs the whole 22 -> target climb again.
+#: Target stars to sweep, from the cheapest breakpoint worth measuring up to 22.
 #:
-#: 24 stars is deliberately not swept from scratch. It is by far the dearest
-#: combination to measure - the 15 -> 24 climb repairing to 12 stars averages 972
-#: attempts per trial, against 40 for 15 -> 22 - and the question it answers is
-#: better answered by sweep_marginal.py: reach 22, then price 22 -> 24 on its
-#: own. Note that composing the two gives the right mean but not the right
-#: percentiles, because percentiles do not add.
-TARGET_STARS: tuple[int, ...] = (22, 23)
+#: 22 is where this sweep stops. Past it the question changes shape: destruction
+#: runs at 18% from 23 stars up and a 23+ star item only ever leaves a 22 star
+#: trace, so every destruction costs the whole 22 -> target climb again. That is
+#: sweep_marginal.py's question - hold a 22 star item, then price the next star
+#: on its own - and it is answered there rather than here.
+#:
+#: Composing the two ("nothing to 22" plus "22 to 23") gives the right mean but
+#: not the right percentiles, because percentiles do not add. Anything past 22
+#: therefore has to be read from the marginal dataset, not assembled.
+TARGET_STARS: tuple[int, ...] = (17, 18, 19, 20, 21, 22)
 
 #: Starting stars to compare. 10-14 are omitted: those scrolls all cost the
 #: same 0.2e and carry no destruction risk, so they barely differ from 15.
+#:
+#: Not every start star reaches every target - a 20 star item is already past a
+#: 19 star target - and build_configs drops the combinations that cannot happen.
 START_STARS: tuple[int, ...] = (15, 16, 17, 18, 19, 20)
 
 #: Repair policies to compare.
 POLICIES: tuple[RepairPolicy, ...] = (RepairPolicy.FULL, RepairPolicy.TO_12)
 
-#: Targets whose breakthrough scroll policies are explored.
+#: Targets whose breakthrough scroll policies are explored: all of them.
 #:
-#: Every other target is swept enhance-only, exactly as before. The choice space
-#: is far too large to sweep - a 15 to 22 climb has seven decision points - so
-#: starforce.policy solves for the cheapest policy instead and names the two or
-#: three worth measuring. What it cannot solve is percentiles, which is why they
-#: still get simulated here.
+#: The choice space is far too large to sweep - a 15 to 22 climb has seven
+#: decision points - so starforce.policy solves for the cheapest policy instead
+#: and names the two or three worth measuring. What it cannot solve is
+#: percentiles, which is why those still get simulated here.
 #:
-#: 23 stars is deliberately left out for now: bringing it in is a separate piece
-#: of work, and mixing a target that considers scrolls with one that does not is
-#: something the front end has to label rather than hide.
-BREAKTHROUGH_TARGETS: tuple[int, ...] = (22,)
+#: Derived from TARGET_STARS rather than listed again, so the two cannot drift.
+#: A target past 23 would need the solver's model extended first, and
+#: starforce.policy raises rather than answering for one - see its _check.
+BREAKTHROUGH_TARGETS: tuple[int, ...] = TARGET_STARS
 
 #: Trials per combination.
 TRIALS = 50_000
@@ -92,12 +95,18 @@ def build_configs(
     policy worth comparing; every other target is measured enhance-only. The
     policies come from starforce.policy, which derives them rather than
     enumerating - see BREAKTHROUGH_TARGETS.
+
+    Start stars at or above the target are skipped rather than rejected: with
+    several targets in one sweep the two lists cannot both be exhaustive, and an
+    item that is already at 20 stars has nothing to do about a 19 star target.
     """
     configs: list[RunConfig] = []
     for target_star in target_stars:
         for name in volatile_data.known_names():
             item = volatile_data.lookup(name)
             for start_star in start_stars:
+                if start_star >= target_star:
+                    continue
                 for policy in policies:
                     if target_star in breakthrough_targets:
                         chosen = sweep_policies(

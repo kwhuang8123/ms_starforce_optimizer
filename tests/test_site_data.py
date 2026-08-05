@@ -18,7 +18,8 @@ import unittest
 from pathlib import Path
 
 import build_site_data
-from starforce import rules
+import sweep
+from starforce import policy, rules
 from starforce import static_data as data
 
 DATA_DIR = Path(build_site_data.OUTPUT_DIR)
@@ -168,6 +169,46 @@ class ParityTest(unittest.TestCase):
                         if entry["action"] in rolling
                     ),
                 )
+
+
+class SweepConfigTest(unittest.TestCase):
+    """What the sweep will actually measure, before it spends an hour doing it."""
+
+    def configs(self):
+        return sweep.build_configs(
+            sweep.TARGET_STARS, sweep.START_STARS, sweep.POLICIES
+        )
+
+    def test_no_combination_starts_at_or_above_its_target(self) -> None:
+        # With several targets in one sweep the two lists cannot both be
+        # exhaustive, so build_configs has to drop the impossible pairs. Without
+        # that, adding any target below 21 raises out of RunConfig.
+        for config in self.configs():
+            with self.subTest(start=config.start_star, target=config.target_star):
+                self.assertLess(config.start_star, config.target_star)
+
+    def test_every_target_is_covered_by_at_least_one_start_star(self) -> None:
+        covered = {config.target_star for config in self.configs()}
+        self.assertEqual(covered, set(sweep.TARGET_STARS))
+
+    def test_the_sweep_stops_where_the_solver_does(self) -> None:
+        # A FULL repair target above the trace cap plus one has no solution
+        # here, so a sweep configured for one would fail partway through rather
+        # than at the first config.
+        self.assertLessEqual(
+            max(sweep.BREAKTHROUGH_TARGETS), policy.MAX_FULL_REPAIR_TARGET
+        )
+
+    def test_every_swept_target_considers_breakthrough_scrolls(self) -> None:
+        self.assertEqual(
+            set(sweep.BREAKTHROUGH_TARGETS), set(sweep.TARGET_STARS)
+        )
+
+    def test_the_rebuild_star_stays_in_the_sweep(self) -> None:
+        # sweep_marginal.py prices a rebuild from this dataset's 22 star rows;
+        # dropping that target would leave the marginal sweep with nothing to
+        # build on.
+        self.assertIn(rules.REBUILD_STAR, sweep.TARGET_STARS)
 
 
 class RepriceTest(unittest.TestCase):
