@@ -19,6 +19,7 @@
  * percentile is therefore labelled as belonging to the sweep's own prices.
  */
 
+import * as rules from "./rules.js";
 import * as store from "./prices-store.js";
 import { rebuildBasis, repricedMean } from "./reprice.js";
 import { describe, expectedTotal, optimalPolicy, sameEntries } from "./policy.js";
@@ -186,6 +187,22 @@ function stableAlternative(candidates, best) {
   return { row: calmest, meanCost, tailGain };
 }
 
+/** The scroll shortcut for a row, marked when it beats the measured route. */
+function scrollCell(best) {
+  const scroll = scrollShortcut(best.target_star);
+  if (scroll === null) {
+    return `<span class="muted">—</span>`;
+  }
+  const text = formatYi(scroll.price);
+  if (scroll.price >= best.repriced) {
+    return `<span class="muted">${text}</span>`;
+  }
+  return (
+    `<span class="ok-text strong">${text}</span>` +
+    `<br><span class="muted">省 ${((1 - scroll.price / best.repriced) * 100).toFixed(0)}%</span>`
+  );
+}
+
 function nearTieCell(ordered) {
   if (ordered.length < 2) {
     return "—";
@@ -199,6 +216,30 @@ function nearTieCell(ordered) {
     `<span class="bad-text">${text}</span>` +
     `<br><span class="muted">誤差內，等同 ${routeLabel(ordered[1])}</span>`
   );
+}
+
+/**
+ * Buying the target's own star scroll and stopping there.
+ *
+ * A scroll sets an item straight to its star, so for any target a scroll exists
+ * for, "buy that scroll" is a complete route: no attempts, no destruction, and
+ * a cost that is simply the price - p50 and p95 both land on it.
+ *
+ * The sweep cannot express this. A SCROLL run buys its start_star scroll and
+ * then climbs, and RunConfig requires the target to exceed the start, so a
+ * zero-attempt route has no configuration to be. It does not need one: there is
+ * nothing random about it, and comparing it is arithmetic rather than sampling.
+ *
+ * Priced from the live table, not the dataset snapshot, because the answer to
+ * "should I just buy the scroll" moves with the scroll's price.
+ *
+ * Returns null when no scroll reaches the target - 21 stars and above.
+ */
+function scrollShortcut(target) {
+  if (!rules.starScrollStars().includes(target)) {
+    return null;
+  }
+  return { star: target, price: rules.starScrollCost(target) };
 }
 
 // ---------------------------------------------------------------------------
@@ -328,19 +369,63 @@ function renderAsk(prices) {
   const best = ordered[0];
   const stable = stableAlternative(candidates, best);
   const explored = new Set(dataset.meta.breakthrough_targets || []);
+  const scroll = scrollShortcut(target);
+  const scrollWins = scroll !== null && scroll.price < best.repriced;
 
-  const parts = [
-    `<div class="ask-head">
-       <span class="ask-cost">${formatYi(best.repriced)}</span>
-       <span class="muted">平均總成本・現價</span>
-     </div>`,
-    `<div class="ask-route">${routeLabel(best)}</div>`,
-    answerLine(
-      "p50 / p95<small>快照價</small>",
-      `${formatYi(percentile(best, "50"))} / ${formatYi(percentile(best, "95"))}`
-    ),
-    answerLine("與次佳差距", nearTieCell(ordered)),
-  ];
+  // When a scroll reaches the target for less than the cheapest measured climb,
+  // it is the answer - not a footnote to a dearer one. It also cannot go wrong,
+  // so it has no distribution to show: the price is the p50 and the p95.
+  const parts = scrollWins
+    ? [
+        `<div class="ask-head">
+           <span class="ask-cost">${formatYi(scroll.price)}</span>
+           <span class="muted">確定花費・現價</span>
+         </div>`,
+        `<div class="ask-route">直接買 ${scroll.star} 星星捲</div>`,
+        answerLine(
+          "風險",
+          `<span class="ok-text">無</span>` +
+            `<span class="muted">　一次強化都不做，不會破壞</span>`
+        ),
+        answerLine(
+          "改用模擬出的最省路線",
+          `${routeLabel(best)}<br><span class="muted">平均 ${formatYi(best.repriced)}，` +
+            `貴 ${((best.repriced / scroll.price - 1) * 100).toFixed(1)}%</span>`
+        ),
+      ]
+    : [
+        `<div class="ask-head">
+           <span class="ask-cost">${formatYi(best.repriced)}</span>
+           <span class="muted">平均總成本・現價</span>
+         </div>`,
+        `<div class="ask-route">${routeLabel(best)}</div>`,
+        answerLine(
+          "p50 / p95<small>快照價</small>",
+          `${formatYi(percentile(best, "50"))} / ${formatYi(percentile(best, "95"))}`
+        ),
+        answerLine("與次佳差距", nearTieCell(ordered)),
+      ];
+
+  // Everything below qualifies the measured climb. A winning scroll is cheaper
+  // than that climb and cannot go wrong, so it dominates every alternative
+  // those notes could point at - a stable variant, a policy the dataset has
+  // not caught up with - and printing them anyway would bury the answer under
+  // caveats about a route nobody should take.
+  if (scrollWins) {
+    box.innerHTML = parts.join("");
+    return;
+  }
+
+  // "Should I just buy the scroll" deserves an answer even when it is no.
+  if (scroll !== null) {
+    parts.push(
+      answerLine(
+        `直接買 ${scroll.star} 星星捲`,
+        `${formatYi(scroll.price)}<br><span class="muted">貴 ` +
+          `${((scroll.price / best.repriced - 1) * 100).toFixed(1)}%，不划算</span>`
+      )
+    );
+  }
 
   if (stable !== null) {
     parts.push(
@@ -387,7 +472,7 @@ function renderAsk(prices) {
 function renderScratch(prices) {
   const dataset = datasets.simulations;
   if (!dataset) {
-    el.scratch.innerHTML = `<tr><td colspan="10">資料集尚未產生。</td></tr>`;
+    el.scratch.innerHTML = `<tr><td colspan="11">資料集尚未產生。</td></tr>`;
     return;
   }
 
@@ -435,6 +520,7 @@ function renderScratch(prices) {
       <td class="num strong">${formatYi(best.repriced)}</td>
       <td class="num">${formatYi(percentile(best, "50"))}</td>
       <td class="num">${formatYi(percentile(best, "95"))}</td>
+      <td class="num">${scrollCell(best)}</td>
       <td class="num">${nearTieCell(ordered)}</td>
       <td>${stable === null ? "—" : routeLabel(stable.row)}</td>
       <td class="num">${
