@@ -11,6 +11,7 @@ import { loadManifest } from "./assets.js";
 import { initPlay } from "./ui-play.js";
 import { initBest } from "./ui-best.js";
 import { initData } from "./ui-data.js";
+import { initRates } from "./ui-rates.js";
 import { initPrices } from "./ui-prices.js";
 
 async function loadJson(path, { required = true } = {}) {
@@ -69,6 +70,9 @@ async function boot() {
   initPlay(datasets);
   initBest(datasets);
   initData(datasets);
+  // Reads static.json only, so it takes no dataset and never re-renders on a
+  // price edit.
+  initRates();
   renderFooter(datasets);
 }
 

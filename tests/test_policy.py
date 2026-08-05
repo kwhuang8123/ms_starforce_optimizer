@@ -52,6 +52,28 @@ class ValidationTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             pol.optimal_policy(200, 20, 20, 1)
 
+    def test_a_full_repair_run_past_the_trace_cap_is_refused(self) -> None:
+        # Above 22 stars a destroyed item leaves a 22 star trace, so repairing
+        # it does not return it to the star it was lost on. The recursion would
+        # still produce a number; refusing is the only honest answer.
+        for target in (24, 25, 30):
+            with self.subTest(target=target):
+                with self.assertRaises(NotImplementedError):
+                    pol.optimal_policy(200, 20, target, 1, RepairPolicy.FULL)
+
+    def test_the_highest_solvable_full_repair_target_is_23(self) -> None:
+        # 23 is reached by attempts from 22 and below, every one of which leaves
+        # a trace carrying its own star, so the recursion still holds there.
+        self.assertEqual(pol.MAX_FULL_REPAIR_TARGET, 23)
+        pol.optimal_policy(200, 20, 23, 1, RepairPolicy.FULL)
+
+    def test_a_cheap_repair_run_is_unaffected_by_the_trace_cap(self) -> None:
+        # TO_12 lands on 12 stars and re-scrolls to the start whatever star the
+        # destruction happened on, so the target never breaks its recursion.
+        for target in (24, 25, 30):
+            with self.subTest(target=target):
+                pol.optimal_policy(200, 20, target, 1, RepairPolicy.TO_12)
+
     def test_a_policy_outside_the_run_raises(self) -> None:
         policy = pol.BreakthroughPolicy("x", ((19, 21, 10_000),))
         with self.assertRaises(ValueError):
