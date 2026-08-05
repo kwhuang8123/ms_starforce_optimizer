@@ -12,3 +12,6 @@ venv/
 # Editors
 .vscode/
 .idea/
+
+# Claude Code: launch.json is shared, local settings are not
+.claude/settings.local.json
