@@ -9,7 +9,7 @@
 
 import * as store from "./prices-store.js";
 import { rebuildBasis, repricedMean } from "./reprice.js";
-import { describe } from "./policy.js";
+import { describe, describeCompact } from "./policy.js";
 import { formatYi } from "./format.js";
 
 const POLICY_LABEL = { full: "完整修復", to_12: "修復至 12 星" };
@@ -128,6 +128,24 @@ function withRepricedMeans(rows, prices) {
   });
 }
 
+/**
+ * Which scrolls this row's policy actually buys, and where.
+ *
+ * The policy's name - "最省平均", "只用必中" - says how it was chosen, not what
+ * it does, which is the thing worth reading off a table. The full form goes in
+ * the tooltip so a folded range can still be checked star by star.
+ */
+function breakthroughCell(row) {
+  const entries = row.breakthrough_entries;
+  if (!entries || entries.length === 0) {
+    return `<span class="muted">不用</span>`;
+  }
+  return (
+    `<span title="${describe({ entries })}">` +
+    `${describeCompact({ entries })}</span>`
+  );
+}
+
 /** How far today's prices moved this row, against the sweep's snapshot. */
 function deltaCell(row) {
   if (row.repriced === null) {
@@ -240,11 +258,7 @@ function render() {
         <td class="num">${row.start_star}</td>
         <td class="num">${row.target_star}</td>
         <td>${POLICY_LABEL[row.repair_policy]}</td>
-        <td title="${
-          row.breakthrough_entries && row.breakthrough_entries.length
-            ? describe({ entries: row.breakthrough_entries })
-            : "全部強化"
-        }">${BREAKTHROUGH_LABEL[row.breakthrough_policy || "none"]}</td>
+        <td class="breakthrough">${breakthroughCell(row)}</td>
         <td class="num strong repriced"${modified ? "" : " hidden"}>${
           row.repriced === null ? "—" : formatYi(row.repriced)
         }</td>

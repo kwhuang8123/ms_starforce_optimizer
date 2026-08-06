@@ -450,6 +450,11 @@ button.big {
   font-size: 13px;
 }
 
+/* The breakthrough column spells out which scrolls a row buys, which runs long.
+   Kept on one line so every row is the same height - the table already scrolls
+   sideways inside .table-scroll, so width costs nothing that height would not. */
+#data-table td.breakthrough { white-space: nowrap; }
+
 /* The cheat sheet's query card: one equipment, one situation, one answer. The
    figure leads because it is what the question was about; everything else is a
    qualifier on it. */

@@ -213,3 +213,46 @@ export function describe(policy) {
     )
     .join("、");
 }
+
+/**
+ * The same policy with runs of consecutive stars folded into a range.
+ *
+ * The cheapest scroll rarely changes from one star to the next, so a policy
+ * that buys the same one at 18, 19 and 20 spells it out three times - 55
+ * characters for a four-scroll policy, in a table that is already seventeen
+ * columns wide. Folding those runs says exactly the same thing in half the
+ * space:
+ *
+ *   18星→突破21星100%、19星→突破21星100%、20星→突破21星100%、21星→突破22星100%
+ *   18-20星→突破21星100%、21星→突破22星100%
+ *
+ * Only genuinely consecutive stars using the identical scroll are folded, so a
+ * policy that skips a star still shows both halves apart. Nothing is dropped.
+ */
+export function describeCompact(policy) {
+  if (policy.entries.length === 0) {
+    return "全部強化";
+  }
+
+  const runs = [];
+  for (const [star, capStar, success] of policy.entries) {
+    const last = runs[runs.length - 1];
+    if (
+      last !== undefined &&
+      last.capStar === capStar &&
+      last.success === success &&
+      last.end + 1 === star
+    ) {
+      last.end = star;
+      continue;
+    }
+    runs.push({ start: star, end: star, capStar, success });
+  }
+
+  return runs
+    .map(({ start, end, capStar, success }) => {
+      const stars = start === end ? `${start}星` : `${start}-${end}星`;
+      return `${stars}→${rules.breakthroughLabel(capStar, success)}`;
+    })
+    .join("、");
+}
