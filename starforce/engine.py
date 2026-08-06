@@ -105,13 +105,21 @@ class RunConfig:
         self._check_breakthrough_policy()
 
     def _check_breakthrough_policy(self) -> None:
-        """A policy must only name stars this run actually climbs through."""
+        """A policy must only name stars this run actually climbs through.
+
+        An OWNED run can end up below where it started: every destruction above
+        22 stars drops it back to 22, whether it repairs in full or rebuilds. So
+        its policy may name stars from 22 up, not merely from ``start_star``.
+        """
         if self.breakthrough_policy is None:
             return
+        lowest = self.start_star
+        if self.start_mode is StartMode.OWNED:
+            lowest = min(lowest, rules.REBUILD_STAR)
         outside = [
             star
             for star in self.breakthrough_policy.stars
-            if not self.start_star <= star < self.target_star
+            if not lowest <= star < self.target_star
         ]
         if outside:
             raise ValueError(

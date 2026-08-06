@@ -32,6 +32,7 @@ from starforce import (
     simulate,
     volatile_data,
 )
+from starforce.policy import sweep_policies
 from starforce.sim_data_loader import RebuildBasis
 from starforce.stats import SimulationSummary
 from starforce.units import format_meso, to_yi
@@ -75,10 +76,17 @@ def build_configs(
     target_stars: Sequence[int],
     policies: Sequence[RepairPolicy],
 ) -> list[RunConfig]:
-    """Every start/target pair with start below target, per equipment and policy."""
+    """Every start/target pair with start below target, per equipment and policy.
+
+    Each pair is measured once per breakthrough policy worth comparing, the same
+    way sweep.py does it. Those policies are derived rather than enumerated -
+    starforce.policy solves the recursion, which for an OWNED run is coupled
+    through the 22 stars every destruction drops it back to.
+    """
     configs = []
     for target_star in target_stars:
         for name in volatile_data.known_names():
+            item = volatile_data.lookup(name)
             for start_star in start_stars:
                 if start_star >= target_star:
                     continue
@@ -86,16 +94,26 @@ def build_configs(
                     rebuild = (
                         basis.cost(name) if policy is RepairPolicy.TO_12 else 0
                     )
-                    configs.append(
-                        RunConfig.for_equipment(
-                            name,
-                            start_star,
-                            target_star,
-                            repair_policy=policy,
-                            start_mode=StartMode.OWNED,
-                            rebuild_cost=rebuild,
+                    for breakthrough in sweep_policies(
+                        item.level,
+                        start_star,
+                        target_star,
+                        item.price,
+                        policy,
+                        start_mode=StartMode.OWNED,
+                        rebuild_cost=rebuild,
+                    ):
+                        configs.append(
+                            RunConfig.for_equipment(
+                                name,
+                                start_star,
+                                target_star,
+                                repair_policy=policy,
+                                start_mode=StartMode.OWNED,
+                                rebuild_cost=rebuild,
+                                breakthrough_policy=breakthrough,
+                            )
                         )
-                    )
     return configs
 
 
@@ -147,18 +165,16 @@ def main(
         last = index == len(configs)
         if last or configs[index].target_star != config.target_star:
             print(f"  -- target {config.target_star} done, writing checkpoint")
-            # No breakthrough policy is explored here: starforce.policy solves
-            # SCROLL runs only, and an OWNED run's rebuild cost is itself a
-            # measured figure. Passing an empty tuple says so, rather than
-            # letting build_meta's default report sweep.py's targets - which
-            # this dataset does not even carry rows for.
+            # Every target here has its breakthrough policies explored. Passed
+            # explicitly rather than left to build_meta's default, which reports
+            # sweep.py's targets - ones this dataset carries no rows for.
             meta = build_meta(
                 summaries,
                 target_stars,
                 trials,
                 seed,
                 percentiles,
-                breakthrough_targets=(),
+                breakthrough_targets=target_stars,
             )
             meta["mode"] = "marginal"
             meta["start_stars"] = list(start_stars)

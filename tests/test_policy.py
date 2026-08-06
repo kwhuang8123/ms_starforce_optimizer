@@ -8,6 +8,7 @@ from starforce import policy as pol
 from starforce import static_data as data
 from starforce import rules, simulate, volatile_data
 from starforce.engine import RepairPolicy, RunConfig, StartMode
+from starforce.units import YI
 
 TARGET = 22
 
@@ -42,24 +43,43 @@ class PolicyShapeTest(unittest.TestCase):
 
 
 class ValidationTest(unittest.TestCase):
-    def test_an_owned_run_is_not_solved(self) -> None:
-        with self.assertRaises(NotImplementedError):
+    def test_an_owned_run_must_start_at_the_rebuild_star_or_above(self) -> None:
+        with self.assertRaises(ValueError):
             pol.optimal_policy(
-                200, 22, 24, 1, RepairPolicy.FULL, start_mode=StartMode.OWNED
+                200, 21, 23, 1, RepairPolicy.FULL, start_mode=StartMode.OWNED
             )
+
+    def test_an_owned_cheap_repair_run_needs_a_rebuild_cost(self) -> None:
+        with self.assertRaises(ValueError):
+            pol.optimal_policy(
+                200, 22, 23, 1, RepairPolicy.TO_12, start_mode=StartMode.OWNED
+            )
+
+    def test_a_scroll_run_may_not_carry_a_rebuild_cost(self) -> None:
+        with self.assertRaises(ValueError):
+            pol.optimal_policy(200, 15, 22, 1, rebuild_cost=1)
 
     def test_a_target_below_the_start_raises(self) -> None:
         with self.assertRaises(ValueError):
             pol.optimal_policy(200, 20, 20, 1)
 
-    def test_a_full_repair_run_past_the_trace_cap_is_refused(self) -> None:
-        # Above 22 stars a destroyed item leaves a 22 star trace, so repairing
-        # it does not return it to the star it was lost on. The recursion would
-        # still produce a number; refusing is the only honest answer.
+    def test_a_scroll_full_repair_run_past_the_trace_cap_is_refused(self) -> None:
+        # Above 22 stars a destroyed item drops to 22 - neither the star it was
+        # lost on nor the star a SCROLL run began at, so the recursion would
+        # need a second unknown. Refusing is the only honest answer.
         for target in (24, 25, 30):
             with self.subTest(target=target):
                 with self.assertRaises(NotImplementedError):
                     pol.optimal_policy(200, 20, target, 1, RepairPolicy.FULL)
+
+    def test_an_owned_full_repair_run_past_the_trace_cap_is_solved(self) -> None:
+        # The same fall to 22 stars is fine here: an OWNED run never starts
+        # below 22, so 22 is both where it lands and the lowest star solved.
+        for target in (24, 25):
+            with self.subTest(target=target):
+                pol.optimal_policy(
+                    200, 22, target, 1, RepairPolicy.FULL, start_mode=StartMode.OWNED
+                )
 
     def test_the_highest_solvable_full_repair_target_is_23(self) -> None:
         # 23 is reached by attempts from 22 and below, every one of which leaves
@@ -192,6 +212,142 @@ class OptimalityTest(unittest.TestCase):
                     scroll[1] / data.RATE_BASIS
                 )
                 self.assertLess(cost, enhance)
+
+
+class OwnedTest(unittest.TestCase):
+    """Runs that start from an item already at 22 stars or above.
+
+    The recursion here is the one the from-scratch sweep does not exercise:
+    every destruction above 22 stars drops the item to 22 rather than back
+    where it was, so the stars are coupled through a single fallback value.
+    """
+
+    REBUILD = 700 * YI
+
+    def problem(self, name: str, start: int, target: int, repair: RepairPolicy):
+        item = volatile_data.lookup(name)
+        rebuild = self.REBUILD if repair is RepairPolicy.TO_12 else 0
+        return item, rebuild
+
+    def solve(self, name, start, target, repair):
+        item, rebuild = self.problem(name, start, target, repair)
+        chosen = pol.optimal_policy(
+            item.level,
+            start,
+            target,
+            item.price,
+            repair,
+            start_mode=StartMode.OWNED,
+            rebuild_cost=rebuild,
+        )
+        total = pol.expected_total(
+            chosen,
+            item.level,
+            start,
+            target,
+            item.price,
+            repair,
+            start_mode=StartMode.OWNED,
+            rebuild_cost=rebuild,
+        )
+        return chosen, total
+
+    def enumerate_best(self, name, start, target, repair) -> float:
+        """Brute force every policy over the stars an OWNED run can occupy."""
+        item, rebuild = self.problem(name, start, target, repair)
+        stars = list(range(pol.base_star_for(start, StartMode.OWNED), target))
+        choices = []
+        for star in stars:
+            options: list[tuple[int, int] | None] = [None]
+            options.extend(
+                (cap, rate)
+                for cap, rate in data.BREAKTHROUGH_SCROLLS
+                if star + 1 <= cap
+            )
+            choices.append(options)
+
+        best = None
+        stack: list[tuple[int, list[tuple[int, int, int]]]] = [(0, [])]
+        while stack:
+            index, chosen = stack.pop()
+            if index == len(stars):
+                total = pol.expected_total(
+                    pol.BreakthroughPolicy("brute", tuple(chosen)),
+                    item.level,
+                    start,
+                    target,
+                    item.price,
+                    repair,
+                    start_mode=StartMode.OWNED,
+                    rebuild_cost=rebuild,
+                )
+                if best is None or total < best:
+                    best = total
+                continue
+            for option in choices[index]:
+                nxt = chosen if option is None else chosen + [
+                    (stars[index], option[0], option[1])
+                ]
+                stack.append((index + 1, nxt))
+        assert best is not None
+        return best
+
+    def test_the_solver_matches_brute_force(self) -> None:
+        # 22 -> 23 has one decision star, so the whole space is a few dozen
+        # policies rather than thousands.
+        for name in ("頂培", "巨大", "控制核心"):
+            for repair in (RepairPolicy.FULL, RepairPolicy.TO_12):
+                with self.subTest(equipment=name, repair=repair.value):
+                    _, solved = self.solve(name, 22, 23, repair)
+                    brute = self.enumerate_best(name, 22, 23, repair)
+                    self.assertAlmostEqual(solved, brute, delta=1.0)
+
+    def test_the_solver_matches_brute_force_across_two_decision_stars(self) -> None:
+        for repair in (RepairPolicy.FULL, RepairPolicy.TO_12):
+            with self.subTest(repair=repair.value):
+                _, solved = self.solve("控制核心", 22, 24, repair)
+                brute = self.enumerate_best("控制核心", 22, 24, repair)
+                self.assertAlmostEqual(solved, brute, delta=1.0)
+
+    def test_starting_higher_never_costs_more(self) -> None:
+        # A 23 star item is partway to 24 already, so it cannot be dearer than
+        # a 22 star one - and both fall back to 22 when destroyed.
+        for name in ("神秘", "控制核心"):
+            with self.subTest(equipment=name):
+                _, from22 = self.solve(name, 22, 24, RepairPolicy.FULL)
+                _, from23 = self.solve(name, 23, 24, RepairPolicy.FULL)
+                self.assertLess(from23, from22)
+
+    def test_a_policy_may_name_the_fallback_star_below_the_start(self) -> None:
+        # Starting at 23 with a scroll named for 22: reachable only after a
+        # destruction, which is exactly when it applies.
+        item = volatile_data.lookup("控制核心")
+        policy = pol.BreakthroughPolicy("x", ((22, 23, 5_000),))
+        total = pol.expected_total(
+            policy, item.level, 23, 24, item.price,
+            RepairPolicy.FULL, start_mode=StartMode.OWNED,
+        )
+        self.assertGreater(total, 0)
+
+    def test_the_engine_lands_on_the_solved_mean(self) -> None:
+        for name in ("神秘", "控制核心"):
+            for repair in (RepairPolicy.FULL, RepairPolicy.TO_12):
+                item, rebuild = self.problem(name, 22, 23, repair)
+                chosen, solved = self.solve(name, 22, 23, repair)
+                with self.subTest(equipment=name, repair=repair.value):
+                    config = RunConfig.for_equipment(
+                        name,
+                        22,
+                        23,
+                        repair_policy=repair,
+                        start_mode=StartMode.OWNED,
+                        rebuild_cost=rebuild,
+                        breakthrough_policy=chosen,
+                    )
+                    sampled = simulate(
+                        config, trials=20_000, seed=20260806
+                    ).total_cost.mean
+                    self.assertAlmostEqual(sampled / solved, 1.0, delta=0.03)
 
 
 class SweepPoliciesTest(unittest.TestCase):

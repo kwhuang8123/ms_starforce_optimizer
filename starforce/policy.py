@@ -140,13 +140,22 @@ def _best_scroll(star: int, deterministic_only: bool) -> tuple[float, tuple[int,
 
 @dataclass(frozen=True)
 class _Problem:
-    """Everything the recursion needs, resolved once."""
+    """Everything the recursion needs, resolved once.
+
+    ``base_star`` is the lowest star the recursion covers, and the one every
+    destruction that loses ground falls back to. An OWNED run is solved from 22
+    stars up even when it starts at 23 or 24, because that is where a
+    destruction puts it and it has to climb again from there.
+    """
 
     level: int
     start_star: int
     target_star: int
     equipment_price: int
     repair_policy: RepairPolicy
+    start_mode: StartMode
+    base_star: int
+    rebuild_cost: int = 0
 
     def enhance_terms(self, star: int) -> tuple[float, float, float, float]:
         """``(fee, p_success, p_destroy, immediate destruction cost)``."""
@@ -160,10 +169,29 @@ class _Problem:
                 meso, pieces = rules.cheap_repair()
             cost = meso + pieces * self.equipment_price
             if self.repair_policy is RepairPolicy.TO_12:
-                # The engine climbs back out of a 12 star repair with another
-                # start_star scroll, charged at repair time.
-                cost += rules.star_scroll_cost(self.start_star)
+                if self.start_mode is StartMode.OWNED:
+                    # No scroll reaches 22 stars, so an OWNED run climbs back by
+                    # rebuilding - a flat measured cost charged at repair time.
+                    cost += self.rebuild_cost
+                else:
+                    # A SCROLL run climbs back out of a 12 star repair with
+                    # another start_star scroll, also charged at repair time.
+                    cost += rules.star_scroll_cost(self.start_star)
         return fee, success / data.RATE_BASIS, destroy / data.RATE_BASIS, cost
+
+    def lands_on_itself(self, star: int) -> bool:
+        """Does a destruction here put the item back on the star it was lost on?
+
+        Only a FULL repair can, and only while the trace still records the star
+        - above TRACE_STAR_CAP every trace reads 22, so the item drops to
+        ``base_star`` instead and the star stops being an independent wait.
+
+        TO_12 never does: it lands on 12 stars and climbs back to where the run
+        began, which is ``base_star`` by construction.
+        """
+        return (
+            self.repair_policy is RepairPolicy.FULL and star <= rules.TRACE_STAR_CAP
+        )
 
 
 def _sweep_back(
@@ -172,24 +200,26 @@ def _sweep_back(
     policy: BreakthroughPolicy | None,
     deterministic_only: bool = False,
 ) -> tuple[list[tuple[int, int, int]], dict[int, float], dict[int, float]]:
-    """One backward pass from the target, holding the restart value fixed.
+    """One backward pass from the target, holding the base value fixed.
 
     With ``policy`` given, every star follows it. With ``policy`` None, every
     star takes whichever action is cheaper - that is the greedy improvement.
 
     Returns the chosen entries plus ``V(s)`` split into its constant part and
-    its coefficient on the restart value, so the caller can close the fixed
-    point. Under FULL repair the coefficient stays zero: a repair puts the item
-    back where it was, so restarting never happens.
+    its coefficient on ``V(base_star)``, so the caller can close the fixed
+    point. A star whose destruction lands back on itself contributes nothing to
+    that coefficient: it is an independent wait, and nothing ever falls through
+    it. Where every star is like that - a SCROLL run repairing in full below 23
+    stars - the coefficient stays zero throughout and the fixed point is moot.
     """
     constant = {problem.target_star: 0.0}
     coefficient = {problem.target_star: 0.0}
     chosen: list[tuple[int, int, int]] = []
 
-    for star in range(problem.target_star - 1, problem.start_star - 1, -1):
+    for star in range(problem.target_star - 1, problem.base_star - 1, -1):
         fee, p_success, p_destroy, destruction = problem.enhance_terms(star)
 
-        if problem.repair_policy is RepairPolicy.FULL:
+        if problem.lands_on_itself(star):
             enhance_constant = (fee + p_destroy * destruction) / p_success + constant[star + 1]
             enhance_coefficient = coefficient[star + 1]
         else:
@@ -228,53 +258,85 @@ def _sweep_back(
     return chosen, constant, coefficient
 
 
-def _restart_value(problem: _Problem, policy: BreakthroughPolicy) -> float:
-    """``V(start_star)`` for a fixed policy, solved exactly.
+def _base_value(problem: _Problem, policy: BreakthroughPolicy) -> float:
+    """``V(base_star)`` for a fixed policy, solved exactly.
 
-    ``V(start) = a + b V(start)`` where ``a`` and ``b`` come from one backward
-    pass, so the fixed point is ``a / (1 - b)``. ``b`` is the probability-weighted
-    share of runs that end up restarting, and it is strictly below one because
-    every star has a positive chance of being passed.
+    Every star is affine in this value, and the base star is itself one of them,
+    so ``V(base) = a + b V(base)`` closes to ``a / (1 - b)``. ``b`` is the
+    probability-weighted share of runs that fall back to the base, and it stays
+    below one because every star has a positive chance of being passed.
     """
     _, constant, coefficient = _sweep_back(problem, 0.0, policy)
-    a = constant[problem.start_star]
-    b = coefficient[problem.start_star]
+    a = constant[problem.base_star]
+    b = coefficient[problem.base_star]
     if b >= 1.0:
         raise RuntimeError(
-            f"the restart fixed point does not converge (coefficient {b}); "
-            f"this means a star can never be passed, which the rate tables rule out"
+            f"the fixed point at {problem.base_star} stars does not converge "
+            f"(coefficient {b}); this means a star can never be passed, which "
+            f"the rate tables rule out"
         )
     return a / (1.0 - b)
 
 
-#: Highest target whose FULL repair still returns an item where it was.
+def _solve(problem: _Problem, policy: BreakthroughPolicy) -> float:
+    """``V(start_star)`` for a fixed policy, read off the closed fixed point.
+
+    For a run that begins at the base - every SCROLL run, and an OWNED run held
+    at 22 stars - that is the fixed point itself. An OWNED run starting higher
+    is already partway up, and this is where that head start is priced in.
+    """
+    base = _base_value(problem, policy)
+    if problem.start_star == problem.base_star:
+        return base
+    _, constant, coefficient = _sweep_back(problem, base, policy)
+    return constant[problem.start_star] + coefficient[problem.start_star] * base
+
+
+#: Highest target a SCROLL run repairing in full is solved for.
 #:
-#: The recursion treats a destroyed star as an independent wait, which needs the
-#: repair to put the item back on that same star. A trace never records more
-#: than TRACE_STAR_CAP, so that holds only while the highest attempt - one below
-#: the target - is still at or under the cap.
+#: Above TRACE_STAR_CAP a destruction leaves a 22 star trace, so the item drops
+#: to 22 rather than back to where it was lost. The recursion handles that - it
+#: is how every OWNED run works - but it needs the fallback star to be the
+#: lowest one it covers, and a SCROLL run starts below 22. Solving one would
+#: mean carrying a second unknown, and nothing asks for it: sweep.py stops at 22
+#: stars and sweep_marginal.py answers the range above.
 MAX_FULL_REPAIR_TARGET = rules.TRACE_STAR_CAP + 1
 
 
-def _check_repair_reachable(target_star: int, repair_policy: RepairPolicy) -> None:
-    """Refuse a FULL repair target the recursion would answer wrongly.
+def _check_repair_reachable(
+    target_star: int, repair_policy: RepairPolicy, start_mode: StartMode
+) -> None:
+    """Refuse the one combination whose fallback star sits inside the range.
 
-    Past MAX_FULL_REPAIR_TARGET a destruction leaves a 22 star trace rather than
-    the star it happened on, so repairing drops the item below where it was and
-    the stars stop being independent. Solving it needs a different recursion,
-    not a wider bound - so this raises instead of returning a plausible number.
-
-    TO_12 is unaffected: it always lands on 12 stars and re-scrolls to the
-    start, whatever star the destruction happened on.
+    An OWNED run is unaffected: it never starts below 22, so 22 is both where a
+    destruction lands and the lowest star solved, which is exactly what the
+    recursion needs.
     """
-    if repair_policy is RepairPolicy.FULL and target_star > MAX_FULL_REPAIR_TARGET:
+    if (
+        start_mode is StartMode.SCROLL
+        and repair_policy is RepairPolicy.FULL
+        and target_star > MAX_FULL_REPAIR_TARGET
+    ):
         raise NotImplementedError(
-            f"a FULL repair run to {target_star} stars is not solved here: above "
-            f"{rules.TRACE_STAR_CAP} stars a destroyed item leaves a "
-            f"{rules.TRACE_STAR_CAP} star trace, so repairing it does not return "
-            f"it to the star it was lost on and the per-star recursion no longer "
-            f"holds. sweep_marginal.py measures that range instead"
+            f"a SCROLL run repairing in full to {target_star} stars is not solved "
+            f"here: above {rules.TRACE_STAR_CAP} stars a destroyed item drops to "
+            f"{rules.TRACE_STAR_CAP}, which is neither the star it was lost on nor "
+            f"the star the run began at, so the recursion would need a second "
+            f"unknown. sweep_marginal.py measures that range instead"
         )
+
+
+def base_star_for(start_star: int, start_mode: StartMode) -> int:
+    """The lowest star the recursion covers, and where a lost run falls back to.
+
+    A SCROLL run bottoms out where it began: below 23 stars a full repair puts
+    the item back on the star it was lost on, and a 12 star repair re-scrolls to
+    the start. An OWNED run always drops to the rebuild star, so it is solved
+    from there up even when it starts higher.
+    """
+    if start_mode is StartMode.SCROLL:
+        return start_star
+    return min(start_star, rules.REBUILD_STAR)
 
 
 def _check(
@@ -283,16 +345,30 @@ def _check(
     target_star: int,
     start_mode: StartMode,
     repair_policy: RepairPolicy,
+    rebuild_cost: int,
 ) -> None:
     rules.check_level(level)
-    if start_mode is not StartMode.SCROLL:
-        raise NotImplementedError(
-            "only SCROLL runs are solved here; an OWNED run's rebuild cost is "
-            "itself a measured figure, and sweep_marginal.py has not been "
-            "brought into this yet"
-        )
-    _check_repair_reachable(target_star, repair_policy)
-    rules.check_start_star(start_star)
+    _check_repair_reachable(target_star, repair_policy, start_mode)
+
+    if start_mode is StartMode.SCROLL:
+        rules.check_start_star(start_star)
+        if rebuild_cost:
+            raise ValueError(
+                "rebuild_cost applies to an OWNED run repairing to 12 stars only, "
+                f"got start_mode={start_mode.value}"
+            )
+    else:
+        if start_star < rules.REBUILD_STAR:
+            raise ValueError(
+                f"an OWNED run is priced against a {rules.REBUILD_STAR} star "
+                f"rebuild, so it must start at or above it, got {start_star}"
+            )
+        if repair_policy is RepairPolicy.TO_12 and rebuild_cost <= 0:
+            raise ValueError(
+                "an OWNED run repairing to 12 stars needs a positive rebuild_cost: "
+                f"the cost of climbing back to {rules.REBUILD_STAR} stars"
+            )
+
     if target_star <= start_star:
         raise ValueError(
             f"target_star must exceed start_star, got {start_star} -> {target_star}"
@@ -312,16 +388,21 @@ def expected_total(
     equipment_price: int,
     repair_policy: RepairPolicy = RepairPolicy.FULL,
     start_mode: StartMode = StartMode.SCROLL,
+    rebuild_cost: int = 0,
 ) -> float:
     """Exact expected total cost of following ``policy``, in meso.
 
     Exact in the sense that it is derived rather than sampled: no number of
-    trials would improve it. It covers the same three cost streams the engine
-    tracks - enhancement fees, repair meso and equipment, and both kinds of
-    scroll - and the opening star scroll the run is set up with.
+    trials would improve it. It covers the same cost streams the engine tracks -
+    enhancement fees, repair meso and equipment, both kinds of scroll, and an
+    OWNED run's rebuilds - plus the opening star scroll a SCROLL run is set up
+    with. An OWNED run buys nothing to begin: it already holds the item.
     """
-    _check(level, start_star, target_star, start_mode, repair_policy)
-    outside = [star for star in policy.stars if not start_star <= star < target_star]
+    _check(
+        level, start_star, target_star, start_mode, repair_policy, rebuild_cost
+    )
+    base = base_star_for(start_star, start_mode)
+    outside = [star for star in policy.stars if not base <= star < target_star]
     if outside:
         raise ValueError(
             f"policy {policy.name!r} names scrolls for stars {outside}, which this "
@@ -333,8 +414,16 @@ def expected_total(
         target_star=target_star,
         equipment_price=equipment_price,
         repair_policy=repair_policy,
+        start_mode=start_mode,
+        base_star=base,
+        rebuild_cost=rebuild_cost,
     )
-    return rules.star_scroll_cost(start_star) + _restart_value(problem, policy)
+    opening = (
+        rules.star_scroll_cost(start_star)
+        if start_mode is StartMode.SCROLL
+        else 0
+    )
+    return opening + _solve(problem, policy)
 
 
 def optimal_policy(
@@ -346,6 +435,7 @@ def optimal_policy(
     start_mode: StartMode = StartMode.SCROLL,
     deterministic_only: bool = False,
     name: str | None = None,
+    rebuild_cost: int = 0,
 ) -> BreakthroughPolicy:
     """The cheapest policy by expected total cost.
 
@@ -354,24 +444,30 @@ def optimal_policy(
     answer is about: at 21 stars the cheapest scroll by expectation is a 50%
     one, and paying more for certainty is a defensible thing to want.
 
-    Policy iteration: evaluate the current policy to get the value of
-    restarting, take the cheaper action at every star given that value, repeat.
-    Under FULL repair nothing restarts, so the first pass is already optimal.
+    Policy iteration: evaluate the current policy to get the value of falling
+    back to the base star, take the cheaper action at every star given that
+    value, repeat. Where nothing ever falls back - a SCROLL run repairing in
+    full - the first pass is already optimal.
     """
-    _check(level, start_star, target_star, start_mode, repair_policy)
+    _check(
+        level, start_star, target_star, start_mode, repair_policy, rebuild_cost
+    )
     problem = _Problem(
         level=level,
         start_star=start_star,
         target_star=target_star,
         equipment_price=equipment_price,
         repair_policy=repair_policy,
+        start_mode=start_mode,
+        base_star=base_star_for(start_star, start_mode),
+        rebuild_cost=rebuild_cost,
     )
     label = name or ("safe" if deterministic_only else "optimal")
 
     policy = BreakthroughPolicy(label)
     for _ in range(MAX_ROUNDS):
-        restart = _restart_value(problem, policy)
-        entries, _, _ = _sweep_back(problem, restart, None, deterministic_only)
+        base = _base_value(problem, policy)
+        entries, _, _ = _sweep_back(problem, base, None, deterministic_only)
         improved = BreakthroughPolicy(label, tuple(entries))
         if improved.entries == policy.entries:
             return improved
@@ -389,6 +485,8 @@ def sweep_policies(
     target_star: int,
     equipment_price: int,
     repair_policy: RepairPolicy = RepairPolicy.FULL,
+    start_mode: StartMode = StartMode.SCROLL,
+    rebuild_cost: int = 0,
 ) -> list[BreakthroughPolicy]:
     """The policies worth measuring for one combination.
 
@@ -397,18 +495,17 @@ def sweep_policies(
     the three can coincide, and duplicates are dropped: measuring the same
     policy twice would put two identical rows in the dataset.
     """
+    shared = (level, start_star, target_star, equipment_price, repair_policy)
     candidates = [
         NONE,
         optimal_policy(
-            level, start_star, target_star, equipment_price, repair_policy
+            *shared, start_mode=start_mode, rebuild_cost=rebuild_cost
         ),
         optimal_policy(
-            level,
-            start_star,
-            target_star,
-            equipment_price,
-            repair_policy,
+            *shared,
+            start_mode=start_mode,
             deterministic_only=True,
+            rebuild_cost=rebuild_cost,
         ),
     ]
 
