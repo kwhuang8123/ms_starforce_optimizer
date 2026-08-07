@@ -69,13 +69,27 @@ function bind() {
   el.marginal = document.querySelector("#best-marginal tbody");
 }
 
-function routeLabel(row) {
-  const base = `${row.start_star} 星起手・${POLICY_LABEL[row.repair_policy]}`;
+/** Which scrolls a row buys, on a line of its own, or nothing when it buys none. */
+function scrollLine(row) {
   const entries = row.breakthrough_entries;
   if (!entries || entries.length === 0) {
-    return base;
+    return "";
   }
-  return `${base}<br><span class="muted">${describe({ entries })}</span>`;
+  return `<br><span class="muted">${describe({ entries })}</span>`;
+}
+
+function routeLabel(row) {
+  return (
+    `${row.start_star} 星起手・${POLICY_LABEL[row.repair_policy]}` + scrollLine(row)
+  );
+}
+
+/**
+ * The same thing without the starting star, for a table that already filters by
+ * it - repeating "22 星起手" down every row of the 22 star view says nothing.
+ */
+function repairLabel(row) {
+  return POLICY_LABEL[row.repair_policy] + scrollLine(row);
 }
 
 /** Targets whose breakthrough policies the sweep actually explored. */
@@ -608,7 +622,7 @@ function renderMarginal(prices) {
     lines.push(`<tr>
       <td>${best.equipment}</td>
       <td class="num">${best.target_star} 星</td>
-      <td>${POLICY_LABEL[best.repair_policy]}</td>
+      <td>${repairLabel(best)}</td>
       <td class="num strong">${formatYi(best.repriced)}</td>
       <td class="num">${formatYi(percentile(best, "50"))}</td>
       <td class="num">${formatYi(percentile(best, "95"))}</td>

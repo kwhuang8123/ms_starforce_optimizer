@@ -297,12 +297,30 @@ class RepriceTest(unittest.TestCase):
                     self.assertEqual(row["scrolls_mean"], 0.0)
 
     def test_a_rebuild_count_appears_only_where_a_rebuild_is_priced(self) -> None:
+        # One direction only. A priced rebuild is not always used: a policy that
+        # buys a scroll at every star never enhances, so nothing can be
+        # destroyed and the rebuild - correctly priced, in case one were - is
+        # never charged. The rule is that a rebuild charged must be one priced.
         for name, row, _ in self.rows():
             with self.subTest(dataset=name, policy=row["repair_policy"]):
+                if row["rebuild_count_mean"] > 0:
+                    self.assertGreater(row["rebuild_cost"], 0)
                 if row["rebuild_cost"] == 0:
                     self.assertEqual(row["rebuild_count_mean"], 0.0)
-                else:
-                    self.assertGreater(row["rebuild_count_mean"], 0.0)
+
+    def test_a_run_that_never_enhances_never_destroys_or_rebuilds(self) -> None:
+        # The zero-variance case: every star bought outright, nothing rolled.
+        seen = 0
+        for name, row, _ in self.rows():
+            if row["attempts_mean"] != 0:
+                continue
+            seen += 1
+            with self.subTest(dataset=name, row=row["equipment"], target=row["target_star"]):
+                self.assertTrue(row["breakthrough_counts_mean"])
+                self.assertEqual(row["destroys_mean"], 0.0)
+                self.assertEqual(row["rebuild_count_mean"], 0.0)
+                self.assertEqual(row["equipment_mean"], 0.0)
+        self.assertGreater(seen, 0, "沒有任何一列是零次強化，這個測試就沒在測東西")
 
     def test_the_golden_cases_were_measured_not_derived(self) -> None:
         # The expectation must come from a second simulation at the new prices,

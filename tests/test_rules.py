@@ -100,9 +100,9 @@ class StartStarTest(unittest.TestCase):
 
 class StarScrollTest(unittest.TestCase):
     def test_cost_is_returned(self) -> None:
-        self.assertEqual(rules.star_scroll_cost(15), 20_000_000)
-        self.assertEqual(rules.star_scroll_cost(17), 960_000_000)
-        self.assertEqual(rules.star_scroll_cost(20), 21_600_000_000)
+        self.assertEqual(rules.star_scroll_cost(15), 15_000_000)
+        self.assertEqual(rules.star_scroll_cost(17), 700_000_000)
+        self.assertEqual(rules.star_scroll_cost(20), 17_700_000_000)
 
     def test_star_outside_the_scroll_range_raises(self) -> None:
         for star in (9, 14, 21):
@@ -126,9 +126,9 @@ class BreakthroughTest(unittest.TestCase):
                     rules.check_breakthrough(*pair)
 
     def test_cost_is_returned(self) -> None:
-        self.assertEqual(rules.breakthrough_cost(21, 10_000), 17_800_000_000)
-        self.assertEqual(rules.breakthrough_cost(23, 3_000), 13_000_000_000)
-        self.assertEqual(rules.breakthrough_cost(26, 5_000), 460_000_000_000)
+        self.assertEqual(rules.breakthrough_cost(21, 10_000), 15_200_000_000)
+        self.assertEqual(rules.breakthrough_cost(23, 3_000), 8_700_000_000)
+        self.assertEqual(rules.breakthrough_cost(26, 5_000), 380_000_000_000)
 
     def test_a_scroll_that_does_not_exist_has_no_cost(self) -> None:
         with self.assertRaises(ValueError):

@@ -1,28 +1,28 @@
 {
- "generated_at": "2026-08-05T21:10:41+00:00",
+ "generated_at": "2026-08-06T17:55:19+00:00",
  "rate_basis": 10000,
  "star_scroll_cost": {
-  "15": 20000000,
+  "15": 15000000,
   "16": 100000000,
-  "17": 960000000,
-  "18": 1630000000,
-  "19": 4700000000,
-  "20": 21600000000
+  "17": 700000000,
+  "18": 1300000000,
+  "19": 4300000000,
+  "20": 17700000000
  },
  "breakthrough_scroll_cost": {
-  "21-10000": 17800000000,
-  "22-10000": 36200000000,
-  "23-3000": 13000000000,
-  "23-5000": 17000000000,
-  "23-10000": 42300000000,
-  "24-3000": 22800000000,
-  "24-5000": 38000000000,
-  "24-10000": 80000000000,
-  "25-3000": 100000000000,
-  "25-5000": 160000000000,
-  "25-10000": 380000000000,
-  "26-3000": 310000000000,
-  "26-5000": 460000000000
+  "21-10000": 15200000000,
+  "22-10000": 27500000000,
+  "23-3000": 8700000000,
+  "23-5000": 12600000000,
+  "23-10000": 30000000000,
+  "24-3000": 17500000000,
+  "24-5000": 26800000000,
+  "24-10000": 74000000000,
+  "25-3000": 72000000000,
+  "25-5000": 126100000000,
+  "25-10000": 293300000000,
+  "26-3000": 220000000000,
+  "26-5000": 380000000000
  },
  "cases": [
   {
@@ -67,14 +67,14 @@
     "star": 19,
     "destroyed": false,
     "totals": {
-     "total_meso": 6208489500,
+     "total_meso": 6203489500,
      "equipment_used": 2,
      "equipment_cost": 300000000,
      "scrolls_used": 1,
      "breakthroughs_used": 0,
      "attempts": 22,
      "destroys": 2,
-     "total_cost": 6508489500,
+     "total_cost": 6503489500,
      "attempts_by_star": {
       "15": 1,
       "16": 3,
@@ -89,10 +89,10 @@
       "star_before": 0,
       "star_after": 15,
       "outcome": null,
-      "meso": 20000000,
+      "meso": 15000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 20000000
+      "total_cost_after": 15000000
      },
      {
       "index": 2,
@@ -103,7 +103,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 68139000
+      "total_cost_after": 63139000
      },
      {
       "index": 3,
@@ -114,7 +114,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 127201500
+      "total_cost_after": 122201500
      },
      {
       "index": 4,
@@ -125,7 +125,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 186264000
+      "total_cost_after": 181264000
      },
      {
       "index": 5,
@@ -136,7 +136,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 245326500
+      "total_cost_after": 240326500
      },
      {
       "index": 6,
@@ -147,7 +147,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 320510000
+      "total_cost_after": 315510000
      },
      {
       "index": 7,
@@ -158,7 +158,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 395693500
+      "total_cost_after": 390693500
      },
      {
       "index": 8,
@@ -169,7 +169,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 470877000
+      "total_cost_after": 465877000
      },
      {
       "index": 9,
@@ -180,7 +180,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 546060500
+      "total_cost_after": 541060500
      },
      {
       "index": 10,
@@ -191,7 +191,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 621244000
+      "total_cost_after": 616244000
      },
      {
       "index": 11,
@@ -202,7 +202,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 696427500
+      "total_cost_after": 691427500
      },
      {
       "index": 12,
@@ -213,7 +213,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 771611000
+      "total_cost_after": 766611000
      },
      {
       "index": 13,
@@ -224,7 +224,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 846794500
+      "total_cost_after": 841794500
      },
      {
       "index": 14,
@@ -235,7 +235,7 @@
       "meso": 1110000000,
       "equipment_used": 1,
       "equipment_cost": 150000000,
-      "total_cost_after": 2106794500
+      "total_cost_after": 2101794500
      },
      {
       "index": 15,
@@ -246,7 +246,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2181978000
+      "total_cost_after": 2176978000
      },
      {
       "index": 16,
@@ -257,7 +257,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2257161500
+      "total_cost_after": 2252161500
      },
      {
       "index": 17,
@@ -268,7 +268,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2469827500
+      "total_cost_after": 2464827500
      },
      {
       "index": 18,
@@ -279,7 +279,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2682493500
+      "total_cost_after": 2677493500
      },
      {
       "index": 19,
@@ -290,7 +290,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2895159500
+      "total_cost_after": 2890159500
      },
      {
       "index": 20,
@@ -301,7 +301,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3107825500
+      "total_cost_after": 3102825500
      },
      {
       "index": 21,
@@ -312,7 +312,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3320491500
+      "total_cost_after": 3315491500
      },
      {
       "index": 22,
@@ -323,7 +323,7 @@
       "meso": 2400000000,
       "equipment_used": 1,
       "equipment_cost": 150000000,
-      "total_cost_after": 5870491500
+      "total_cost_after": 5865491500
      },
      {
       "index": 23,
@@ -334,7 +334,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6083157500
+      "total_cost_after": 6078157500
      },
      {
       "index": 24,
@@ -345,7 +345,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6295823500
+      "total_cost_after": 6290823500
      },
      {
       "index": 25,
@@ -356,11 +356,11 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6508489500
+      "total_cost_after": 6503489500
      }
     ],
     "stop_reason": "reached_target",
-    "spent": 6508489500
+    "spent": 6503489500
    }
   },
   {
@@ -505,14 +505,14 @@
     "star": 19,
     "destroyed": false,
     "totals": {
-     "total_meso": 11408074500,
+     "total_meso": 11353074500,
      "equipment_used": 10,
      "equipment_cost": 1500000000,
      "scrolls_used": 11,
      "breakthroughs_used": 0,
      "attempts": 122,
      "destroys": 10,
-     "total_cost": 12908074500,
+     "total_cost": 12853074500,
      "attempts_by_star": {
       "15": 23,
       "16": 24,
@@ -527,10 +527,10 @@
       "star_before": 0,
       "star_after": 15,
       "outcome": null,
-      "meso": 20000000,
+      "meso": 15000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 20000000
+      "total_cost_after": 15000000
      },
      {
       "index": 2,
@@ -541,7 +541,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 68139000
+      "total_cost_after": 63139000
      },
      {
       "index": 3,
@@ -552,7 +552,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 127201500
+      "total_cost_after": 122201500
      },
      {
       "index": 4,
@@ -563,7 +563,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 186264000
+      "total_cost_after": 181264000
      },
      {
       "index": 5,
@@ -574,7 +574,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 245326500
+      "total_cost_after": 240326500
      },
      {
       "index": 6,
@@ -585,7 +585,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 320510000
+      "total_cost_after": 315510000
      },
      {
       "index": 7,
@@ -596,7 +596,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 395693500
+      "total_cost_after": 390693500
      },
      {
       "index": 8,
@@ -607,7 +607,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 470877000
+      "total_cost_after": 465877000
      },
      {
       "index": 9,
@@ -618,7 +618,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 546060500
+      "total_cost_after": 541060500
      },
      {
       "index": 10,
@@ -629,7 +629,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 621244000
+      "total_cost_after": 616244000
      },
      {
       "index": 11,
@@ -640,7 +640,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 696427500
+      "total_cost_after": 691427500
      },
      {
       "index": 12,
@@ -651,7 +651,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 771611000
+      "total_cost_after": 766611000
      },
      {
       "index": 13,
@@ -662,7 +662,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 846794500
+      "total_cost_after": 841794500
      },
      {
       "index": 14,
@@ -673,7 +673,7 @@
       "meso": 0,
       "equipment_used": 1,
       "equipment_cost": 150000000,
-      "total_cost_after": 996794500
+      "total_cost_after": 991794500
      },
      {
       "index": 15,
@@ -681,10 +681,10 @@
       "star_before": 12,
       "star_after": 15,
       "outcome": null,
-      "meso": 20000000,
+      "meso": 15000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1016794500
+      "total_cost_after": 1006794500
      },
      {
       "index": 16,
@@ -695,7 +695,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1064933500
+      "total_cost_after": 1054933500
      },
      {
       "index": 17,
@@ -706,7 +706,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1113072500
+      "total_cost_after": 1103072500
      },
      {
       "index": 18,
@@ -717,7 +717,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1172135000
+      "total_cost_after": 1162135000
      },
      {
       "index": 19,
@@ -728,7 +728,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1247318500
+      "total_cost_after": 1237318500
      },
      {
       "index": 20,
@@ -739,7 +739,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1322502000
+      "total_cost_after": 1312502000
      },
      {
       "index": 21,
@@ -750,7 +750,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1397685500
+      "total_cost_after": 1387685500
      },
      {
       "index": 22,
@@ -761,7 +761,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1472869000
+      "total_cost_after": 1462869000
      },
      {
       "index": 23,
@@ -772,7 +772,7 @@
       "meso": 0,
       "equipment_used": 1,
       "equipment_cost": 150000000,
-      "total_cost_after": 1622869000
+      "total_cost_after": 1612869000
      },
      {
       "index": 24,
@@ -780,10 +780,10 @@
       "star_before": 12,
       "star_after": 15,
       "outcome": null,
-      "meso": 20000000,
+      "meso": 15000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1642869000
+      "total_cost_after": 1627869000
      },
      {
       "index": 25,
@@ -794,7 +794,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1691008000
+      "total_cost_after": 1676008000
      },
      {
       "index": 26,
@@ -805,7 +805,7 @@
       "meso": 0,
       "equipment_used": 1,
       "equipment_cost": 150000000,
-      "total_cost_after": 1841008000
+      "total_cost_after": 1826008000
      },
      {
       "index": 27,
@@ -813,10 +813,10 @@
       "star_before": 12,
       "star_after": 15,
       "outcome": null,
-      "meso": 20000000,
+      "meso": 15000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1861008000
+      "total_cost_after": 1841008000
      },
      {
       "index": 28,
@@ -827,7 +827,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1909147000
+      "total_cost_after": 1889147000
      },
      {
       "index": 29,
@@ -838,7 +838,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1957286000
+      "total_cost_after": 1937286000
      },
      {
       "index": 30,
@@ -849,7 +849,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2016348500
+      "total_cost_after": 1996348500
      },
      {
       "index": 31,
@@ -860,7 +860,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2075411000
+      "total_cost_after": 2055411000
      },
      {
       "index": 32,
@@ -871,7 +871,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2150594500
+      "total_cost_after": 2130594500
      },
      {
       "index": 33,
@@ -882,7 +882,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2225778000
+      "total_cost_after": 2205778000
      },
      {
       "index": 34,
@@ -893,7 +893,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2300961500
+      "total_cost_after": 2280961500
      },
      {
       "index": 35,
@@ -904,7 +904,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2376145000
+      "total_cost_after": 2356145000
      },
      {
       "index": 36,
@@ -915,7 +915,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2451328500
+      "total_cost_after": 2431328500
      },
      {
       "index": 37,
@@ -926,7 +926,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2663994500
+      "total_cost_after": 2643994500
      },
      {
       "index": 38,
@@ -937,7 +937,7 @@
       "meso": 0,
       "equipment_used": 1,
       "equipment_cost": 150000000,
-      "total_cost_after": 2813994500
+      "total_cost_after": 2793994500
      },
      {
       "index": 39,
@@ -945,10 +945,10 @@
       "star_before": 12,
       "star_after": 15,
       "outcome": null,
-      "meso": 20000000,
+      "meso": 15000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2833994500
+      "total_cost_after": 2808994500
      },
      {
       "index": 40,
@@ -959,7 +959,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2882133500
+      "total_cost_after": 2857133500
      },
      {
       "index": 41,
@@ -970,7 +970,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 2941196000
+      "total_cost_after": 2916196000
      },
      {
       "index": 42,
@@ -981,7 +981,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3000258500
+      "total_cost_after": 2975258500
      },
      {
       "index": 43,
@@ -992,7 +992,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3059321000
+      "total_cost_after": 3034321000
      },
      {
       "index": 44,
@@ -1003,7 +1003,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3134504500
+      "total_cost_after": 3109504500
      },
      {
       "index": 45,
@@ -1014,7 +1014,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3209688000
+      "total_cost_after": 3184688000
      },
      {
       "index": 46,
@@ -1025,7 +1025,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3284871500
+      "total_cost_after": 3259871500
      },
      {
       "index": 47,
@@ -1036,7 +1036,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3360055000
+      "total_cost_after": 3335055000
      },
      {
       "index": 48,
@@ -1047,7 +1047,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3435238500
+      "total_cost_after": 3410238500
      },
      {
       "index": 49,
@@ -1058,7 +1058,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3510422000
+      "total_cost_after": 3485422000
      },
      {
       "index": 50,
@@ -1069,7 +1069,7 @@
       "meso": 0,
       "equipment_used": 1,
       "equipment_cost": 150000000,
-      "total_cost_after": 3660422000
+      "total_cost_after": 3635422000
      },
      {
       "index": 51,
@@ -1077,10 +1077,10 @@
       "star_before": 12,
       "star_after": 15,
       "outcome": null,
-      "meso": 20000000,
+      "meso": 15000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3680422000
+      "total_cost_after": 3650422000
      },
      {
       "index": 52,
@@ -1091,7 +1091,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3728561000
+      "total_cost_after": 3698561000
      },
      {
       "index": 53,
@@ -1102,7 +1102,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3776700000
+      "total_cost_after": 3746700000
      },
      {
       "index": 54,
@@ -1113,7 +1113,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3824839000
+      "total_cost_after": 3794839000
      },
      {
       "index": 55,
@@ -1124,7 +1124,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3872978000
+      "total_cost_after": 3842978000
      },
      {
       "index": 56,
@@ -1135,7 +1135,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3921117000
+      "total_cost_after": 3891117000
      },
      {
       "index": 57,
@@ -1146,7 +1146,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 3980179500
+      "total_cost_after": 3950179500
      },
      {
       "index": 58,
@@ -1157,7 +1157,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 4039242000
+      "total_cost_after": 4009242000
      },
      {
       "index": 59,
@@ -1168,7 +1168,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 4098304500
+      "total_cost_after": 4068304500
      },
      {
       "index": 60,
@@ -1179,7 +1179,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 4173488000
+      "total_cost_after": 4143488000
      },
      {
       "index": 61,
@@ -1190,7 +1190,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 4248671500
+      "total_cost_after": 4218671500
      },
      {
       "index": 62,
@@ -1201,7 +1201,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 4323855000
+      "total_cost_after": 4293855000
      },
      {
       "index": 63,
@@ -1212,7 +1212,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 4399038500
+      "total_cost_after": 4369038500
      },
      {
       "index": 64,
@@ -1223,7 +1223,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 4474222000
+      "total_cost_after": 4444222000
      },
      {
       "index": 65,
@@ -1234,7 +1234,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 4549405500
+      "total_cost_after": 4519405500
      },
      {
       "index": 66,
@@ -1245,7 +1245,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 4624589000
+      "total_cost_after": 4594589000
      },
      {
       "index": 67,
@@ -1256,7 +1256,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 4699772500
+      "total_cost_after": 4669772500
      },
      {
       "index": 68,
@@ -1267,7 +1267,7 @@
       "meso": 0,
       "equipment_used": 1,
       "equipment_cost": 150000000,
-      "total_cost_after": 4849772500
+      "total_cost_after": 4819772500
      },
      {
       "index": 69,
@@ -1275,10 +1275,10 @@
       "star_before": 12,
       "star_after": 15,
       "outcome": null,
-      "meso": 20000000,
+      "meso": 15000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 4869772500
+      "total_cost_after": 4834772500
      },
      {
       "index": 70,
@@ -1289,7 +1289,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 4917911500
+      "total_cost_after": 4882911500
      },
      {
       "index": 71,
@@ -1300,7 +1300,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 4976974000
+      "total_cost_after": 4941974000
      },
      {
       "index": 72,
@@ -1311,7 +1311,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5036036500
+      "total_cost_after": 5001036500
      },
      {
       "index": 73,
@@ -1322,7 +1322,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5095099000
+      "total_cost_after": 5060099000
      },
      {
       "index": 74,
@@ -1333,7 +1333,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5154161500
+      "total_cost_after": 5119161500
      },
      {
       "index": 75,
@@ -1344,7 +1344,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5213224000
+      "total_cost_after": 5178224000
      },
      {
       "index": 76,
@@ -1355,7 +1355,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5272286500
+      "total_cost_after": 5237286500
      },
      {
       "index": 77,
@@ -1366,7 +1366,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5331349000
+      "total_cost_after": 5296349000
      },
      {
       "index": 78,
@@ -1377,7 +1377,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5390411500
+      "total_cost_after": 5355411500
      },
      {
       "index": 79,
@@ -1388,7 +1388,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5465595000
+      "total_cost_after": 5430595000
      },
      {
       "index": 80,
@@ -1399,7 +1399,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5540778500
+      "total_cost_after": 5505778500
      },
      {
       "index": 81,
@@ -1410,7 +1410,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5615962000
+      "total_cost_after": 5580962000
      },
      {
       "index": 82,
@@ -1421,7 +1421,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5691145500
+      "total_cost_after": 5656145500
      },
      {
       "index": 83,
@@ -1432,7 +1432,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5766329000
+      "total_cost_after": 5731329000
      },
      {
       "index": 84,
@@ -1443,7 +1443,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5841512500
+      "total_cost_after": 5806512500
      },
      {
       "index": 85,
@@ -1454,7 +1454,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 5916696000
+      "total_cost_after": 5881696000
      },
      {
       "index": 86,
@@ -1465,7 +1465,7 @@
       "meso": 0,
       "equipment_used": 1,
       "equipment_cost": 150000000,
-      "total_cost_after": 6066696000
+      "total_cost_after": 6031696000
      },
      {
       "index": 87,
@@ -1473,10 +1473,10 @@
       "star_before": 12,
       "star_after": 15,
       "outcome": null,
-      "meso": 20000000,
+      "meso": 15000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6086696000
+      "total_cost_after": 6046696000
      },
      {
       "index": 88,
@@ -1487,7 +1487,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6134835000
+      "total_cost_after": 6094835000
      },
      {
       "index": 89,
@@ -1498,7 +1498,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6182974000
+      "total_cost_after": 6142974000
      },
      {
       "index": 90,
@@ -1509,7 +1509,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6231113000
+      "total_cost_after": 6191113000
      },
      {
       "index": 91,
@@ -1520,7 +1520,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6279252000
+      "total_cost_after": 6239252000
      },
      {
       "index": 92,
@@ -1531,7 +1531,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6327391000
+      "total_cost_after": 6287391000
      },
      {
       "index": 93,
@@ -1542,7 +1542,7 @@
       "meso": 0,
       "equipment_used": 1,
       "equipment_cost": 150000000,
-      "total_cost_after": 6477391000
+      "total_cost_after": 6437391000
      },
      {
       "index": 94,
@@ -1550,10 +1550,10 @@
       "star_before": 12,
       "star_after": 15,
       "outcome": null,
-      "meso": 20000000,
+      "meso": 15000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6497391000
+      "total_cost_after": 6452391000
      },
      {
       "index": 95,
@@ -1564,7 +1564,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6545530000
+      "total_cost_after": 6500530000
      },
      {
       "index": 96,
@@ -1575,7 +1575,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6604592500
+      "total_cost_after": 6559592500
      },
      {
       "index": 97,
@@ -1586,7 +1586,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6663655000
+      "total_cost_after": 6618655000
      },
      {
       "index": 98,
@@ -1597,7 +1597,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6738838500
+      "total_cost_after": 6693838500
      },
      {
       "index": 99,
@@ -1608,7 +1608,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6814022000
+      "total_cost_after": 6769022000
      },
      {
       "index": 100,
@@ -1619,7 +1619,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6889205500
+      "total_cost_after": 6844205500
      },
      {
       "index": 101,
@@ -1630,7 +1630,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 6964389000
+      "total_cost_after": 6919389000
      },
      {
       "index": 102,
@@ -1641,7 +1641,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 7177055000
+      "total_cost_after": 7132055000
      },
      {
       "index": 103,
@@ -1652,7 +1652,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 7389721000
+      "total_cost_after": 7344721000
      },
      {
       "index": 104,
@@ -1663,7 +1663,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 7602387000
+      "total_cost_after": 7557387000
      },
      {
       "index": 105,
@@ -1674,7 +1674,7 @@
       "meso": 0,
       "equipment_used": 1,
       "equipment_cost": 150000000,
-      "total_cost_after": 7752387000
+      "total_cost_after": 7707387000
      },
      {
       "index": 106,
@@ -1682,10 +1682,10 @@
       "star_before": 12,
       "star_after": 15,
       "outcome": null,
-      "meso": 20000000,
+      "meso": 15000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 7772387000
+      "total_cost_after": 7722387000
      },
      {
       "index": 107,
@@ -1696,7 +1696,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 7820526000
+      "total_cost_after": 7770526000
      },
      {
       "index": 108,
@@ -1707,7 +1707,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 7868665000
+      "total_cost_after": 7818665000
      },
      {
       "index": 109,
@@ -1718,7 +1718,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 7927727500
+      "total_cost_after": 7877727500
      },
      {
       "index": 110,
@@ -1729,7 +1729,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8002911000
+      "total_cost_after": 7952911000
      },
      {
       "index": 111,
@@ -1740,7 +1740,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8078094500
+      "total_cost_after": 8028094500
      },
      {
       "index": 112,
@@ -1751,7 +1751,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8153278000
+      "total_cost_after": 8103278000
      },
      {
       "index": 113,
@@ -1762,7 +1762,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8228461500
+      "total_cost_after": 8178461500
      },
      {
       "index": 114,
@@ -1773,7 +1773,7 @@
       "meso": 0,
       "equipment_used": 1,
       "equipment_cost": 150000000,
-      "total_cost_after": 8378461500
+      "total_cost_after": 8328461500
      },
      {
       "index": 115,
@@ -1781,10 +1781,10 @@
       "star_before": 12,
       "star_after": 15,
       "outcome": null,
-      "meso": 20000000,
+      "meso": 15000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8398461500
+      "total_cost_after": 8343461500
      },
      {
       "index": 116,
@@ -1795,7 +1795,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8446600500
+      "total_cost_after": 8391600500
      },
      {
       "index": 117,
@@ -1806,7 +1806,7 @@
       "meso": 48139000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8494739500
+      "total_cost_after": 8439739500
      },
      {
       "index": 118,
@@ -1817,7 +1817,7 @@
       "meso": 59062500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8553802000
+      "total_cost_after": 8498802000
      },
      {
       "index": 119,
@@ -1828,7 +1828,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8628985500
+      "total_cost_after": 8573985500
      },
      {
       "index": 120,
@@ -1839,7 +1839,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8704169000
+      "total_cost_after": 8649169000
      },
      {
       "index": 121,
@@ -1850,7 +1850,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8779352500
+      "total_cost_after": 8724352500
      },
      {
       "index": 122,
@@ -1861,7 +1861,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8854536000
+      "total_cost_after": 8799536000
      },
      {
       "index": 123,
@@ -1872,7 +1872,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 8929719500
+      "total_cost_after": 8874719500
      },
      {
       "index": 124,
@@ -1883,7 +1883,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 9004903000
+      "total_cost_after": 8949903000
      },
      {
       "index": 125,
@@ -1894,7 +1894,7 @@
       "meso": 75183500,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 9080086500
+      "total_cost_after": 9025086500
      },
      {
       "index": 126,
@@ -1905,7 +1905,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 9292752500
+      "total_cost_after": 9237752500
      },
      {
       "index": 127,
@@ -1916,7 +1916,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 9505418500
+      "total_cost_after": 9450418500
      },
      {
       "index": 128,
@@ -1927,7 +1927,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 9718084500
+      "total_cost_after": 9663084500
      },
      {
       "index": 129,
@@ -1938,7 +1938,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 9930750500
+      "total_cost_after": 9875750500
      },
      {
       "index": 130,
@@ -1949,7 +1949,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 10143416500
+      "total_cost_after": 10088416500
      },
      {
       "index": 131,
@@ -1960,7 +1960,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 10356082500
+      "total_cost_after": 10301082500
      },
      {
       "index": 132,
@@ -1971,7 +1971,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 10568748500
+      "total_cost_after": 10513748500
      },
      {
       "index": 133,
@@ -1982,7 +1982,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 10781414500
+      "total_cost_after": 10726414500
      },
      {
       "index": 134,
@@ -1993,7 +1993,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 10994080500
+      "total_cost_after": 10939080500
      },
      {
       "index": 135,
@@ -2004,7 +2004,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 11206746500
+      "total_cost_after": 11151746500
      },
      {
       "index": 136,
@@ -2015,7 +2015,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 11419412500
+      "total_cost_after": 11364412500
      },
      {
       "index": 137,
@@ -2026,7 +2026,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 11632078500
+      "total_cost_after": 11577078500
      },
      {
       "index": 138,
@@ -2037,7 +2037,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 11844744500
+      "total_cost_after": 11789744500
      },
      {
       "index": 139,
@@ -2048,7 +2048,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 12057410500
+      "total_cost_after": 12002410500
      },
      {
       "index": 140,
@@ -2059,7 +2059,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 12270076500
+      "total_cost_after": 12215076500
      },
      {
       "index": 141,
@@ -2070,7 +2070,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 12482742500
+      "total_cost_after": 12427742500
      },
      {
       "index": 142,
@@ -2081,7 +2081,7 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 12695408500
+      "total_cost_after": 12640408500
      },
      {
       "index": 143,
@@ -2092,11 +2092,11 @@
       "meso": 212666000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 12908074500
+      "total_cost_after": 12853074500
      }
     ],
     "stop_reason": "reached_target",
-    "spent": 12908074500
+    "spent": 12853074500
    }
   },
   {
@@ -3183,14 +3183,14 @@
     "star": 16,
     "destroyed": false,
     "totals": {
-     "total_meso": 247277800,
+     "total_meso": 242277800,
      "equipment_used": 1,
      "equipment_cost": 1000000000,
      "scrolls_used": 1,
      "breakthroughs_used": 0,
      "attempts": 2,
      "destroys": 1,
-     "total_cost": 1247277800,
+     "total_cost": 1242277800,
      "attempts_by_star": {
       "15": 2
      }
@@ -3202,10 +3202,10 @@
       "star_before": 0,
       "star_after": 15,
       "outcome": null,
-      "meso": 20000000,
+      "meso": 15000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 20000000
+      "total_cost_after": 15000000
      },
      {
       "index": 2,
@@ -3216,7 +3216,7 @@
       "meso": 39138900,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 59138900
+      "total_cost_after": 54138900
      },
      {
       "index": 3,
@@ -3227,7 +3227,7 @@
       "meso": 149000000,
       "equipment_used": 1,
       "equipment_cost": 1000000000,
-      "total_cost_after": 1208138900
+      "total_cost_after": 1203138900
      },
      {
       "index": 4,
@@ -3238,7 +3238,7 @@
       "meso": 39138900,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 1247277800
+      "total_cost_after": 1242277800
      }
     ]
    }
@@ -3275,14 +3275,14 @@
     "star": 20,
     "destroyed": false,
     "totals": {
-     "total_meso": 21811534400,
+     "total_meso": 17911534400,
      "equipment_used": 1,
      "equipment_cost": 2000000000,
      "scrolls_used": 1,
      "breakthroughs_used": 0,
      "attempts": 2,
      "destroys": 1,
-     "total_cost": 23811534400,
+     "total_cost": 19911534400,
      "attempts_by_star": {
       "20": 1,
       "25": 1
@@ -3317,10 +3317,10 @@
       "star_before": 12,
       "star_after": 20,
       "outcome": null,
-      "meso": 21600000000,
+      "meso": 17700000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 23735444400
+      "total_cost_after": 19835444400
      },
      {
       "index": 4,
@@ -3331,7 +3331,7 @@
       "meso": 76090000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 23811534400
+      "total_cost_after": 19911534400
      }
     ]
    }
@@ -3368,14 +3368,14 @@
     "star": 23,
     "destroyed": false,
     "totals": {
-     "total_meso": 45813124000,
+     "total_meso": 35213124000,
      "equipment_used": 0,
      "equipment_cost": 0,
      "scrolls_used": 0,
      "breakthroughs_used": 2,
      "attempts": 1,
      "destroys": 0,
-     "total_cost": 45813124000,
+     "total_cost": 35213124000,
      "attempts_by_star": {
       "23": 1
      }
@@ -3387,10 +3387,10 @@
       "star_before": 22,
       "star_after": 23,
       "outcome": "success",
-      "meso": 22800000000,
+      "meso": 17500000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 22800000000
+      "total_cost_after": 17500000000
      },
      {
       "index": 2,
@@ -3398,10 +3398,10 @@
       "star_before": 23,
       "star_after": 23,
       "outcome": "maintain",
-      "meso": 22800000000,
+      "meso": 17500000000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 45600000000
+      "total_cost_after": 35000000000
      },
      {
       "index": 3,
@@ -3412,7 +3412,7 @@
       "meso": 213124000,
       "equipment_used": 0,
       "equipment_cost": 0,
-      "total_cost_after": 45813124000
+      "total_cost_after": 35213124000
      }
     ]
    }
@@ -3430,11 +3430,11 @@
    "expected": {
     "optimal": {
      "entries": [],
-     "expected_total": 24897265333
+     "expected_total": 24892265333
     },
     "safe": {
      "entries": [],
-     "expected_total": 24897265333
+     "expected_total": 24892265333
     }
    }
   },
@@ -3449,11 +3449,11 @@
    "expected": {
     "optimal": {
      "entries": [],
-     "expected_total": 24672467705
+     "expected_total": 24615890584
     },
     "safe": {
      "entries": [],
-     "expected_total": 24672467705
+     "expected_total": 24615890584
     }
    }
   },
@@ -3474,7 +3474,7 @@
        10000
       ]
      ],
-     "expected_total": 56291299667
+     "expected_total": 53686299667
     },
     "safe": {
      "entries": [
@@ -3484,7 +3484,7 @@
        10000
       ]
      ],
-     "expected_total": 56291299667
+     "expected_total": 53686299667
     }
    }
   },
@@ -3498,12 +3498,24 @@
    "repair_policy": "to_12",
    "expected": {
     "optimal": {
-     "entries": [],
-     "expected_total": 55020579689
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ]
+     ],
+     "expected_total": 52513082367
     },
     "safe": {
-     "entries": [],
-     "expected_total": 55020579689
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ]
+     ],
+     "expected_total": 52513082367
     }
    }
   },
@@ -3539,7 +3551,7 @@
        5000
       ]
      ],
-     "expected_total": 103825867667
+     "expected_total": 87220867667
     },
     "safe": {
      "entries": [
@@ -3564,7 +3576,7 @@
        10000
       ]
      ],
-     "expected_total": 106025867667
+     "expected_total": 89520867667
     }
    }
   },
@@ -3600,7 +3612,7 @@
        5000
       ]
      ],
-     "expected_total": 104497313438
+     "expected_total": 87888993831
     },
     "safe": {
      "entries": [
@@ -3625,7 +3637,7 @@
        10000
       ]
      ],
-     "expected_total": 106697313438
+     "expected_total": 90188993831
     }
    }
   },
@@ -3656,7 +3668,7 @@
        5000
       ]
      ],
-     "expected_total": 74300000000
+     "expected_total": 59900000000
     },
     "safe": {
      "entries": [
@@ -3676,7 +3688,7 @@
        10000
       ]
      ],
-     "expected_total": 76500000000
+     "expected_total": 62200000000
     }
    }
   },
@@ -3702,7 +3714,7 @@
        5000
       ]
      ],
-     "expected_total": 72570374667
+     "expected_total": 59720374667
     },
     "safe": {
      "entries": [
@@ -3710,9 +3722,14 @@
        19,
        21,
        10000
+      ],
+      [
+       21,
+       22,
+       10000
       ]
      ],
-     "expected_total": 74746349100
+     "expected_total": 62020374667
     }
    }
   },
@@ -3738,7 +3755,7 @@
        5000
       ]
      ],
-     "expected_total": 73400000000
+     "expected_total": 58100000000
     },
     "safe": {
      "entries": [
@@ -3753,7 +3770,7 @@
        10000
       ]
      ],
-     "expected_total": 75600000000
+     "expected_total": 60400000000
     }
    }
   },
@@ -3774,11 +3791,17 @@
        5000
       ]
      ],
-     "expected_total": 71355374667
+     "expected_total": 57290374667
     },
     "safe": {
-     "entries": [],
-     "expected_total": 72832724100
+     "entries": [
+      [
+       21,
+       22,
+       10000
+      ]
+     ],
+     "expected_total": 59590374667
     }
    }
   },
@@ -3793,6 +3816,11 @@
    "expected": {
     "optimal": {
      "entries": [
+      [
+       18,
+       21,
+       10000
+      ],
       [
        19,
        21,
@@ -3809,10 +3837,15 @@
        5000
       ]
      ],
-     "expected_total": 87771342500
+     "expected_total": 72100000000
     },
     "safe": {
      "entries": [
+      [
+       18,
+       21,
+       10000
+      ],
       [
        19,
        21,
@@ -3829,7 +3862,7 @@
        10000
       ]
      ],
-     "expected_total": 89971342500
+     "expected_total": 74400000000
     }
    }
   },
@@ -3850,7 +3883,7 @@
        10000
       ]
      ],
-     "expected_total": 68189447316
+     "expected_total": 61480065441
     },
     "safe": {
      "entries": [
@@ -3860,7 +3893,7 @@
        10000
       ]
      ],
-     "expected_total": 68189447316
+     "expected_total": 61480065441
     }
    }
   },
@@ -3881,7 +3914,7 @@
        10000
       ]
      ],
-     "expected_total": 57845883667
+     "expected_total": 54845883667
     },
     "safe": {
      "entries": [
@@ -3891,7 +3924,7 @@
        10000
       ]
      ],
-     "expected_total": 57845883667
+     "expected_total": 54845883667
     }
    }
   },
@@ -3905,12 +3938,24 @@
    "repair_policy": "to_12",
    "expected": {
     "optimal": {
-     "entries": [],
-     "expected_total": 50220846860
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ]
+     ],
+     "expected_total": 47531974100
     },
     "safe": {
-     "entries": [],
-     "expected_total": 50220846860
+     "entries": [
+      [
+       19,
+       21,
+       10000
+      ]
+     ],
+     "expected_total": 47531974100
     }
    }
   }
@@ -3931,15 +3976,15 @@
     "scroll_star": 15,
     "rebuild_cost": 0,
     "trials": 3000,
-    "total_cost_mean": 24925892078,
+    "total_cost_mean": 24920892078,
     "total_cost_percentiles": {
-     "50": 20603431150,
-     "75": 33808834200,
-     "90": 49636370060,
-     "95": 60564864665,
-     "99": 83883633351
+     "50": 20598431150,
+     "75": 33803834200,
+     "90": 49631370060,
+     "95": 60559864665,
+     "99": 83878633351
     },
-    "meso_mean": 24100942078,
+    "meso_mean": 24095942078,
     "static_meso_mean": 24080942078.0,
     "equipment_cost_mean": 824950000,
     "rebuild_cost_mean": 0,
@@ -3961,27 +4006,27 @@
    },
    "prices": {
     "star_scroll_cost": {
-     "15": 60000000,
+     "15": 45000000,
      "16": 300000000,
-     "17": 2880000000,
-     "18": 4890000000,
-     "19": 14100000000,
-     "20": 64800000000
+     "17": 2100000000,
+     "18": 3900000000,
+     "19": 12900000000,
+     "20": 53100000000
     },
     "breakthrough_scroll_cost": {
-     "21-10000": 53400000000,
-     "22-10000": 108600000000,
-     "23-3000": 39000000000,
-     "23-5000": 51000000000,
-     "23-10000": 126900000000,
-     "24-3000": 68400000000,
-     "24-5000": 114000000000,
-     "24-10000": 240000000000,
-     "25-3000": 300000000000,
-     "25-5000": 480000000000,
-     "25-10000": 1140000000000,
-     "26-3000": 930000000000,
-     "26-5000": 1380000000000
+     "21-10000": 45600000000,
+     "22-10000": 82500000000,
+     "23-3000": 26100000000,
+     "23-5000": 37800000000,
+     "23-10000": 90000000000,
+     "24-3000": 52500000000,
+     "24-5000": 80400000000,
+     "24-10000": 222000000000,
+     "25-3000": 216000000000,
+     "25-5000": 378300000000,
+     "25-10000": 879900000000,
+     "26-3000": 660000000000,
+     "26-5000": 1140000000000
     },
     "equipment": [
      {
@@ -4041,7 +4086,7 @@
     ]
    },
    "rebuild_cost": 0,
-   "expected_total_cost_mean": 28265692078
+   "expected_total_cost_mean": 28250692078
   },
   {
    "name": "scrolled climb, cheap repair",
@@ -4058,15 +4103,15 @@
     "scroll_star": 15,
     "rebuild_cost": 0,
     "trials": 3000,
-    "total_cost_mean": 24636207677,
+    "total_cost_mean": 24579717677,
     "total_cost_percentiles": {
-     "50": 18055499700,
-     "75": 32816677275,
-     "90": 52706671950,
-     "95": 69166506615,
-     "99": 103586185420
+     "50": 18010499700,
+     "75": 32749595025,
+     "90": 52585171950,
+     "95": 68971506615,
+     "99": 103361485420
     },
-    "meso_mean": 23091507677,
+    "meso_mean": 23035017677,
     "static_meso_mean": 22865547677.0,
     "equipment_cost_mean": 1544700000,
     "rebuild_cost_mean": 0,
@@ -4088,27 +4133,27 @@
    },
    "prices": {
     "star_scroll_cost": {
-     "15": 60000000,
+     "15": 45000000,
      "16": 300000000,
-     "17": 2880000000,
-     "18": 4890000000,
-     "19": 14100000000,
-     "20": 64800000000
+     "17": 2100000000,
+     "18": 3900000000,
+     "19": 12900000000,
+     "20": 53100000000
     },
     "breakthrough_scroll_cost": {
-     "21-10000": 53400000000,
-     "22-10000": 108600000000,
-     "23-3000": 39000000000,
-     "23-5000": 51000000000,
-     "23-10000": 126900000000,
-     "24-3000": 68400000000,
-     "24-5000": 114000000000,
-     "24-10000": 240000000000,
-     "25-3000": 300000000000,
-     "25-5000": 480000000000,
-     "25-10000": 1140000000000,
-     "26-3000": 930000000000,
-     "26-5000": 1380000000000
+     "21-10000": 45600000000,
+     "22-10000": 82500000000,
+     "23-3000": 26100000000,
+     "23-5000": 37800000000,
+     "23-10000": 90000000000,
+     "24-3000": 52500000000,
+     "24-5000": 80400000000,
+     "24-10000": 222000000000,
+     "25-3000": 216000000000,
+     "25-5000": 378300000000,
+     "25-10000": 879900000000,
+     "26-3000": 660000000000,
+     "26-5000": 1140000000000
     },
     "equipment": [
      {
@@ -4168,7 +4213,7 @@
     ]
    },
    "rebuild_cost": 0,
-   "expected_total_cost_mean": 31266927677
+   "expected_total_cost_mean": 31097457677
   },
   {
    "name": "dearer scroll, dearer equipment",
@@ -4185,16 +4230,16 @@
     "scroll_star": 19,
     "rebuild_cost": 0,
     "trials": 3000,
-    "total_cost_mean": 194296433946,
+    "total_cost_mean": 191590300613,
     "total_cost_percentiles": {
-     "50": 133859864600,
-     "75": 264602658950,
-     "90": 449798979960,
-     "95": 589193515390,
-     "99": 898693617714
+     "50": 131859864600,
+     "75": 261002658950,
+     "90": 444184504760,
+     "95": 581193515390,
+     "99": 886697617714
     },
-    "meso_mean": 67459100613,
-    "static_meso_mean": 35662033946.33333,
+    "meso_mean": 64752967279,
+    "static_meso_mean": 35662033945.66667,
     "equipment_cost_mean": 126837333333,
     "rebuild_cost_mean": 0,
     "rebuild_count_mean": 0.0,
@@ -4212,27 +4257,27 @@
    },
    "prices": {
     "star_scroll_cost": {
-     "15": 60000000,
+     "15": 45000000,
      "16": 300000000,
-     "17": 2880000000,
-     "18": 4890000000,
-     "19": 14100000000,
-     "20": 64800000000
+     "17": 2100000000,
+     "18": 3900000000,
+     "19": 12900000000,
+     "20": 53100000000
     },
     "breakthrough_scroll_cost": {
-     "21-10000": 53400000000,
-     "22-10000": 108600000000,
-     "23-3000": 39000000000,
-     "23-5000": 51000000000,
-     "23-10000": 126900000000,
-     "24-3000": 68400000000,
-     "24-5000": 114000000000,
-     "24-10000": 240000000000,
-     "25-3000": 300000000000,
-     "25-5000": 480000000000,
-     "25-10000": 1140000000000,
-     "26-3000": 930000000000,
-     "26-5000": 1380000000000
+     "21-10000": 45600000000,
+     "22-10000": 82500000000,
+     "23-3000": 26100000000,
+     "23-5000": 37800000000,
+     "23-10000": 90000000000,
+     "24-3000": 52500000000,
+     "24-5000": 80400000000,
+     "24-10000": 222000000000,
+     "25-3000": 216000000000,
+     "25-5000": 378300000000,
+     "25-10000": 879900000000,
+     "26-3000": 660000000000,
+     "26-5000": 1140000000000
     },
     "equipment": [
      {
@@ -4292,7 +4337,7 @@
     ]
    },
    "rebuild_cost": 0,
-   "expected_total_cost_mean": 765239900613
+   "expected_total_cost_mean": 757121500613
   },
   {
    "name": "owned item, no scroll at all",
@@ -4333,27 +4378,27 @@
    },
    "prices": {
     "star_scroll_cost": {
-     "15": 60000000,
+     "15": 45000000,
      "16": 300000000,
-     "17": 2880000000,
-     "18": 4890000000,
-     "19": 14100000000,
-     "20": 64800000000
+     "17": 2100000000,
+     "18": 3900000000,
+     "19": 12900000000,
+     "20": 53100000000
     },
     "breakthrough_scroll_cost": {
-     "21-10000": 53400000000,
-     "22-10000": 108600000000,
-     "23-3000": 39000000000,
-     "23-5000": 51000000000,
-     "23-10000": 126900000000,
-     "24-3000": 68400000000,
-     "24-5000": 114000000000,
-     "24-10000": 240000000000,
-     "25-3000": 300000000000,
-     "25-5000": 480000000000,
-     "25-10000": 1140000000000,
-     "26-3000": 930000000000,
-     "26-5000": 1380000000000
+     "21-10000": 45600000000,
+     "22-10000": 82500000000,
+     "23-3000": 26100000000,
+     "23-5000": 37800000000,
+     "23-10000": 90000000000,
+     "24-3000": 52500000000,
+     "24-5000": 80400000000,
+     "24-10000": 222000000000,
+     "25-3000": 216000000000,
+     "25-5000": 378300000000,
+     "25-10000": 879900000000,
+     "26-3000": 660000000000,
+     "26-5000": 1140000000000
     },
     "equipment": [
      {
@@ -4455,27 +4500,27 @@
    },
    "prices": {
     "star_scroll_cost": {
-     "15": 60000000,
+     "15": 45000000,
      "16": 300000000,
-     "17": 2880000000,
-     "18": 4890000000,
-     "19": 14100000000,
-     "20": 64800000000
+     "17": 2100000000,
+     "18": 3900000000,
+     "19": 12900000000,
+     "20": 53100000000
     },
     "breakthrough_scroll_cost": {
-     "21-10000": 53400000000,
-     "22-10000": 108600000000,
-     "23-3000": 39000000000,
-     "23-5000": 51000000000,
-     "23-10000": 126900000000,
-     "24-3000": 68400000000,
-     "24-5000": 114000000000,
-     "24-10000": 240000000000,
-     "25-3000": 300000000000,
-     "25-5000": 480000000000,
-     "25-10000": 1140000000000,
-     "26-3000": 930000000000,
-     "26-5000": 1380000000000
+     "21-10000": 45600000000,
+     "22-10000": 82500000000,
+     "23-3000": 26100000000,
+     "23-5000": 37800000000,
+     "23-10000": 90000000000,
+     "24-3000": 52500000000,
+     "24-5000": 80400000000,
+     "24-10000": 222000000000,
+     "25-3000": 216000000000,
+     "25-5000": 378300000000,
+     "25-10000": 879900000000,
+     "26-3000": 660000000000,
+     "26-5000": 1140000000000
     },
     "equipment": [
      {
