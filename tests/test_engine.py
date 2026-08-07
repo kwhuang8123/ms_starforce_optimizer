@@ -454,12 +454,12 @@ class UnitsTest(unittest.TestCase):
         # so they are pinned here only to prove the conversion is exact - the
         # authority on what the shipped prices are is test_volatile_data.
         quoted = {
-            15: 0.2,
+            15: 0.15,
             16: 1.0,
-            17: 9.6,
-            18: 16.3,
-            19: 47.0,
-            20: 216.0,
+            17: 7.0,
+            18: 13.0,
+            19: 43.0,
+            20: 177.0,
         }
         for star, yi in quoted.items():
             with self.subTest(star=star):
