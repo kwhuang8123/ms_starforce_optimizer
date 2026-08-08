@@ -54,9 +54,6 @@ const el = {};
 
 function bind() {
   for (const id of [
-    "best-meta",
-    "best-reprice-note",
-    "best-policy-note",
     "best-start",
     "ask-equipment",
     "ask-mode",
@@ -495,33 +492,12 @@ function renderScratch(prices) {
     (row) => `${row.equipment} ${row.target_star}`
   );
   const explored = exploredTargets(dataset);
-  const startStars = [
-    ...new Set(dataset.results.map((row) => row.start_star)),
-  ].sort((a, b) => a - b);
-  const stale = [];
 
   const lines = [];
   for (const candidates of groups.values()) {
     const ordered = rank(candidates);
     const best = ordered[0];
     const stable = stableAlternative(candidates, best);
-
-    if (explored.has(best.target_star)) {
-      const live = liveOptimum(
-        best.equipment, best.target_star, startStars, prices
-      );
-      if (
-        live !== null &&
-        live.total < best.repriced * (1 - POLICY_DRIFT) &&
-        !(
-          live.startStar === best.start_star &&
-          live.repairPolicy === best.repair_policy &&
-          sameEntries(live.policy.entries, best.breakthrough_entries || [])
-        )
-      ) {
-        stale.push({ row: best, live });
-      }
-    }
 
     lines.push(`<tr>
       <td>${best.equipment}</td>
@@ -548,41 +524,6 @@ function renderScratch(prices) {
     </tr>`);
   }
   el.scratch.innerHTML = lines.join("");
-  renderPolicyNote(stale);
-}
-
-/**
- * Say so when the current prices have moved the answer off the dataset.
- *
- * The stored means are still exact for the policies they measured - what has
- * gone stale is which policy is best. Nothing here overwrites the table: the
- * measured rows are real, and a derived figure has no percentiles to show
- * beside them, so this points at the gap rather than papering over it.
- */
-function renderPolicyNote(stale) {
-  const note = el["best-policy-note"];
-  if (stale.length === 0) {
-    note.hidden = true;
-    note.innerHTML = "";
-    return;
-  }
-  const lines = stale
-    .map(({ row, live }) => {
-      const saving = 1 - live.total / row.repriced;
-      return (
-        `<li><strong>${row.equipment} ${row.target_star} 星</strong>：` +
-        `改用 ${live.startStar} 星起手・${POLICY_LABEL[live.repairPolicy]}` +
-        `（${describe(live.policy)}）平均約 ${formatYi(live.total)}，` +
-        `比表上這列再省 ${(saving * 100).toFixed(1)}%</li>`
-      );
-    })
-    .join("");
-  note.hidden = false;
-  note.innerHTML =
-    `<strong>目前物價下，資料集挑出的最優解已經不是最優。</strong>` +
-    `下面這 ${stale.length} 組有更便宜的走法，是用現價即時解出來的精確平均` +
-    `（沒有對應的 p50／p95，因為那需要重跑 sweep）：<ul>${lines}</ul>` +
-    `要讓整張表跟上，重跑 <code>sweep.py</code> 與 <code>build_site_data.py</code>。`;
 }
 
 function fillStartFilter() {
@@ -635,32 +576,8 @@ function renderMarginal(prices) {
       : lines.join("");
 }
 
-function renderNotes() {
-  const parts = [];
-  for (const [label, dataset] of [
-    ["從零開始", datasets.simulations],
-    ["已持有", datasets.marginal],
-  ]) {
-    parts.push(
-      dataset
-        ? `${label} 產生於 ${dataset.meta.generated_at}，每組 ${dataset.meta.trials.toLocaleString(
-            "en-US"
-          )} 次，已完成目標 ${(dataset.meta.targets_completed || []).join("、")} 星`
-        : `${label} 尚未產生`
-    );
-  }
-  el["best-meta"].textContent = parts.join("　|　");
-
-  const note = el["best-reprice-note"];
-  note.hidden = !store.isModified();
-  note.textContent =
-    "「平均」已依目前的物價重新計算，但 p50、p95、以及據此挑出的穩定解仍是資料集自己那組價格下的結果 —— " +
-    "分位數無法重新計價，因為換價格會改變每次試驗之間的排序。要讓它們跟上，請重跑 sweep.py 與 build_site_data.py。";
-}
-
 function render() {
   const prices = store.currentPrices();
-  renderNotes();
   renderAsk(prices);
   renderScratch(prices);
   renderMarginal(prices);

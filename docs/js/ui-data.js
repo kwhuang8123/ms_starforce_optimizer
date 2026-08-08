@@ -29,7 +29,7 @@ function bind() {
   for (const id of [
     "data-source", "data-equipment", "data-target", "data-start", "data-policy",
     "data-breakthrough",
-    "data-meta", "data-price-warning", "data-reprice-note", "data-count",
+    "data-count",
   ]) {
     el[id] = document.getElementById(id);
   }
@@ -64,35 +64,6 @@ function fillFilters() {
   fillFilter(el["data-equipment"], distinct(rows, "equipment"));
   fillFilter(el["data-target"], distinct(rows, "target_star"), (v) => `${v} 星`);
   fillFilter(el["data-start"], distinct(rows, "start_star"), (v) => `${v} 星`);
-}
-
-/** Which of the dataset's prices no longer match what the browser is using. */
-function priceDrift(dataset) {
-  const snapshot = dataset.meta.prices;
-  const current = store.currentPrices();
-  const changed = [];
-
-  for (const [star, price] of Object.entries(snapshot.star_scroll_cost)) {
-    if (current.star_scroll_cost[star] !== price) {
-      changed.push(`${star} 星星捲`);
-    }
-  }
-  // Datasets swept before breakthrough scrolls existed carry no prices for
-  // them, and no row here bought one, so there is nothing to have drifted.
-  for (const [id, price] of Object.entries(
-    snapshot.breakthrough_scroll_cost || {}
-  )) {
-    if (current.breakthrough_scroll_cost[id] !== price) {
-      changed.push(`突破星捲 ${id}`);
-    }
-  }
-  for (const item of snapshot.equipment) {
-    const now = current.equipment.find((entry) => entry.name === item.name);
-    if (!now || now.price !== item.price) {
-      changed.push(item.name);
-    }
-  }
-  return changed;
 }
 
 function sortValue(row, key) {
@@ -159,53 +130,7 @@ function deltaCell(row) {
   return `<span class="${ratio > 0 ? "bad-text" : "ok-text"}">${text}</span>`;
 }
 
-function renderRepriceNote(rows, modified) {
-  const note = el["data-reprice-note"];
-  const unknown = rows.filter((row) => row.repriced === null).length;
-
-  if (!modified) {
-    note.hidden = true;
-    return;
-  }
-  note.hidden = false;
-  note.className = unknown ? "banner warn" : "banner";
-  note.textContent =
-    "「現價平均」是用目前的價格重新計算的 - 因為價格不影響模擬過程，平均值可以精確換算。" +
-    "分位數（p50~p95）做不到這件事：換價格會改變每次試驗之間的排序，所以那幾欄仍然是快照價的結果。";
-  if (unknown) {
-    note.textContent +=
-      `　有 ${unknown} 列無法重算（裝備已從價格表移除，或是缺少可據以計算的 22 星重建成本），以「—」表示。`;
-  }
-}
-
-function renderMeta() {
-  const dataset = active();
-  if (!dataset) {
-    el["data-meta"].textContent = "這個資料集還沒產生，請先跑 sweep.py 再跑 build_site_data.py。";
-    el["data-price-warning"].hidden = true;
-    return;
-  }
-
-  const meta = dataset.meta;
-  const pending = (meta.target_stars || []).filter(
-    (star) => !(meta.targets_completed || []).includes(star)
-  );
-  el["data-meta"].textContent =
-    `產生於 ${meta.generated_at}　每組 ${meta.trials.toLocaleString("en-US")} 次　種子 ${meta.seed}` +
-    `　已完成目標 ${(meta.targets_completed || []).join("、")} 星` +
-    (pending.length ? `　（${pending.join("、")} 星尚未跑完）` : "");
-
-  const changed = priceDrift(dataset);
-  el["data-price-warning"].hidden = changed.length === 0;
-  if (changed.length) {
-    el["data-price-warning"].textContent =
-      `注意：這些結果是用資料集內建的價格快照算出來的，而以下項目現在的價格已經不同 - ` +
-      `${changed.join("、")}。要讓數字跟上，請改完價格後重跑 sweep.py 與 build_site_data.py。`;
-  }
-}
-
 function render() {
-  renderMeta();
   const dataset = active();
   if (!dataset) {
     el.body.innerHTML = "";
@@ -276,7 +201,6 @@ function render() {
     )
     .join("");
 
-  renderRepriceNote(rows, modified);
   el["data-count"].textContent = `${rows.length} / ${dataset.results.length} 組合`;
 }
 

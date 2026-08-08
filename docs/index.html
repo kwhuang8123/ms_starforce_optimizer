@@ -162,19 +162,6 @@
     </div>
 
     <div class="card">
-      <h2>懶人包</h2>
-      <p class="muted">
-        每件裝備、每個目標星力，把資料集裡所有起手星、修復方式與突破星捲用法的組合濃縮成一列。
-        「最優解」是平均總成本最低的走法；「穩定解」是尾巴較短、花費比較不會失控的替代走法，
-        只在它真的划算時才會出現。突破星捲要不要用、在哪幾星用，是解出來的而不是掃出來的：
-        走法太多掃不完，但期望成本有封閉解。
-      </p>
-      <p class="muted" id="best-meta"></p>
-      <p class="banner" id="best-reprice-note" hidden></p>
-      <div class="banner warn" id="best-policy-note" hidden></div>
-    </div>
-
-    <div class="card">
       <h2>從零開始（買星捲起手）</h2>
       <div class="table-scroll">
         <table id="best-scratch">
@@ -262,9 +249,6 @@
           </select>
         </label>
       </div>
-      <p class="muted" id="data-meta"></p>
-      <p class="banner warn" id="data-price-warning" hidden></p>
-      <p class="banner" id="data-reprice-note" hidden></p>
     </div>
 
     <div class="card">
@@ -344,15 +328,9 @@
   <section id="tab-prices" class="panel" hidden>
     <div class="card">
       <h2>物價設定</h2>
-      <p class="muted">
-        這裡的價格只存在瀏覽器（localStorage），會立即影響「手動模擬」的計價。
-        <strong>靜態網頁無法寫回 repo</strong>：要讓「數據瀏覽」的模擬結果跟著更新，
-        請用下方按鈕匯出 JSON，貼回 <code>data/volatile.json</code>，再重跑 <code>sweep.py</code>。
-      </p>
       <div class="row">
         <button id="prices-save" class="primary">儲存</button>
         <button id="prices-reset">還原成內建價格</button>
-        <button id="prices-export">匯出 JSON</button>
         <span id="prices-status" class="muted"></span>
       </div>
     </div>
@@ -391,10 +369,6 @@
       <p class="muted">名稱不可重複；等級限官方公布的六個等級。</p>
     </div>
 
-    <div class="card" id="prices-export-card" hidden>
-      <h2>貼回 <code>data/volatile.json</code></h2>
-      <textarea id="prices-json" rows="16" readonly></textarea>
-    </div>
   </section>
 </main>
 

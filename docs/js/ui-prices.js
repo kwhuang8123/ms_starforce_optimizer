@@ -2,8 +2,8 @@
  * The price tab: edit what the market currently charges.
  *
  * Saving writes to localStorage and re-prices the simulation immediately. It
- * cannot write back to the repo, so the export button produces the exact shape
- * data/volatile.json expects, for the operator to paste in and re-run sweep.py.
+ * cannot write back to the repo: to move a price into the dataset, edit
+ * data/volatile.json directly and re-run sweep.py.
  *
  * Validation matches starforce/volatile_data.py: every scroll star present,
  * prices non-negative integers, levels from the published list, and names that
@@ -14,21 +14,12 @@ import * as rules from "./rules.js";
 import * as store from "./prices-store.js";
 import { YI } from "./format.js";
 
-const COMMENT =
-  "浮動資料：會隨市場變動的價格。單位為楓幣，1e = 100000000。" +
-  "固定資料（強化機率、強化費用、修復楓幣、修復裝備數量）在 starforce/static_data.py。";
-
-const BREAKTHROUGH_COMMENT =
-  "突破星捲價格。key 為「上限星數-成功率萬分點」，例如 23-3000 就是突破23星30%。" +
-  "哪些捲存在寫在 starforce/static_data.py 的 BREAKTHROUGH_SCROLLS。";
-
 let draft = null;
 const el = {};
 
 function bind() {
   for (const id of [
-    "prices-save", "prices-reset", "prices-export", "prices-status",
-    "prices-add", "prices-export-card", "prices-json",
+    "prices-save", "prices-reset", "prices-status", "prices-add",
   ]) {
     el[id] = document.getElementById(id);
   }
@@ -210,30 +201,6 @@ function reset() {
   el["prices-status"].className = "muted ok-text";
 }
 
-function exportJson() {
-  const problem = validate();
-  if (problem !== null) {
-    el["prices-status"].textContent = problem;
-    el["prices-status"].className = "muted bad-text";
-    return;
-  }
-  const payload = {
-    _comment: COMMENT,
-    star_scroll_cost: draft.star_scroll_cost,
-    _breakthrough_comment: BREAKTHROUGH_COMMENT,
-    breakthrough_scroll_cost: draft.breakthrough_scroll_cost,
-    equipment: draft.equipment.map((item) => ({
-      name: item.name,
-      level: item.level,
-      price: item.price,
-      aliases: item.aliases || [],
-    })),
-  };
-  el["prices-json"].value = JSON.stringify(payload, null, 2);
-  el["prices-export-card"].hidden = false;
-  el["prices-json"].select();
-}
-
 export function initPrices() {
   bind();
   loadDraft();
@@ -243,7 +210,6 @@ export function initPrices() {
 
   el["prices-save"].addEventListener("click", save);
   el["prices-reset"].addEventListener("click", reset);
-  el["prices-export"].addEventListener("click", exportJson);
   el["prices-add"].addEventListener("click", () => {
     draft.equipment.push({
       name: "新裝備",
